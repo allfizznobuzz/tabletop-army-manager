@@ -10,23 +10,323 @@ Features:
 
 # Standard library imports
 import json
+import math
 import os
+import random
 import re
 
 # Third-party imports
-from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QColor, QFont, QPainter
+from PySide6.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, Signal
+from PySide6.QtGui import QColor, QFont, QPainter, QTransform
 from PySide6.QtWidgets import (
     QFileDialog, QGroupBox, QHBoxLayout, QLabel, QListWidget,
-    QMainWindow, QMessageBox, QTextEdit, QVBoxLayout, QWidget
+    QMainWindow, QMessageBox, QPushButton, QTextEdit, QVBoxLayout, QWidget
 )
 
 # Local imports
 from army_loader import ArmyLoader
 from battlescribe_converter import BattleScribeConverter
-from combat_mechanics import CombatCalculator
+from combat_mechanics import CombatCalculator, TargetSelector
 from turn_tracker import TurnTracker
 from visual_indicators import VisualIndicatorWidget
+
+
+class StaticDiceWidget(QWidget):
+    """Small, static dice widget for displaying results."""
+    
+    DICE_SIZE = 35  # Smaller for results grid
+    
+    def __init__(self, value=1, parent=None):
+        """Initialize static dice with a specific value."""
+        super().__init__(parent)
+        self.setFixedSize(self.DICE_SIZE + 4, self.DICE_SIZE + 4)
+        self.value = value
+        self.is_success = False  # Whether this roll meets the threshold
+    
+    def set_value(self, value, is_success=False):
+        """Set the dice value and success status."""
+        self.value = value
+        self.is_success = is_success
+        self.update()
+    
+    def paintEvent(self, event):
+        """Paint the static dice."""
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        # Choose colors based on success/failure
+        if self.is_success:
+            bg_color = QColor(200, 255, 200)  # Light green for success
+            border_color = QColor(100, 200, 100)  # Green border
+        else:
+            bg_color = QColor(255, 200, 200)  # Light red for failure
+            border_color = QColor(200, 100, 100)  # Red border
+        
+        # Draw dice background
+        painter.setBrush(bg_color)
+        painter.setPen(border_color)
+        painter.drawRoundedRect(2, 2, self.DICE_SIZE, self.DICE_SIZE, 4, 4)
+        
+        # Draw dice dots
+        self._draw_dice_dots(painter)
+    
+    def _draw_dice_dots(self, painter):
+        """Draw dots on the dice face."""
+        painter.setBrush(QColor(50, 50, 50))
+        painter.setPen(Qt.NoPen)
+        
+        dot_size = 4
+        margin = 8
+        center = self.DICE_SIZE // 2 + 2
+        
+        # Dot positions (adjusted for smaller dice)
+        positions = {
+            'top_left': (margin, margin),
+            'top_right': (self.DICE_SIZE - margin - dot_size + 2, margin),
+            'center_left': (margin, center - dot_size//2),
+            'center': (center - dot_size//2, center - dot_size//2),
+            'center_right': (self.DICE_SIZE - margin - dot_size + 2, center - dot_size//2),
+            'bottom_left': (margin, self.DICE_SIZE - margin - dot_size + 2),
+            'bottom_right': (self.DICE_SIZE - margin - dot_size + 2, self.DICE_SIZE - margin - dot_size + 2)
+        }
+        
+        # Draw dots based on dice value
+        dots_to_draw = []
+        
+        if self.value == 1:
+            dots_to_draw = ['center']
+        elif self.value == 2:
+            dots_to_draw = ['top_left', 'bottom_right']
+        elif self.value == 3:
+            dots_to_draw = ['top_left', 'center', 'bottom_right']
+        elif self.value == 4:
+            dots_to_draw = ['top_left', 'top_right', 'bottom_left', 'bottom_right']
+        elif self.value == 5:
+            dots_to_draw = ['top_left', 'top_right', 'center', 'bottom_left', 'bottom_right']
+        elif self.value == 6:
+            dots_to_draw = ['top_left', 'top_right', 'center_left', 'center_right', 'bottom_left', 'bottom_right']
+        
+        # Draw the dots
+        for dot in dots_to_draw:
+            if dot in positions:
+                x, y = positions[dot]
+                painter.drawEllipse(x, y, dot_size, dot_size)
+
+
+class AnimatedDiceWidget(QWidget):
+    """Animated dice widget that shows rolling animations."""
+    
+    # Animation constants
+    DICE_SIZE = 80  # Larger dice for better visibility
+    ANIMATION_DURATION = 2000  # Longer animation for more realism
+    ROLL_FRAMES = 30  # More frames for smoother animation
+    
+    def __init__(self, parent=None):
+        """Initialize the animated dice widget."""
+        super().__init__(parent)
+        self.setFixedSize(self.DICE_SIZE + 10, self.DICE_SIZE + 10)
+        
+        # Animation state
+        self.is_rolling = False
+        self.current_value = 1
+        self.target_value = 1
+        self.rotation_angle = 0
+        self.rotation_x = 0  # 3D rotation effect
+        self.rotation_y = 0
+        self.bounce_offset = 0
+        self.scale_factor = 1.0  # Scale effect during animation
+        self.shadow_offset = 5  # Shadow depth
+        
+        # Animation timers
+        self.roll_timer = QTimer()
+        self.roll_timer.timeout.connect(self._update_animation)
+        
+        # Animation properties
+        self.animation_frame = 0
+        self.max_frames = self.ROLL_FRAMES
+    
+    def roll_dice(self, target_value):
+        """Start rolling animation to target value."""
+        if self.is_rolling:
+            return
+        
+        self.is_rolling = True
+        self.target_value = target_value
+        self.animation_frame = 0
+        
+        # Start animation timer (60 FPS)
+        self.roll_timer.start(25)  # ~40 FPS for smooth animation
+    
+    def _update_animation(self):
+        """Update animation frame."""
+        self.animation_frame += 1
+        
+        # Calculate animation progress (0.0 to 1.0)
+        progress = self.animation_frame / self.max_frames
+        
+        if progress >= 1.0:
+            # Animation complete
+            self._finish_animation()
+        else:
+            # Update animation values
+            self._update_animation_values(progress)
+        
+        self.update()  # Trigger repaint
+    
+    def _update_animation_values(self, progress):
+        """Update animation values based on progress."""
+        # Multiple rotation axes for 3D effect
+        self.rotation_angle = progress * 900 + (random.randint(0, 180))
+        self.rotation_x = progress * 540 + (random.randint(0, 90))
+        self.rotation_y = progress * 720 + (random.randint(0, 120))
+        
+        # Enhanced bounce with gravity simulation
+        gravity_effect = 1 - (progress * progress)  # Quadratic easing
+        bounce_intensity = 30 * gravity_effect * abs(math.sin(progress * math.pi * 6))
+        self.bounce_offset = bounce_intensity
+        
+        # Scale effect - dice "squash" on impact
+        if progress > 0.8:  # Near end of animation
+            impact_factor = (1 - progress) * 5  # Stronger effect near end
+            self.scale_factor = 1.0 + 0.2 * abs(math.sin(impact_factor * math.pi))
+        else:
+            self.scale_factor = 1.0 + 0.1 * abs(math.sin(progress * math.pi * 3))
+        
+        # Shadow depth changes with bounce
+        self.shadow_offset = 5 + (self.bounce_offset * 0.3)
+        
+        # More frequent face changes for realism
+        if random.random() < 0.4:  # 40% chance to change face
+            self.current_value = random.randint(1, 6)
+    
+    def _finish_animation(self):
+        """Finish the rolling animation."""
+        self.roll_timer.stop()
+        self.is_rolling = False
+        self.current_value = self.target_value
+        self.rotation_angle = 0
+        self.bounce_offset = 0
+        self.update()
+    
+    def paintEvent(self, event):
+        """Paint the animated dice with 3D effects and shadows."""
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        # Calculate dice position
+        center_x = self.width() // 2
+        center_y = self.height() // 2 + self.bounce_offset
+        
+        # Draw shadow first (behind the dice)
+        self._draw_shadow(painter, center_x, center_y)
+        
+        # Save painter state for transformations
+        painter.save()
+        
+        # Apply transformations
+        painter.translate(center_x, center_y)
+        
+        # Apply scaling
+        painter.scale(self.scale_factor, self.scale_factor)
+        
+        # Apply rotations for 3D effect
+        if self.is_rolling:
+            painter.rotate(self.rotation_angle)
+            # Simulate 3D by skewing based on rotation_x and rotation_y
+            skew_x = math.sin(math.radians(self.rotation_x)) * 0.3
+            skew_y = math.sin(math.radians(self.rotation_y)) * 0.2
+            transform = QTransform(1, skew_y, skew_x, 1, 0, 0)
+            painter.setTransform(transform, True)
+        
+        # Center the dice
+        painter.translate(-self.DICE_SIZE//2, -self.DICE_SIZE//2)
+        
+        # Draw dice with gradient effect
+        self._draw_dice_with_gradient(painter)
+        
+        # Draw dice dots
+        self._draw_dice_dots(painter)
+        
+        # Restore painter state
+        painter.restore()
+    
+    def _draw_dice_dots(self, painter):
+        """Draw dots on the dice face."""
+        painter.setBrush(QColor(50, 50, 50))
+        painter.setPen(Qt.NoPen)
+        
+        dot_size = 8
+        margin = 12
+        center = self.DICE_SIZE // 2
+        
+        # Dot positions
+        positions = {
+            'top_left': (margin, margin),
+            'top_right': (self.DICE_SIZE - margin - dot_size, margin),
+            'center_left': (margin, center - dot_size//2),
+            'center': (center - dot_size//2, center - dot_size//2),
+            'center_right': (self.DICE_SIZE - margin - dot_size, center - dot_size//2),
+            'bottom_left': (margin, self.DICE_SIZE - margin - dot_size),
+            'bottom_right': (self.DICE_SIZE - margin - dot_size, self.DICE_SIZE - margin - dot_size)
+        }
+        
+        # Draw dots based on dice value
+        dots_to_draw = []
+        
+        if self.current_value == 1:
+            dots_to_draw = ['center']
+        elif self.current_value == 2:
+            dots_to_draw = ['top_left', 'bottom_right']
+        elif self.current_value == 3:
+            dots_to_draw = ['top_left', 'center', 'bottom_right']
+        elif self.current_value == 4:
+            dots_to_draw = ['top_left', 'top_right', 'bottom_left', 'bottom_right']
+        elif self.current_value == 5:
+            dots_to_draw = ['top_left', 'top_right', 'center', 'bottom_left', 'bottom_right']
+        elif self.current_value == 6:
+            dots_to_draw = ['top_left', 'top_right', 'center_left', 'center_right', 'bottom_left', 'bottom_right']
+        
+        # Draw the dots
+        for dot in dots_to_draw:
+            if dot in positions:
+                x, y = positions[dot]
+                painter.drawEllipse(x, y, dot_size, dot_size)
+    
+    def _draw_shadow(self, painter, center_x, center_y):
+        """Draw a shadow behind the dice."""
+        shadow_size = self.DICE_SIZE * self.scale_factor
+        shadow_x = center_x - shadow_size//2 + self.shadow_offset
+        shadow_y = center_y - shadow_size//2 + self.shadow_offset + self.bounce_offset
+        
+        # Create shadow color (semi-transparent black)
+        shadow_color = QColor(0, 0, 0, 60)  # Alpha for transparency
+        painter.setBrush(shadow_color)
+        painter.setPen(Qt.NoPen)
+        
+        # Draw elliptical shadow (more realistic)
+        painter.drawEllipse(int(shadow_x), int(shadow_y), int(shadow_size * 0.8), int(shadow_size * 0.4))
+    
+    def _draw_dice_with_gradient(self, painter):
+        """Draw dice with gradient effect for 3D appearance."""
+        from PySide6.QtGui import QLinearGradient
+        
+        # Create gradient for 3D effect
+        gradient = QLinearGradient(0, 0, self.DICE_SIZE, self.DICE_SIZE)
+        
+        if self.is_rolling:
+            # Bright colors while rolling
+            gradient.setColorAt(0, QColor(255, 255, 220))  # Light yellow-white
+            gradient.setColorAt(0.5, QColor(250, 250, 200))  # Medium yellow
+            gradient.setColorAt(1, QColor(240, 240, 180))  # Darker yellow
+        else:
+            # Normal dice colors
+            gradient.setColorAt(0, QColor(250, 250, 250))  # Light white
+            gradient.setColorAt(0.5, QColor(240, 240, 240))  # Medium white
+            gradient.setColorAt(1, QColor(220, 220, 220))  # Darker white
+        
+        painter.setBrush(gradient)
+        painter.setPen(QColor(100, 100, 100, 150))  # Semi-transparent border
+        painter.drawRoundedRect(0, 0, self.DICE_SIZE, self.DICE_SIZE, 10, 10)
 
 
 class DiceVisualWidget(QWidget):
@@ -175,6 +475,7 @@ class TabletopArmyManager(QMainWindow):
         self.current_attacking_unit = None
         self.current_defending_unit = None
         self.selected_weapon = None
+        self.current_dice_result = None
         self.turn_tracker = TurnTracker()
         self.target_selector = TargetSelector()
         
@@ -391,6 +692,104 @@ class TabletopArmyManager(QMainWindow):
         
         dice_group.setLayout(dice_layout)
         layout.addWidget(dice_group)
+        
+        # Dice Rolling Section
+        dice_roll_group = QGroupBox("🎲 Roll Dice")
+        dice_roll_layout = QVBoxLayout()
+        
+        # Roll buttons
+        roll_buttons_layout = QHBoxLayout()
+        
+        self.roll_hit_btn = QPushButton("Roll to Hit")
+        self.roll_hit_btn.clicked.connect(self.roll_hit_dice)
+        self.roll_hit_btn.setEnabled(False)
+        
+        self.roll_wound_btn = QPushButton("Roll to Wound")
+        self.roll_wound_btn.clicked.connect(self.roll_wound_dice)
+        self.roll_wound_btn.setEnabled(False)
+        
+        self.roll_save_btn = QPushButton("Roll Saves")
+        self.roll_save_btn.clicked.connect(self.roll_save_dice)
+        self.roll_save_btn.setEnabled(False)
+        
+        self.roll_all_btn = QPushButton("🎯 Roll All Dice")
+        self.roll_all_btn.clicked.connect(self.roll_all_dice)
+        self.roll_all_btn.setEnabled(False)
+        
+        roll_buttons_layout.addWidget(self.roll_hit_btn)
+        roll_buttons_layout.addWidget(self.roll_wound_btn)
+        roll_buttons_layout.addWidget(self.roll_save_btn)
+        roll_buttons_layout.addWidget(self.roll_all_btn)
+        
+        dice_roll_layout.addLayout(roll_buttons_layout)
+        
+        # Rolling animation area (separate from results)
+        rolling_animation_group = QGroupBox("🎲 Rolling Animation")
+        rolling_animation_layout = QHBoxLayout()
+        
+        # Create animated dice widgets for the rolling animation
+        self.rolling_dice = []
+        for i in range(8):  # Up to 8 dice rolling at once
+            dice_widget = AnimatedDiceWidget()
+            dice_widget.setVisible(False)
+            self.rolling_dice.append(dice_widget)
+            rolling_animation_layout.addWidget(dice_widget)
+        
+        rolling_animation_layout.addStretch()
+        rolling_animation_group.setLayout(rolling_animation_layout)
+        dice_roll_layout.addWidget(rolling_animation_group)
+        
+        # Results area with value-based organization
+        dice_animation_group = QGroupBox("🎲 Rolling Dice (Organized by Value)")
+        dice_animation_main_layout = QVBoxLayout()
+        
+        # Create dice grid: 6 rows (one for each dice value, 6 at top, 1 at bottom)
+        self.dice_value_rows = {}
+        self.animated_dice = []
+        
+        for value in [6, 5, 4, 3, 2, 1]:  # Top to bottom: 6s to 1s
+            # Create row for this dice value
+            row_layout = QHBoxLayout()
+            row_label = QLabel(f"⚅ {value}s:" if value == 6 else f"⚄ {value}s:" if value == 5 else f"⚃ {value}s:" if value == 4 else f"⚂ {value}s:" if value == 3 else f"⚁ {value}s:" if value == 2 else f"⚀ {value}s:")
+            row_label.setFixedWidth(50)
+            row_label.setStyleSheet("color: #E0E0E0; font-weight: bold;")
+            row_layout.addWidget(row_label)
+            
+            # Add cutoff indicator (red line for failures, green for successes)
+            cutoff_indicator = QLabel("│")  # Vertical bar
+            cutoff_indicator.setFixedWidth(15)
+            cutoff_indicator.setAlignment(Qt.AlignCenter)
+            cutoff_indicator.setStyleSheet("color: #FF6B6B; font-size: 20px; font-weight: bold;")  # Red by default
+            row_layout.addWidget(cutoff_indicator)
+            
+            # Create static dice widgets for this value (up to 15 dice per row)
+            dice_widgets_for_value = []
+            for i in range(15):
+                dice_widget = StaticDiceWidget(value)
+                dice_widget.setVisible(False)
+                dice_widgets_for_value.append(dice_widget)
+                row_layout.addWidget(dice_widget)
+            
+            row_layout.addStretch()  # Push dice to the left
+            self.dice_value_rows[value] = {
+                'dice': dice_widgets_for_value,
+                'cutoff_indicator': cutoff_indicator
+            }
+            dice_animation_main_layout.addLayout(row_layout)
+        
+        dice_animation_group.setLayout(dice_animation_main_layout)
+        dice_roll_layout.addWidget(dice_animation_group)
+        
+        # Dice results display
+        self.dice_results = QTextEdit()
+        self.dice_results.setMaximumHeight(120)
+        self.dice_results.setReadOnly(True)
+        self.dice_results.setFont(QFont("Consolas", 9))
+        self.dice_results.setPlaceholderText("Dice roll results will appear here...")
+        dice_roll_layout.addWidget(self.dice_results)
+        
+        dice_roll_group.setLayout(dice_roll_layout)
+        layout.addWidget(dice_roll_group)
         
         # Detailed calculation results
         details_group = QGroupBox("Calculation Details")
@@ -655,7 +1054,16 @@ class TabletopArmyManager(QMainWindow):
             result.save_roll, result.invuln_save_roll, total_dice
         )
         
-        # Update detailed text
+        # Enable dice rolling buttons
+        self.roll_hit_btn.setEnabled(result.hit_roll <= 6 and total_dice > 0)
+        self.roll_wound_btn.setEnabled(False)  # Enable after hit rolls
+        self.roll_save_btn.setEnabled(False)   # Enable after wound rolls
+        self.roll_all_btn.setEnabled(True)
+        
+        # Store current result for dice rolling
+        self.current_dice_result = result
+        
+        # Display detailed results
         weapon = self.selected_weapon
         attacker = self.current_attacking_unit
         target = self.current_defending_unit
@@ -764,3 +1172,266 @@ class TabletopArmyManager(QMainWindow):
     def update_turn_display(self):
         """Update the turn tracker display"""
         self.turn_label.setText(f"Turn {self.turn_tracker.current_turn} - {self.turn_tracker.current_phase} Phase")
+    
+    def roll_hit_dice(self):
+        """Roll dice for hit rolls with animations"""
+        if not self.current_dice_result or not self.current_attacking_unit or not self.selected_weapon:
+            return
+        
+        if self.current_dice_result.hit_roll > 6:
+            self.dice_results.append("🎯 HIT ROLLS: Auto-miss - no dice to roll!")
+            return
+        
+        total_dice = self.calculate_total_dice()
+        if total_dice == 0:
+            self.dice_results.append("🎯 HIT ROLLS: No dice to roll!")
+            return
+        
+        # Limit dice display to 6 for visual purposes
+        dice_to_show = min(total_dice, 6)
+        
+        # Roll the dice
+        rolls = [random.randint(1, 6) for _ in range(total_dice)]
+        hits = sum(1 for roll in rolls if roll >= self.current_dice_result.hit_roll)
+        
+        # Show and animate dice with hit threshold
+        self._animate_dice_roll(dice_to_show, rolls[:dice_to_show], self.current_dice_result.hit_roll)
+        
+        # Delay results display to allow animation to complete (2 seconds + buffer)
+        QTimer.singleShot(2200, lambda: self._display_hit_results(total_dice, rolls, hits))
+        
+        # Enable wound rolling if there are hits (after animation)
+        if hits > 0 and self.current_dice_result.wound_roll <= 6:
+            QTimer.singleShot(2300, lambda: self.roll_wound_btn.setEnabled(True))
+    
+    def roll_wound_dice(self):
+        """Roll dice for wound rolls with animations"""
+        if not self.current_dice_result:
+            return
+        
+        if self.current_dice_result.wound_roll > 6:
+            self.dice_results.append("💥 WOUND ROLLS: Cannot wound - no dice to roll!")
+            return
+        
+        # For simplicity, assume we're rolling with the number of hits from previous roll
+        # In a real game, user would specify how many dice to roll
+        dice_count = 3  # Default for demo - could be extracted from hit results
+        
+        # Roll the dice
+        rolls = [random.randint(1, 6) for _ in range(dice_count)]
+        wounds = sum(1 for roll in rolls if roll >= self.current_dice_result.wound_roll)
+        
+        # Show and animate dice
+        self._animate_dice_roll(dice_count, rolls)
+        
+        # Delay results display to allow animation to complete (2 seconds + buffer)
+        QTimer.singleShot(2200, lambda: self._display_wound_results(dice_count, rolls, wounds))
+        
+        # Enable save rolling if there are wounds (after animation)
+        if wounds > 0 and (self.current_dice_result.save_roll <= 6 or self.current_dice_result.invuln_save_roll <= 6):
+            QTimer.singleShot(2300, lambda: self.roll_save_btn.setEnabled(True))
+    
+    def roll_save_dice(self):
+        """Roll dice for save rolls with animations"""
+        if not self.current_dice_result:
+            return
+        
+        # Determine which save to use
+        armor_save_available = self.current_dice_result.save_roll <= 6
+        invuln_save_available = self.current_dice_result.invuln_save_roll <= 6
+        
+        if not armor_save_available and not invuln_save_available:
+            self.dice_results.append("🛡️ SAVE ROLLS: No saves available - all wounds go through!")
+            return
+        
+        # For demo, assume rolling saves for 2 wounds
+        dice_count = 2
+        
+        # Choose the better save (lower number)
+        if armor_save_available and invuln_save_available:
+            save_needed = min(self.current_dice_result.save_roll, self.current_dice_result.invuln_save_roll)
+            save_type = "Best Available"
+        elif armor_save_available:
+            save_needed = self.current_dice_result.save_roll
+            save_type = "Armor"
+        else:
+            save_needed = self.current_dice_result.invuln_save_roll
+            save_type = "Invulnerable"
+        
+        # Roll the dice
+        rolls = [random.randint(1, 6) for _ in range(dice_count)]
+        saves = sum(1 for roll in rolls if roll >= save_needed)
+        wounds_taken = dice_count - saves
+        
+        # Show and animate dice
+        self._animate_dice_roll(dice_count, rolls)
+        
+        # Delay results display to allow animation to complete (2 seconds + buffer)
+        QTimer.singleShot(2200, lambda: self._display_save_results(dice_count, rolls, saves, wounds_taken, save_type))
+    
+    def roll_all_dice(self):
+        """Roll all dice in sequence"""
+        if not self.current_dice_result:
+            self.dice_results.append("❌ No combat calculation available - select weapon and target first!")
+            return
+        
+        self.dice_results.clear()
+        self.dice_results.append("🎲 ROLLING ALL DICE IN SEQUENCE...\n")
+        
+        # Roll hits first
+        self.roll_hit_dice()
+        
+        # Small delay for better UX (optional)
+        self.dice_results.append("")
+        
+        # Roll wounds
+        self.roll_wound_dice()
+        
+        self.dice_results.append("")
+        
+        # Roll saves
+        self.roll_save_dice()
+        
+        self.dice_results.append("\n🏁 COMBAT SEQUENCE COMPLETE!")
+    
+    def _animate_dice_roll(self, num_dice, roll_values, roll_threshold=7):
+        """Animate dice rolling then gradually populate results."""
+        # Store roll data for gradual population
+        self.current_roll_values = roll_values
+        self.current_roll_threshold = roll_threshold
+        
+        # Clear previous results
+        self._clear_dice_results()
+        
+        # Show rolling animation first
+        dice_to_animate = min(num_dice, len(self.rolling_dice))
+        for i in range(dice_to_animate):
+            dice_widget = self.rolling_dice[i]
+            dice_widget.setVisible(True)
+            target_value = roll_values[i] if i < len(roll_values) else random.randint(1, 6)
+            QTimer.singleShot(i * 100, lambda dw=dice_widget, val=target_value: dw.roll_dice(val))
+        
+        # After animation completes, start gradual population
+        QTimer.singleShot(2100, self._start_gradual_population)
+    
+    def _display_hit_results(self, total_dice, rolls, hits):
+        """Display hit roll results after animation."""
+        rolls_str = ", ".join(str(roll) for roll in rolls)
+        result_text = f"🎯 HIT ROLLS ({total_dice} dice, need {self.current_dice_result.hit_roll}+):\n"
+        result_text += f"   Rolled: [{rolls_str}]\n"
+        result_text += f"   ✅ HITS: {hits}/{total_dice}\n"
+        
+        self.dice_results.append(result_text)
+    
+    def _display_wound_results(self, dice_count, rolls, wounds):
+        """Display wound roll results after animation."""
+        rolls_str = ", ".join(str(roll) for roll in rolls)
+        result_text = f"💥 WOUND ROLLS ({dice_count} dice, need {self.current_dice_result.wound_roll}+):\n"
+        result_text += f"   Rolled: [{rolls_str}]\n"
+        result_text += f"   ✅ WOUNDS: {wounds}/{dice_count}\n"
+        
+        self.dice_results.append(result_text)
+    
+    def _display_save_results(self, dice_count, rolls, saves, wounds_taken, save_type):
+        """Display save roll results after animation."""
+        rolls_str = ", ".join(str(roll) for roll in rolls)
+        result_text = f"🛡️ {save_type.upper()} SAVE ROLLS ({dice_count} dice, need {self._get_save_needed()}+):\n"
+        result_text += f"   Rolled: [{rolls_str}]\n"
+        result_text += f"   ✅ SAVES: {saves}/{dice_count}\n"
+        result_text += f"   ❌ WOUNDS TAKEN: {wounds_taken}\n"
+        
+        self.dice_results.append(result_text)
+    
+    def _get_save_needed(self):
+        """Get the save value needed for current calculation."""
+        if not self.current_dice_result:
+            return 7
+        
+        armor_save_available = self.current_dice_result.save_roll <= 6
+        invuln_save_available = self.current_dice_result.invuln_save_roll <= 6
+        
+        if armor_save_available and invuln_save_available:
+            return min(self.current_dice_result.save_roll, self.current_dice_result.invuln_save_roll)
+        elif armor_save_available:
+            return self.current_dice_result.save_roll
+        elif invuln_save_available:
+            return self.current_dice_result.invuln_save_roll
+        else:
+            return 7
+    
+    def _clear_dice_results(self):
+        """Clear all dice from the results grid."""
+        # Hide rolling dice
+        for dice_widget in self.rolling_dice:
+            dice_widget.setVisible(False)
+        
+        # Hide all result dice
+        for value in [6, 5, 4, 3, 2, 1]:
+            dice_widgets = self.dice_value_rows[value]['dice']
+            for dice_widget in dice_widgets:
+                dice_widget.setVisible(False)
+    
+    def _start_gradual_population(self):
+        """Start gradually populating dice results."""
+        if not hasattr(self, 'current_roll_values'):
+            return
+        
+        # Hide rolling dice now that animation is done
+        for dice_widget in self.rolling_dice:
+            dice_widget.setVisible(False)
+        
+        # Update cutoff indicators based on current threshold
+        self._update_cutoff_indicators()
+        
+        # Count dice by value
+        value_counts = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
+        for value in self.current_roll_values:
+            if 1 <= value <= 6:
+                value_counts[value] += 1
+        
+        # Calculate population speed based on total dice count
+        total_dice = len(self.current_roll_values)
+        if total_dice <= 5:
+            delay_per_die = 200  # Slower for few dice
+        elif total_dice <= 10:
+            delay_per_die = 150  # Medium speed
+        else:
+            delay_per_die = 100  # Faster for many dice
+        
+        # Gradually populate dice in each row
+        current_delay = 0
+        for value in [6, 5, 4, 3, 2, 1]:  # Top to bottom
+            count = value_counts[value]
+            if count > 0:
+                dice_widgets = self.dice_value_rows[value]['dice']
+                
+                for i in range(min(count, len(dice_widgets))):
+                    dice_widget = dice_widgets[i]
+                    is_success = value >= self.current_roll_threshold
+                    
+                    # Schedule this die to appear
+                    QTimer.singleShot(current_delay, 
+                                    lambda dw=dice_widget, val=value, success=is_success: 
+                                    self._show_result_die(dw, val, success))
+                    current_delay += delay_per_die
+    
+    def _show_result_die(self, dice_widget, value, is_success):
+        """Show a single result die with appropriate coloring."""
+        dice_widget.set_value(value, is_success)
+        dice_widget.setVisible(True)
+    
+    def _update_cutoff_indicators(self):
+        """Update the cutoff indicators based on current roll threshold."""
+        threshold = getattr(self, 'current_roll_threshold', 7)
+        
+        for value in [6, 5, 4, 3, 2, 1]:
+            indicator = self.dice_value_rows[value]['cutoff_indicator']
+            
+            if value >= threshold:
+                # Success values - green indicator
+                indicator.setStyleSheet("color: #4CAF50; font-size: 20px; font-weight: bold;")
+                indicator.setText("✓")  # Checkmark
+            else:
+                # Failure values - red indicator  
+                indicator.setStyleSheet("color: #FF6B6B; font-size: 20px; font-weight: bold;")
+                indicator.setText("✗")  # X mark
