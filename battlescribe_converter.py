@@ -89,17 +89,17 @@ class BattleScribeConverter:
         unit_name = unit_data.get("name", "Unknown Unit")
         unit_type = self._determine_unit_type(unit_data.get("categories", []))
         
-        # Default stats
+        # Default stats - numeric values default to 0
         unit_info = {
             "name": unit_name,
             "type": unit_type,
             "models": 1,
-            "wounds": 1,
-            "weapon_skill": 4,
-            "ballistic_skill": 4,
-            "toughness": 4,
-            "armor_save": 6,
-            "invulnerable_save": 7
+            "wounds": 0,
+            "weapon_skill": 0,
+            "ballistic_skill": 0,
+            "toughness": 0,
+            "armor_save": 0,
+            "invulnerable_save": 7  # 7 means no invulnerable save
         }
         
         # Extract stats from profiles
@@ -145,23 +145,8 @@ class BattleScribeConverter:
                             except:
                                 pass
         
-        # Try to extract model count from costs or selections
-        if "costs" in unit_data:
-            for cost in unit_data["costs"]:
-                if cost.get("name") == "pts":
-                    # Rough estimation based on points for wounds if not found
-                    if unit_info["wounds"] == 1:
-                        points = int(cost.get("value", 0))
-                        if points > 300:
-                            unit_info["wounds"] = 12
-                        elif points > 200:
-                            unit_info["wounds"] = 8
-                        elif points > 100:
-                            unit_info["wounds"] = 6
-                        elif points > 50:
-                            unit_info["wounds"] = 3
-                        elif points > 20:
-                            unit_info["wounds"] = 2
+        # Note: We no longer guess wounds based on point costs as this is unreliable
+        # Wounds should be extracted from the unit profile characteristics only
         
         # Check for invulnerable save in abilities profiles
         if "profiles" in unit_data:
@@ -315,14 +300,14 @@ class BattleScribeConverter:
         """Extract weapon stats directly from weapon profile characteristics"""
         weapon_name = weapon_profile.get("name", "Unknown Weapon")
         
-        # Default weapon stats
+        # Default weapon stats - numeric values default to 0
         weapon = {
             "name": weapon_name,
             "range": "Melee",
             "type": "MELEE",
             "attacks": "1",
-            "skill": 4,
-            "strength": 4,
+            "skill": 0,
+            "strength": 0,
             "ap": 0,
             "damage": "1"
         }
@@ -380,8 +365,8 @@ class BattleScribeConverter:
             "range": "Melee",
             "type": "MELEE",
             "attacks": "1",
-            "skill": 4,
-            "strength": 4,
+            "skill": 0,
+            "strength": 0,
             "ap": 0,
             "damage": "1"
         }
@@ -405,17 +390,17 @@ class BattleScribeConverter:
                             try:
                                 weapon["skill"] = int(char_value.replace("+", ""))
                             except:
-                                weapon["skill"] = 4
+                                weapon["skill"] = 0
                         elif char_name == "bs" or char_name == "ballistic skill":
                             try:
                                 weapon["skill"] = int(char_value.replace("+", ""))
                             except:
-                                weapon["skill"] = 4
+                                weapon["skill"] = 0
                         elif char_name == "s" or char_name == "strength":
                             try:
-                                weapon["strength"] = int(char_value) if char_value.isdigit() else 4
+                                weapon["strength"] = int(char_value) if char_value.isdigit() else 0
                             except:
-                                weapon["strength"] = 4
+                                weapon["strength"] = 0
                         elif char_name == "ap" or char_name == "armour penetration":
                             try:
                                 ap_val = char_value.replace("-", "").replace("+", "")
