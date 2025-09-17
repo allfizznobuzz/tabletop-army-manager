@@ -604,13 +604,10 @@ class TabletopArmyManager(QMainWindow):
         
         # Army loading with auto-conversion
         load_layout = QHBoxLayout()
-        load_btn = QPushButton("📁 Load Army")
+        load_btn = QPushButton("📁 Load Army (JSON)")
         load_btn.clicked.connect(self.load_attacking_army)
-        load_battlescribe_btn = QPushButton("🔄 Load BattleScribe")
-        load_battlescribe_btn.clicked.connect(self.load_attacking_battlescribe)
         
         load_layout.addWidget(load_btn)
-        load_layout.addWidget(load_battlescribe_btn)
         layout.addLayout(load_layout)
         
         self.attacking_army_label = QLabel("No army loaded")
@@ -812,15 +809,12 @@ class TabletopArmyManager(QMainWindow):
         group = QGroupBox("🛡️ DEFENDING FORCE")
         layout = QVBoxLayout()
         
-        # Army loading
+        # Army loading with auto-conversion
         load_layout = QHBoxLayout()
-        load_btn = QPushButton("📁 Load Army")
+        load_btn = QPushButton("📁 Load Army (JSON)")
         load_btn.clicked.connect(self.load_defending_army)
-        load_battlescribe_btn = QPushButton("🔄 Load BattleScribe")
-        load_battlescribe_btn.clicked.connect(self.load_defending_battlescribe)
         
         load_layout.addWidget(load_btn)
-        load_layout.addWidget(load_battlescribe_btn)
         layout.addLayout(load_layout)
         
         self.defending_army_label = QLabel("No army loaded")
@@ -882,24 +876,18 @@ class TabletopArmyManager(QMainWindow):
         return max(1, total_dice)  # At least 1 die
         
     def load_attacking_army(self):
-        """Load a standard army JSON file"""
-        self._load_army_file(True, False)
+        """Load army JSON file with auto-detection of BattleScribe format"""
+        self._load_army_file(True)
         
-    def load_attacking_battlescribe(self):
-        """Load and convert a BattleScribe file"""
-        self._load_army_file(True, True)
-        
+
     def load_defending_army(self):
-        """Load a standard army JSON file"""
-        self._load_army_file(False, False)
+        """Load army JSON file with auto-detection of BattleScribe format"""
+        self._load_army_file(False)
         
-    def load_defending_battlescribe(self):
-        """Load and convert a BattleScribe file"""
-        self._load_army_file(False, True)
         
-    def _load_army_file(self, is_attacking, is_battlescribe):
+    def _load_army_file(self, is_attacking):
         """Generic army file loading with robust error handling and auto-detection"""
-        file_filter = "JSON Files (*.json)" if not is_battlescribe else "BattleScribe Files (*.json *.ros)"
+        file_filter = "JSON Files (*.json)"
         title = f"Load {'Attacking' if is_attacking else 'Defending'} Army"
         
         file_path, _ = QFileDialog.getOpenFileName(self, title, "", file_filter)
@@ -908,7 +896,7 @@ class TabletopArmyManager(QMainWindow):
             
         try:
             # Auto-detect BattleScribe format and convert if needed
-            army = self._load_army_with_auto_conversion(file_path, is_battlescribe)
+            army = self._load_army_with_auto_conversion(file_path, False)
                 
             # Set the loaded army
             if is_attacking:

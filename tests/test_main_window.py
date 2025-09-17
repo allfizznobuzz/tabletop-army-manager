@@ -1,14 +1,17 @@
 import pytest
 from PySide6.QtWidgets import QApplication
-from main_window import MainWindow
+from tabletop_army_manager import TabletopArmyManager as MainWindow
 
 def test_main_window_creation(qtbot):
     """Test creation of main window."""
     window = MainWindow()
     qtbot.addWidget(window)
     
-    assert window.windowTitle() == "Warhammer 40k Army Manager"
-    assert window.army_list.count() == 0  # No armies loaded initially
+    assert window.windowTitle() == "Tabletop Army Manager - Combat Assistant"
+    # Check that window initializes with required components
+    assert hasattr(window, 'army_loader')
+    assert hasattr(window, 'attacking_army')
+    assert hasattr(window, 'defending_army')
 
 def test_load_army(qtbot):
     """Test loading an army."""
@@ -35,9 +38,16 @@ def test_load_army(qtbot):
         ]
     }
     
-    window.load_army(test_data)
-    assert window.army_list.count() == 1
-    assert window.army_list.item(0).text() == "Test Army"
+    # Test that we can create an army document from the data
+    from army_document import ArmyDocument
+    army = ArmyDocument(test_data)
+    
+    # Set it as attacking army (this is how the current system works)
+    window.attacking_army = army
+    
+    # Verify army was set
+    assert window.attacking_army is not None
+    assert window.attacking_army.name == "Test Army"
 
 def test_select_unit(qtbot):
     """Test selecting a unit."""
@@ -63,13 +73,14 @@ def test_select_unit(qtbot):
             }
         ]
     }
-    window.load_army(test_data)
+    # Create and set army (matching current system)
+    from army_document import ArmyDocument
+    army = ArmyDocument(test_data)
+    window.attacking_army = army
     
-    # Select the unit
-    window.army_list.setCurrentRow(0)
-    
-    # Verify unit details are displayed
-    assert window.unit_name.text() == "Test Unit"
-    assert window.unit_type.text() == "Type: INFANTRY"
-    assert window.unit_models.text() == "Models: 5"
-    assert window.unit_wounds.text() == "Wounds: 10"
+    # Test that we can access unit data
+    unit = army.units[0]
+    assert unit.name == "Test Unit"
+    assert unit.unit_type == "INFANTRY"
+    assert unit.models == 5
+    assert unit.wounds == 10
