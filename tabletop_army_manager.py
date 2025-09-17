@@ -606,8 +606,11 @@ class TabletopArmyManager(QMainWindow):
         load_layout = QHBoxLayout()
         load_btn = QPushButton("📁 Load Army (JSON)")
         load_btn.clicked.connect(self.load_attacking_army)
+        remove_btn = QPushButton("🗑️ Remove Army")
+        remove_btn.clicked.connect(self.remove_attacking_army)
         
         load_layout.addWidget(load_btn)
+        load_layout.addWidget(remove_btn)
         layout.addLayout(load_layout)
         
         self.attacking_army_label = QLabel("No army loaded")
@@ -841,8 +844,11 @@ class TabletopArmyManager(QMainWindow):
         load_layout = QHBoxLayout()
         load_btn = QPushButton("📁 Load Army (JSON)")
         load_btn.clicked.connect(self.load_defending_army)
+        remove_btn = QPushButton("🗑️ Remove Army")
+        remove_btn.clicked.connect(self.remove_defending_army)
         
         load_layout.addWidget(load_btn)
+        load_layout.addWidget(remove_btn)
         layout.addLayout(load_layout)
         
         self.defending_army_label = QLabel("No army loaded")
@@ -926,7 +932,33 @@ class TabletopArmyManager(QMainWindow):
         """Load army JSON file with auto-detection of BattleScribe format"""
         self._load_army_file(False)
         
+    def remove_attacking_army(self):
+        """Remove the currently loaded attacking army"""
+        self.attacking_army = None
+        self.current_attacking_unit = None
+        self.selected_weapon = None
+        self.attacking_army_label.setText("No army loaded")
+        self.attacking_army_label.setStyleSheet("color: #888888; font-style: italic;")
+        self.attacking_units_list.clear()
+        self.attacking_weapons_list.clear()
+        self.attacking_unit_name.setText("No unit selected")
+        self.attacking_unit_stats.setText("")
+        self.fire_weapon_btn.setEnabled(False)
+        self.target_selector.attacking_army = None
+        self.trigger_auto_calculation()
         
+    def remove_defending_army(self):
+        """Remove the currently loaded defending army"""
+        self.defending_army = None
+        self.current_defending_unit = None
+        self.defending_army_label.setText("No army loaded")
+        self.defending_army_label.setStyleSheet("color: #888888; font-style: italic;")
+        self.defending_units_list.clear()
+        self.defending_unit_name.setText("No target selected")
+        self.defending_unit_stats.setText("")
+        self.target_selector.defending_army = None
+        self.trigger_auto_calculation()
+
     def _load_army_file(self, is_attacking):
         """Generic army file loading with robust error handling and auto-detection"""
         file_filter = "JSON Files (*.json)"
