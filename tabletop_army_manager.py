@@ -618,6 +618,20 @@ class TabletopArmyManager(QMainWindow):
         layout.addWidget(QLabel("🪖 Units:"))
         self.attacking_units_list = QListWidget()
         self.attacking_units_list.itemClicked.connect(self.select_attacking_unit)
+        # Remove dotted focus outline
+        self.attacking_units_list.setStyleSheet("""
+            QListWidget::item:selected {
+                background-color: #0078d4;
+                color: white;
+                outline: none;
+            }
+            QListWidget::item:focus {
+                outline: none;
+            }
+            QListWidget {
+                outline: none;
+            }
+        """)
         layout.addWidget(self.attacking_units_list)
         
         # Selected unit info
@@ -633,6 +647,20 @@ class TabletopArmyManager(QMainWindow):
         unit_info_layout.addWidget(QLabel("🔫 Weapons:"))
         self.attacking_weapons_list = QListWidget()
         self.attacking_weapons_list.itemClicked.connect(self.select_weapon)
+        # Remove dotted focus outline
+        self.attacking_weapons_list.setStyleSheet("""
+            QListWidget::item:selected {
+                background-color: #0078d4;
+                color: white;
+                outline: none;
+            }
+            QListWidget::item:focus {
+                outline: none;
+            }
+            QListWidget {
+                outline: none;
+            }
+        """)
         unit_info_layout.addWidget(self.attacking_weapons_list)
         
         # Fire weapon button
@@ -825,6 +853,20 @@ class TabletopArmyManager(QMainWindow):
         layout.addWidget(QLabel("🎯 Target Units:"))
         self.defending_units_list = QListWidget()
         self.defending_units_list.itemClicked.connect(self.select_defending_unit)
+        # Remove dotted focus outline
+        self.defending_units_list.setStyleSheet("""
+            QListWidget::item:selected {
+                background-color: #0078d4;
+                color: white;
+                outline: none;
+            }
+            QListWidget::item:focus {
+                outline: none;
+            }
+            QListWidget {
+                outline: none;
+            }
+        """)
         layout.addWidget(self.defending_units_list)
         
         # Selected target info
@@ -970,14 +1012,14 @@ class TabletopArmyManager(QMainWindow):
         self.attacking_units_list.clear()
         if self.attacking_army:
             for unit in self.attacking_army.units:
-                self.attacking_units_list.addItem(f"⚔️ {unit.name} ({unit.unit_type})")
+                self.attacking_units_list.addItem(f"⚔️ {unit.name}")
                 
     def populate_defending_units(self):
         """Populate the defending units list"""
         self.defending_units_list.clear()
         if self.defending_army:
             for unit in self.defending_army.units:
-                self.defending_units_list.addItem(f"🛡️ {unit.name} ({unit.unit_type})")
+                self.defending_units_list.addItem(f"🛡️ {unit.name}")
                 
     def select_attacking_unit(self, item):
         """Select an attacking unit"""
