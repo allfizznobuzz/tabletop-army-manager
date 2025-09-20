@@ -1,56 +1,86 @@
 # Tabletop Army Manager
 
-A generic tabletop miniature game combat assistant that helps speed up gameplay by managing army documents and providing instant combat dice calculations.
+A web-based real-time multiplayer application for managing tabletop wargaming armies, tracking combat, and managing game sessions using Firebase.
 
 ## Features
 
-### Core Functionality
-- **Army Document Loading**: Load standard JSON files or BattleScribe exports with automatic format detection
-- **Combat Calculations**: Instant hit, wound, and save roll calculations with visual dice displays
-- **Unit & Weapon Selection**: Interactive selection of attacking units, weapons, and target units
-- **AP Calculation**: Accurate armor penetration calculations with auto-fail detection
-- **Invulnerable Saves**: Proper handling of invulnerable saves and AP interactions
+- **Real-time Multiplayer**: Live game sessions with instant updates
+- **Army Management**: Load armies from JSON files or BattleScribe format
+- **Combat System**: Calculate damage, track wounds, assign victory points
+- **Turn Management**: Automated turn tracking with real-time notifications
+- **Authentication**: Google Sign-In and email/password options
+- **Cloud Storage**: Armies and game data stored in Firebase
+- **Offline Support**: Continue playing when internet connection drops
 
-### User Interface
-- **Professional Dark Theme**: Accessible color scheme following WCAG guidelines
-- **Visual Dice Display**: Custom dice widgets showing required rolls with color coding
-- **Instant Updates**: Real-time calculation updates when selecting weapons and targets
-- **Clear Combat Feedback**: Detailed explanations of dice roll requirements
+## Quick Start
 
-### Technical Features
-- **BattleScribe Integration**: Robust conversion from BattleScribe JSON format
-- **Cross-Platform**: Built with PySide6 for Windows, macOS, and Linux
-- **Clean Architecture**: Well-organized, maintainable codebase with comprehensive documentation
-- **Test Coverage**: Comprehensive test suite for reliability
+### Prerequisites
+- Node.js 16+ installed
+- Firebase CLI: `npm install -g firebase-tools`
 
-## Setup
+### Setup
+1. **Clone and install dependencies**:
+   ```bash
+   git clone <repository-url>
+   cd tabletop-army-manager
+   npm install
+   ```
 
-1. Create a virtual environment:
+2. **Set up Firebase**:
+   ```bash
+   firebase login
+   firebase init
+   ```
+
+3. **Update Firebase config** in `src/firebase/config.js` with your project details
+
+4. **Start development**:
+   ```bash
+   npm run firebase:emulators  # Terminal 1
+   npm start                   # Terminal 2
+   ```
+
+### Deploy to Production
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+npm run firebase:deploy
 ```
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+## Usage
 
-3. Run the application:
-```bash
-python main_tabletop.py
-```
-
-## Testing
-
-Run tests using pytest:
-```bash
-pytest
-```
+1. **Sign in** with Google or create an account
+2. **Create armies** by uploading JSON files or using the army builder
+3. **Start a game** and invite friends via game ID
+4. **Play in real-time** with automatic updates across all devices
 
 ## Project Structure
 
-- `src/`: Source code
-- `tests/`: Test files
-- `assets/`: Application assets (icons, images)
-- `docs/`: Documentation
+### Frontend (React)
+- `src/firebase/` - Firebase configuration and database operations
+- `src/components/` - React components
+- `src/hooks/` - Custom React hooks
+
+### Legacy Desktop Code (Reference)
+- `army_loader.py` - Army data loading (migrated to Firebase functions)
+- `combat_mechanics.py` - Combat calculations (migrated to client-side)
+- `turn_tracker.py` - Turn management (migrated to Firebase)
+- `tests/` - Test suite for legacy code
+
+### Firebase Configuration
+- `firebase.json` - Firebase project configuration
+- `firestore.rules` - Database security rules
+- `storage.rules` - File upload security
+
+## Testing
+
+```bash
+# Run React tests
+npm test
+
+# Run legacy Python tests
+pytest
+```
+
+## Cost
+
+- **Development**: Free (Firebase emulators)
+- **Production**: $0-2/month (Firebase free tier covers typical gaming group usage)
