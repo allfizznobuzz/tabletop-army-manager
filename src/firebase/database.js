@@ -51,14 +51,47 @@ export const createArmy = async (userId, armyData) => {
   return armyRef.id;
 };
 
+// Get user's games
+export const getUserGames = async (userId) => {
+  try {
+    const gamesRef = collection(db, DATABASE_COLLECTIONS.GAMES);
+    const q = query(gamesRef, where('players', 'array-contains', userId));
+    const querySnapshot = await getDocs(q);
+    
+    const games = [];
+    querySnapshot.forEach((doc) => {
+      games.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    return games;
+  } catch (error) {
+    console.error('Error getting games:', error);
+    throw error;
+  }
+};
+
 export const getUserArmies = async (userId) => {
-  const q = query(
-    collection(db, DATABASE_COLLECTIONS.ARMIES),
-    where('ownerId', '==', userId),
-    orderBy('createdAt', 'desc')
-  );
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  try {
+    const armiesRef = collection(db, DATABASE_COLLECTIONS.ARMIES);
+    const q = query(armiesRef, where('ownerId', '==', userId));
+    const querySnapshot = await getDocs(q);
+    
+    const armies = [];
+    querySnapshot.forEach((doc) => {
+      armies.push({
+        id: doc.id,
+        ...doc.data()
+      });
+    });
+    
+    return armies;
+  } catch (error) {
+    console.error('Error getting armies:', error);
+    throw error;
+  }
 };
 
 export const updateArmy = async (armyId, updates) => {

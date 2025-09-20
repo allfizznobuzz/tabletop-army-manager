@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { onAuthStateChange, signInWithGoogle, signOutUser } from './firebase/auth';
 import { subscribeToGame } from './firebase/database';
-import ArmyManager from './components/ArmyManager';
+import GameDashboard from './components/GameDashboard';
 import GameSession from './components/GameSession';
 import './App.css';
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState('armies'); // 'armies', 'game'
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'game'
   const [currentGameId, setCurrentGameId] = useState(null);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ function App() {
   const handleSignOut = async () => {
     try {
       await signOutUser();
-      setCurrentView('armies');
+      setCurrentView('dashboard');
       setCurrentGameId(null);
     } catch (error) {
       console.error('Sign out failed:', error);
@@ -79,10 +79,10 @@ function App() {
 
       <nav className="app-nav">
         <button 
-          onClick={() => setCurrentView('armies')}
-          className={currentView === 'armies' ? 'active' : ''}
+          onClick={() => setCurrentView('dashboard')}
+          className={currentView === 'dashboard' ? 'active' : ''}
         >
-          My Armies
+          Game Dashboard
         </button>
         {currentGameId && (
           <button 
@@ -95,8 +95,8 @@ function App() {
       </nav>
 
       <main className="app-main">
-        {currentView === 'armies' && (
-          <ArmyManager user={user} onJoinGame={joinGame} />
+        {currentView === 'dashboard' && (
+          <GameDashboard user={user} onJoinGame={joinGame} />
         )}
         {currentView === 'game' && currentGameId && (
           <GameSession gameId={currentGameId} user={user} />

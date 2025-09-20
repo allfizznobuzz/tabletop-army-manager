@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { getUserArmies, createArmy, createGame, joinGame } from '../firebase/database';
+import { parseArmyFile } from '../utils/armyParser';
 
 const ArmyManager = ({ user, onJoinGame }) => {
   const [armies, setArmies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateGame, setShowCreateGame] = useState(false);
   const [gameId, setGameId] = useState('');
+  const [uploadError, setUploadError] = useState('');
 
   useEffect(() => {
     loadUserArmies();
@@ -19,6 +21,31 @@ const ArmyManager = ({ user, onJoinGame }) => {
       console.error('Failed to load armies:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setUploadError('');
+
+    try {
+      const text = await file.text();
+      const jsonData = JSON.parse(text);
+      
+      // Parse the army file (handles both BattleScribe and simple formats)
+      const parsedArmy = parseArmyFile(jsonData);
+      
+      // Create the army in Firebase
+      await createArmy(user.uid, parsedArmy);
+      loadUserArmies(); // Refresh the list
+      
+      // Clear the file input
+      event.target.value = '';
+    } catch (error) {
+      console.error('Failed to upload army:', error);
+      setUploadError(error.message || 'Failed to parse army file. Please check the JSON format.');
     }
   };
 
@@ -107,10 +134,28 @@ const ArmyManager = ({ user, onJoinGame }) => {
     <div className="army-manager">
       <div className="army-manager-header">
         <h2>My Armies</h2>
-        <button onClick={handleCreateArmy} className="create-army-btn">
-          Create Sample Army
-        </button>
+        <div className="army-actions">
+          <input
+            type="file"
+            accept=".json"
+            onChange={handleFileUpload}
+            className="file-input"
+            id="army-file-input"
+          />
+          <label htmlFor="army-file-input" className="upload-army-btn">
+            Upload Army JSON
+          </label>
+          <button onClick={handleCreateArmy} className="create-army-btn">
+            Create Sample Army
+          </button>
+        </div>
       </div>
+
+      {uploadError && (
+        <div className="error-message">
+          <p>{uploadError}</p>
+        </div>
+      )}
 
       <div className="armies-grid">
         {armies.length === 0 ? (
@@ -165,6 +210,32 @@ const ArmyManager = ({ user, onJoinGame }) => {
           margin-bottom: 2rem;
         }
 
+        .army-actions {
+          display: flex;
+          gap: 1rem;
+          align-items: center;
+        }
+
+        .file-input {
+          display: none;
+        }
+
+        .upload-army-btn {
+          background: #3498db;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 16px;
+          text-decoration: none;
+          display: inline-block;
+        }
+
+        .upload-army-btn:hover {
+          background: #2980b9;
+        }
+
         .create-army-btn {
           background: #27ae60;
           color: white;
@@ -177,6 +248,19 @@ const ArmyManager = ({ user, onJoinGame }) => {
 
         .create-army-btn:hover {
           background: #219a52;
+        }
+
+        .error-message {
+          background: #f8d7da;
+          color: #721c24;
+          padding: 1rem;
+          border-radius: 5px;
+          margin-bottom: 2rem;
+          border: 1px solid #f5c6cb;
+        }
+
+        .error-message p {
+          margin: 0;
         }
 
         .armies-grid {
@@ -275,6 +359,16 @@ const ArmyManager = ({ user, onJoinGame }) => {
           .army-manager-header {
             flex-direction: column;
             gap: 1rem;
+            text-align: center;
+          }
+
+          .army-actions {
+            flex-direction: column;
+            width: 100%;
+          }
+
+          .upload-army-btn, .create-army-btn {
+            width: 100%;
             text-align: center;
           }
 
