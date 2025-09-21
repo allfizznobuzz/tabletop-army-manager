@@ -120,15 +120,9 @@ const GameSession = ({ gameId, user }) => {
                 onClick={() => setSelectedUnit(unit)}
               >
                 <h4>{unit.name}</h4>
-                <p className="unit-player">Player: {unit.playerName}</p>
-                <p>Wounds: {unit.currentWounds}/{unit.totalWounds}</p>
-                <p>Points: {unit.points}</p>
-                <p>Damage Taken: {unit.totalDamage || 0}</p>
-                {unit.weapons && unit.weapons.length > 0 && (
-                  <p>Weapons: {unit.weapons.length}</p>
-                )}
                 <div className="unit-status">
-                  {unit.currentWounds === 0 ? '💀 Destroyed' : '✅ Active'}
+                  {unit.currentWounds === 0 ? '💀 Destroyed' : 
+                   isMyTurn && unit.playerId === user.uid ? '⚡ Ready' : '⏸️ Waiting'}
                 </div>
               </div>
             ))}
@@ -262,27 +256,31 @@ const GameSession = ({ gameId, user }) => {
 
         .units-sidebar {
           background: white;
-          padding: 1.5rem;
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
           height: fit-content;
           max-height: 80vh;
-          overflow-y: auto;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
         }
 
         .units-sidebar h3 {
-          margin: 0 0 1rem 0;
+          margin: 0;
           color: #2c3e50;
-          position: sticky;
-          top: 0;
           background: white;
-          padding-bottom: 0.5rem;
+          padding: 1.5rem 1.5rem 1rem 1.5rem;
+          flex-shrink: 0;
+          border-bottom: 1px solid #eee;
         }
 
         .units-list {
           display: flex;
           flex-direction: column;
           gap: 1rem;
+          padding: 1rem 1.5rem 1.5rem 1.5rem;
+          overflow-y: auto;
+          flex: 1;
         }
 
         .game-main {
@@ -310,6 +308,8 @@ const GameSession = ({ gameId, user }) => {
           cursor: pointer;
           transition: all 0.3s;
           font-size: 0.9rem;
+          background: white;
+          z-index: 1;
         }
 
         .unit-card h4 {
