@@ -143,7 +143,16 @@ const GameSession = ({ gameId, user }) => {
           points: unit.points || 0,
           models: unit.models || unit.size || 1,
           weapons: unit.weapons || [],
-          modelGroups: unit.modelGroups || []
+          modelGroups: unit.modelGroups || [],
+          abilities: unit.abilities || [],
+          rules: unit.rules || [],
+          keywords: unit.keywords || [],
+          // Include all unit stats
+          weapon_skill: unit.weapon_skill,
+          ballistic_skill: unit.ballistic_skill,
+          toughness: unit.toughness,
+          armor_save: unit.armor_save,
+          invulnerable_save: unit.invulnerable_save
         });
       });
     }
@@ -228,11 +237,106 @@ const GameSession = ({ gameId, user }) => {
                 <div className="selected-unit-info">
                   <div className="unit-header">
                     <h4>{selectedUnit.name}</h4>
-                    <div className="unit-stats">
-                      <span><strong>Total Models:</strong> {selectedUnit.models || 1}</span>
-                      <span><strong>Wounds:</strong> {selectedUnit.currentWounds}/{selectedUnit.totalWounds}</span>
+                    <div className="unit-basic-stats">
+                      <span><strong>Player:</strong> {selectedUnit.playerName}</span>
+                      <span><strong>Type:</strong> {selectedUnit.type || 'INFANTRY'}</span>
+                      <span><strong>Points:</strong> {selectedUnit.points || 0}</span>
                     </div>
                   </div>
+
+                  {/* Unit Profile Stats */}
+                  <div className="unit-profile">
+                    <h5>Unit Profile:</h5>
+                    <div className="profile-stats">
+                      <div className="stat-row">
+                        <div className="stat-item">
+                          <span className="stat-label">Models</span>
+                          <span className="stat-value">{selectedUnit.models || 1}</span>
+                        </div>
+                        <div className="stat-item">
+                          <span className="stat-label">Wounds</span>
+                          <span className="stat-value">{selectedUnit.currentWounds}/{selectedUnit.totalWounds || selectedUnit.wounds || 1}</span>
+                        </div>
+                        {selectedUnit.weapon_skill && (
+                          <div className="stat-item">
+                            <span className="stat-label">WS</span>
+                            <span className="stat-value">{selectedUnit.weapon_skill}+</span>
+                          </div>
+                        )}
+                        {selectedUnit.ballistic_skill && (
+                          <div className="stat-item">
+                            <span className="stat-label">BS</span>
+                            <span className="stat-value">{selectedUnit.ballistic_skill}+</span>
+                          </div>
+                        )}
+                        {selectedUnit.toughness && (
+                          <div className="stat-item">
+                            <span className="stat-label">T</span>
+                            <span className="stat-value">{selectedUnit.toughness}</span>
+                          </div>
+                        )}
+                        {selectedUnit.armor_save && (
+                          <div className="stat-item">
+                            <span className="stat-label">Sv</span>
+                            <span className="stat-value">{selectedUnit.armor_save}+</span>
+                          </div>
+                        )}
+                        {selectedUnit.invulnerable_save && (
+                          <div className="stat-item">
+                            <span className="stat-label">Inv</span>
+                            <span className="stat-value">{selectedUnit.invulnerable_save}++</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Debug logging for selected unit */}
+                  {console.log('Selected unit data:', {
+                    name: selectedUnit.name,
+                    abilities: selectedUnit.abilities,
+                    rules: selectedUnit.rules,
+                    keywords: selectedUnit.keywords
+                  })}
+
+                  {/* Unit Abilities (with full descriptions) */}
+                  {selectedUnit.abilities && selectedUnit.abilities.length > 0 && (
+                    <div className="unit-abilities">
+                      <h5>Abilities:</h5>
+                      <div className="abilities-list">
+                        {selectedUnit.abilities.map((ability, index) => (
+                          <div key={index} className="ability-item">
+                            <strong>{ability.name}:</strong>
+                            <p>{ability.description}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Unit Rules (names only) */}
+                  {selectedUnit.rules && selectedUnit.rules.length > 0 && (
+                    <div className="unit-rules">
+                      <h5>Rules:</h5>
+                      <div className="rules-list">
+                        {selectedUnit.rules.map((rule, index) => (
+                          <span key={index} className="rule-tag">{rule}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Keywords (names only) */}
+                  {selectedUnit.keywords && selectedUnit.keywords.length > 0 && (
+                    <div className="unit-keywords">
+                      <h5>Keywords:</h5>
+                      <div className="keywords-list">
+                        {selectedUnit.keywords.map((keyword, index) => (
+                          <span key={index} className="keyword-tag">{keyword}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="model-groups-section">
                     <h5>Model Groups:</h5>

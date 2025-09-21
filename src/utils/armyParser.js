@@ -1,16 +1,20 @@
-// Army parser utility to handle both BattleScribe and simple JSON formats
-// Based on the existing Python converter logic
+// Clean, refactored Army Parser
+// Handles both BattleScribe and simple JSON formats with scalable architecture
 
+/**
+ * Main entry point for parsing army files
+ * Auto-detects format and converts to standardized structure
+ */
 export const parseArmyFile = (jsonData) => {
-  // Auto-detect BattleScribe format (has 'roster' key)
   if (jsonData.roster) {
     return convertBattleScribeToSimple(jsonData);
   }
-  
-  // Already in simple format, validate and return
   return validateSimpleFormat(jsonData);
 };
 
+/**
+ * Converts BattleScribe format to simple format
+ */
 const convertBattleScribeToSimple = (battleScribeData) => {
   const roster = battleScribeData.roster;
   const forces = roster.forces || [];
@@ -19,583 +23,350 @@ const convertBattleScribeToSimple = (battleScribeData) => {
     throw new Error('No forces found in BattleScribe roster');
   }
   
-  const force = forces[0]; // Use first force
+  const force = forces[0];
   const selections = force.selections || [];
   
-  // Extract army name from force or use default
-  const armyName = force.name || 'Imported Army';
+  const armyData = {
+    name: force.name || 'Imported Army',
+    faction: extractFaction(force),
+    units: []
+  };
   
-  // Extract faction from force rules or categories
-  let faction = 'Unknown';
-  if (force.rules && force.rules.length > 0) {
-    faction = force.rules[0].name || 'Unknown';
-  }
-  
-  const units = [];
-  
-  // Process selections to extract units
+  // Process each selection to extract units
   selections.forEach(selection => {
-    if (selection.type === 'model' || selection.type === 'unit') {
+    if (isUnitSelection(selection)) {
       const unit = convertBattleScribeUnit(selection);
       if (unit) {
-        units.push(unit);
+        armyData.units.push(unit);
       }
     }
   });
   
-  return {
-    name: armyName,
-    faction: faction,
-    units: units
-  };
+  return armyData;
 };
 
+/**
+ * Converts a single BattleScribe unit selection to simple format
+ */
 const convertBattleScribeUnit = (selection) => {
-  const unit = {
-    name: selection.name || 'Unknown Unit',
-    type: 'INFANTRY',
-    models: 0,
-    wounds: 1,
-    currentWounds: 1,
-    points: 0,
-    weapons: [],
-    modelGroups: []
-  };
+  // Initialize unit with defaults
+  const unit = createBaseUnit(selection);
   
-  // Scoped debug logger; enable by setting process.env.DEBUG_ARMY_PARSER = '1'
-  const dbg = (...args) => {
-    try {
-      if (typeof process !== 'undefined' && process.env && process.env.DEBUG_ARMY_PARSER === '1') {
-        console.log(...args);
-      }
-    } catch (_) {
-      // ignore if process/env not available
+  // Extract unit data from BattleScribe structure
+  extractUnitStats(selection, unit);
+  extractAbilitiesRulesKeywords(selection, unit);
+  extractModelGroups(selection, unit);
+  extractWeapons(selection, unit);
+  extractCosts(selection, unit);
+  
+  return unit;
+};
+
+/**
+ * Creates base unit object with defaults
+ */
+const createBaseUnit = (selection) => ({
+  name: selection.name || 'Unknown Unit',
+  type: 'INFANTRY',
+  models: selection.number || 1,
+  wounds: 1,
+  currentWounds: 1,
+  points: 0,
+  weapons: [],
+  modelGroups: [],
+  abilities: [],
+  rules: [],
+  keywords: []
+});
+
+/**
+ * Extracts unit statistics from profiles
+ */
+const extractUnitStats = (selection, unit) => {
+  if (!selection.profiles) return;
+  
+  selection.profiles.forEach(profile => {
+    if (profile.typeName === 'Unit' && profile.characteristics) {
+      profile.characteristics.forEach(char => {
+        const value = char.$text;
+        
+        switch (char.name) {
+          case 'W':
+            const wounds = parseInt(value, 10);
+            if (isFinite(wounds)) {
+              unit.wounds = wounds;
+              unit.currentWounds = wounds;
+            }
+            break;
+          case 'WS':
+            unit.weapon_skill = extractSkillValue(value);
+            break;
+          case 'BS':
+            unit.ballistic_skill = extractSkillValue(value);
+            break;
+          case 'T':
+            const toughness = parseInt(value, 10);
+            if (isFinite(toughness)) unit.toughness = toughness;
+            break;
+          case 'Sv':
+            unit.armor_save = extractSkillValue(value);
+            break;
+          case 'Keywords':
+            if (value && value !== '-') {
+              const keywords = value.split(',').map(k => k.trim()).filter(k => k);
+              unit.keywords.push(...keywords);
+            }
+            break;
+        }
+      });
+    }
+  });
+};
+
+/**
+ * Extracts abilities, rules, and keywords from selection
+ */
+const extractAbilitiesRulesKeywords = (selection, unit) => {
+  const processSelection = (sel) => {
+    // Extract from profiles
+    if (sel.profiles) {
+      sel.profiles.forEach(profile => {
+        if (profile.typeName === 'Abilities') {
+          const description = profile.characteristics?.find(char => char.name === 'Description');
+          unit.abilities.push({
+            name: profile.name,
+            description: description ? description.$text : ''
+          });
+        }
+      });
+    }
+    
+    // Extract from rules
+    if (sel.rules) {
+      sel.rules.forEach(rule => {
+        if (rule.name) {
+          unit.rules.push(rule.name);
+        }
+      });
+    }
+    
+    // Recursively process nested selections
+    if (sel.selections) {
+      sel.selections.forEach(nestedSel => processSelection(nestedSel));
     }
   };
   
-  // Generic scalable approach: analyze BattleScribe structure to detect model groups
-  dbg(`\n=== ANALYZING UNIT STRUCTURE: ${unit.name} ===`);
+  processSelection(selection);
+};
+
+/**
+ * Extracts model groups from selection
+ */
+const extractModelGroups = (selection, unit) => {
+  if (!selection.selections) return;
   
-  // Look for nested model selections in BattleScribe data
-  const detectedModelGroups = [];
-  let totalModelsDetected = 0;
+  const modelGroups = [];
+  let totalModels = 0;
+  
+  selection.selections.forEach(sel => {
+    if (sel.type === 'model' && sel.number && sel.name) {
+      const modelGroup = {
+        name: sel.name,
+        count: sel.number,
+        weapons: []
+      };
+      
+      // Extract weapons for this model group
+      extractModelGroupWeapons(sel, modelGroup);
+      
+      modelGroups.push(modelGroup);
+      totalModels += sel.number;
+    }
+  });
+  
+  // If we found model groups, use them
+  if (modelGroups.length > 0) {
+    unit.models = totalModels;
+    unit.modelGroups = modelGroups;
+    
+    // Create flattened weapons array for backward compatibility
+    unit.weapons = [];
+    modelGroups.forEach(group => {
+      unit.weapons.push(...group.weapons);
+    });
+  }
+};
+
+/**
+ * Extracts weapons for a specific model group
+ */
+const extractModelGroupWeapons = (selection, modelGroup) => {
+  const processWeaponSelection = (sel) => {
+    if (sel.profiles) {
+      sel.profiles.forEach(profile => {
+        if (profile.typeName === 'Ranged Weapons' || profile.typeName === 'Melee Weapons') {
+          const weapon = createWeaponFromProfile(profile, sel.number || 1);
+          modelGroup.weapons.push(weapon);
+        }
+      });
+    }
+    
+    if (sel.selections) {
+      sel.selections.forEach(nestedSel => processWeaponSelection(nestedSel));
+    }
+  };
   
   if (selection.selections) {
-    selection.selections.forEach(sel => {
-      if (sel.type === 'model' && sel.number && sel.name) {
-        dbg(`Found model group: ${sel.name} (count: ${sel.number})`);
-        
-        // Collect weapons for this model group
-        const modelGroupWeapons = [];
-        const collectModelWeapons = (selections) => {
-          if (!selections) return;
-          selections.forEach(weaponSel => {
-            if (weaponSel.profiles) {
-              weaponSel.profiles.forEach(profile => {
-                if (profile.typeName === 'Ranged Weapons' || profile.typeName === 'Melee Weapons') {
-                  const weaponCount = weaponSel.number || 1;
-                  
-                  // Create weapon object
-                  const weapon = {
-                    name: profile.name,
-                    range: '',
-                    type: profile.typeName === 'Melee Weapons' ? 'Melee' : 'Assault 1',
-                    attacks: 1,
-                    skill: 4,
-                    strength: 4,
-                    ap: 0,
-                    damage: 1,
-                    abilities: [],
-                    count: weaponCount
-                  };
-                  
-                  // Extract characteristics
-                  if (profile.characteristics) {
-                    profile.characteristics.forEach(char => {
-                      const val = char.$text;
-                      switch (char.name) {
-                        case 'Range':
-                          weapon.range = val || weapon.range;
-                          break;
-                        case 'Type':
-                          weapon.type = val || weapon.type;
-                          break;
-                        case 'A': {
-                          const n = parseInt(val, 10);
-                          weapon.attacks = isFinite(n) ? n : (val || weapon.attacks);
-                          break;
-                        }
-                        case 'WS':
-                        case 'BS': {
-                          const m = typeof val === 'string' ? val.match(/(\d+)/) : null;
-                          const n = m ? parseInt(m[1], 10) : NaN;
-                          weapon.skill = isFinite(n) ? n : weapon.skill;
-                          break;
-                        }
-                        case 'S': {
-                          const n = parseInt(val, 10);
-                          weapon.strength = isFinite(n) ? n : weapon.strength;
-                          break;
-                        }
-                        case 'AP': {
-                          const n = parseInt(val, 10);
-                          weapon.ap = isFinite(n) ? n : weapon.ap;
-                          break;
-                        }
-                        case 'D': {
-                          const n = parseInt(val, 10);
-                          weapon.damage = isFinite(n) ? n : weapon.damage;
-                          break;
-                        }
-                      }
-                    });
-                  }
-                  
-                  modelGroupWeapons.push(weapon);
-                  dbg(`  Added weapon: ${weapon.name} (x${weapon.count})`);
-                }
-              });
-            }
-            if (weaponSel.selections) {
-              collectModelWeapons(weaponSel.selections);
-            }
-          });
-        };
-        
-        collectModelWeapons(sel.selections);
-        
-        // Create model group
-        detectedModelGroups.push({
-          name: sel.name,
-          count: sel.number,
-          weapons: modelGroupWeapons
-        });
-        
-        totalModelsDetected += sel.number;
+    selection.selections.forEach(sel => processWeaponSelection(sel));
+  }
+};
+
+/**
+ * Extracts weapons from selection (fallback for units without model groups)
+ */
+const extractWeapons = (selection, unit) => {
+  // Only extract weapons if we don't have model groups
+  if (unit.modelGroups.length > 0) return;
+  
+  const weapons = [];
+  
+  const processWeaponSelection = (sel) => {
+    if (sel.profiles) {
+      sel.profiles.forEach(profile => {
+        if (profile.typeName === 'Ranged Weapons' || profile.typeName === 'Melee Weapons') {
+          const weapon = createWeaponFromProfile(profile, sel.number || 1);
+          weapons.push(weapon);
+        }
+      });
+    }
+    
+    if (sel.selections) {
+      sel.selections.forEach(nestedSel => processWeaponSelection(nestedSel));
+    }
+  };
+  
+  processWeaponSelection(selection);
+  
+  // Group identical weapons
+  unit.weapons = groupIdenticalWeapons(weapons);
+};
+
+/**
+ * Creates weapon object from BattleScribe profile
+ */
+const createWeaponFromProfile = (profile, count = 1) => {
+  const weapon = {
+    name: profile.name,
+    range: '12"',
+    type: profile.typeName === 'Melee Weapons' ? 'Melee' : 'Assault 1',
+    attacks: 1,
+    skill: 4,
+    strength: 4,
+    ap: 0,
+    damage: 1,
+    abilities: [],
+    count: count
+  };
+  
+  // Extract characteristics
+  if (profile.characteristics) {
+    profile.characteristics.forEach(char => {
+      const value = char.$text;
+      
+      switch (char.name) {
+        case 'Range':
+          weapon.range = value || weapon.range;
+          break;
+        case 'Type':
+          weapon.type = value || weapon.type;
+          break;
+        case 'A':
+          const attacks = parseInt(value, 10);
+          weapon.attacks = isFinite(attacks) ? attacks : (value || weapon.attacks);
+          break;
+        case 'WS':
+        case 'BS':
+          weapon.skill = extractSkillValue(value) || weapon.skill;
+          break;
+        case 'S':
+          const strength = parseInt(value, 10);
+          if (isFinite(strength)) weapon.strength = strength;
+          break;
+        case 'AP':
+          const ap = parseInt(value, 10);
+          if (isFinite(ap)) weapon.ap = ap;
+          break;
+        case 'D':
+          const damage = parseInt(value, 10);
+          if (isFinite(damage)) weapon.damage = damage;
+          break;
       }
     });
   }
   
-  // If we found model groups, use them
-  if (detectedModelGroups.length > 0) {
-    dbg(`✅ Found ${detectedModelGroups.length} model groups, total models: ${totalModelsDetected}`);
-    
-    unit.models = totalModelsDetected;
-    unit.modelGroups = detectedModelGroups;
-    
-    // Create flattened weapons array for backward compatibility
-    unit.weapons = [];
-    detectedModelGroups.forEach(group => {
-      unit.weapons.push(...group.weapons);
-    });
-    
-    dbg(`\n--- DETECTED MODEL GROUPS ---`);
-    detectedModelGroups.forEach((group, i) => {
-      dbg(`Group ${i + 1}: ${group.count}x ${group.name}`);
-      dbg(`  Weapons: ${group.weapons.length}`);
-      group.weapons.forEach(weapon => {
-        dbg(`    - ${weapon.name} (x${weapon.count})`);
-      });
-    });
-    dbg(`=== END STRUCTURE ANALYSIS ===\n`);
-    
-    return unit;
-  } else {
-    dbg(`❌ No model groups detected, falling back to original parsing`);
-  }
+  return weapon;
+};
+
+/**
+ * Groups identical weapons together
+ */
+const groupIdenticalWeapons = (weapons) => {
+  const weaponMap = new Map();
   
-  // Extract points cost
+  weapons.forEach(weapon => {
+    const key = `${weapon.name}|${weapon.range}|${weapon.type}`;
+    
+    if (weaponMap.has(key)) {
+      weaponMap.get(key).count += weapon.count;
+    } else {
+      weaponMap.set(key, { ...weapon });
+    }
+  });
+  
+  return Array.from(weaponMap.values());
+};
+
+/**
+ * Extracts costs from selection
+ */
+const extractCosts = (selection, unit) => {
   if (selection.costs) {
     const pointsCost = selection.costs.find(cost => cost.name === 'pts');
     if (pointsCost) {
       unit.points = pointsCost.value || 0;
     }
   }
-  
-  // If the selection itself is a model, set the model count
-  if (selection.type === 'model' || selection.type === 'unit') {
-    unit.models = selection.number || 1;
-  }
-  
-  // Track model groups separately to maintain sergeant/standard separation
-  const modelGroups = [];
-  const weapons = unit.weapons; // Reference to the unit's weapons array for fallback
-
-  // Find and parse the unit's own characteristics from its profiles
-  if (selection.profiles) {
-    selection.profiles.forEach(profile => {
-      if (profile.typeName === 'Unit') {
-        if (profile.characteristics) {
-          profile.characteristics.forEach(char => {
-            const val = char.$text;
-            switch (char.name) {
-              case 'W': {
-                const n = parseInt(val, 10);
-                unit.wounds = isFinite(n) ? n : 1;
-                unit.currentWounds = unit.wounds;
-                break;
-              }
-              case 'WS': {
-                const m = typeof val === 'string' ? val.match(/(\d+)/) : null;
-                const n = m ? parseInt(m[1], 10) : NaN;
-                unit.weapon_skill = isFinite(n) ? n : undefined;
-                break;
-              }
-              case 'BS': {
-                const m = typeof val === 'string' ? val.match(/(\d+)/) : null;
-                const n = m ? parseInt(m[1], 10) : NaN;
-                unit.ballistic_skill = isFinite(n) ? n : undefined;
-                break;
-              }
-              case 'T': {
-                const n = parseInt(val, 10);
-                unit.toughness = isFinite(n) ? n : undefined;
-                break;
-              }
-              case 'Sv': {
-                const m = typeof val === 'string' ? val.match(/(\d+)/) : null;
-                const n = m ? parseInt(m[1], 10) : NaN;
-                unit.armor_save = isFinite(n) ? n : undefined;
-                break;
-              }
-            }
-          });
-        }
-      }
-    });
-  }
-
-  // Recursively extract weapons from all nested selections and count models
-  const extractWeaponsFromSelections = (selections, depth = 0) => {
-    if (!selections) return;
-    
-    const indent = '  '.repeat(depth);
-    dbg(`${indent}Processing ${selections.length} selections at depth ${depth}`);
-    
-    selections.forEach((selection, index) => {
-      dbg(`${indent}Selection ${index}: type="${selection.type}", name="${selection.name}", number=${selection.number}`);
-      
-      // Check if this is a model selection to count models
-      // We only add if it's a nested model group, to avoid double-counting the top-level unit
-      if (depth > 0 && selection.type === 'model' && selection.number) {
-        dbg(`${indent}  -> Adding ${selection.number} models to unit`);
-        unit.models += selection.number;
-        
-        // Create a separate model group for this selection
-        const modelGroup = {
-          name: selection.name,
-          count: selection.number,
-          weapons: []
-        };
-        
-        // Extract weapons from this model's nested selections
-        if (selection.selections) {
-          dbg(`${indent}  -> Processing ${selection.selections.length} weapon selections for this model group`);
-          selection.selections.forEach((weaponSelection, weaponIndex) => {
-            dbg(`${indent}    Weapon selection ${weaponIndex}: type="${weaponSelection.type}", name="${weaponSelection.name}", number=${weaponSelection.number}`);
-            
-            if (weaponSelection.profiles) {
-              weaponSelection.profiles.forEach((profile, profileIndex) => {
-                dbg(`${indent}      Profile ${profileIndex}: typeName="${profile.typeName}", name="${profile.name}"`);
-                
-                if (profile.typeName === 'Ranged Weapons' || profile.typeName === 'Melee Weapons') {
-                  // In BattleScribe, the weapon selection number IS the total count for this model group
-                  const totalWeapons = weaponSelection.number || 1;
-                  
-                  dbg(`${indent}        -> Creating ${totalWeapons} instances of weapon: ${profile.name}`);
-                  
-                  for (let i = 0; i < totalWeapons; i++) {
-                    const weapon = {
-                      name: profile.name,
-                      range: '12"',
-                      type: profile.typeName === 'Melee Weapons' ? 'Melee' : 'Assault 1',
-                      attacks: 1,
-                      skill: 4,
-                      strength: 4,
-                      ap: 0,
-                      damage: 1,
-                      abilities: []
-                    };
-                    
-                    // Extract weapon characteristics
-                    if (profile.characteristics) {
-                      profile.characteristics.forEach(char => {
-                        const val = char.$text;
-                        switch (char.name) {
-                          case 'Range':
-                            weapon.range = val || weapon.range;
-                            break;
-                          case 'Type':
-                            weapon.type = val || weapon.type;
-                            break;
-                          case 'A': {
-                            const n = parseInt(val, 10);
-                            weapon.attacks = isFinite(n) ? n : (val || weapon.attacks);
-                            break;
-                          }
-                          case 'WS':
-                          case 'BS': {
-                            // Expect like '3+' -> 3
-                            const m = typeof val === 'string' ? val.match(/(\d+)/) : null;
-                            const n = m ? parseInt(m[1], 10) : NaN;
-                            weapon.skill = isFinite(n) ? n : weapon.skill;
-                            break;
-                          }
-                          case 'S': {
-                            const n = parseInt(val, 10);
-                            weapon.strength = isFinite(n) ? n : weapon.strength;
-                            break;
-                          }
-                          case 'AP': {
-                            const n = parseInt(val, 10);
-                            weapon.ap = isFinite(n) ? n : weapon.ap;
-                            break;
-                          }
-                          case 'D': {
-                            const n = parseInt(val, 10);
-                            weapon.damage = isFinite(n) ? n : weapon.damage;
-                            break;
-                          }
-                          case 'Keywords':
-                            if (val && val !== '-') {
-                              weapon.abilities = val.split(',').map(a => a.trim());
-                            }
-                            break;
-                        }
-                      });
-                    }
-                    
-                    modelGroup.weapons.push(weapon);
-                  }
-                }
-              });
-            }
-          });
-        }
-        
-        // Add this model group to the list
-        modelGroups.push(modelGroup);
-        
-        // IMPORTANT: Do not recurse into this model's selections again, we've already processed its weapons
-        dbg(`${indent}  -> Skipping recursion into model's selections to avoid double-counting`);
-        return; // Continue to next selection
-      }
-
-      // Process any selection that has weapon profiles (upgrade selections or direct weapon selections)
-      if (selection.profiles && selection.type !== 'model') {
-        const count = selection.number || 1;
-        dbg(`${indent}  -> Found selection with profiles, type="${selection.type}", processing ${selection.profiles.length} profiles`);
-        selection.profiles.forEach((profile, profileIndex) => {
-          dbg(`${indent}    Profile ${profileIndex}: typeName="${profile.typeName}", name="${profile.name}", count=${count}`);
-          if (profile.typeName === 'Ranged Weapons' || profile.typeName === 'Melee Weapons') {
-            dbg(`${indent}      -> Creating ${count} weapons of type: ${profile.name}`);
-            for (let i = 0; i < count; i++) {
-              const weapon = {
-                name: profile.name,
-                range: '12"',
-                type: profile.typeName === 'Melee Weapons' ? 'Melee' : 'Assault 1',
-                attacks: 1,
-                skill: 4,
-                strength: 4,
-                ap: 0,
-                damage: 1,
-                abilities: []
-              };
-              if (profile.characteristics) {
-                profile.characteristics.forEach(char => {
-                  const val = char.$text;
-                  switch (char.name) {
-                    case 'Range':
-                      weapon.range = val || weapon.range;
-                      break;
-                    case 'Type':
-                      weapon.type = val || weapon.type;
-                      break;
-                    case 'A': {
-                      const n = parseInt(val, 10);
-                      weapon.attacks = isFinite(n) ? n : (val || weapon.attacks);
-                      break;
-                    }
-                    case 'WS':
-                    case 'BS': {
-                      const m = typeof val === 'string' ? val.match(/(\d+)/) : null;
-                      const n = m ? parseInt(m[1], 10) : NaN;
-                      weapon.skill = isFinite(n) ? n : weapon.skill;
-                      break;
-                    }
-                    case 'S': {
-                      const n = parseInt(val, 10);
-                      weapon.strength = isFinite(n) ? n : weapon.strength;
-                      break;
-                    }
-                    case 'AP': {
-                      const n = parseInt(val, 10);
-                      weapon.ap = isFinite(n) ? n : weapon.ap;
-                      break;
-                    }
-                    case 'D': {
-                      const n = parseInt(val, 10);
-                      weapon.damage = isFinite(n) ? n : weapon.damage;
-                      break;
-                    }
-                    case 'Keywords':
-                      if (val && val !== '-') {
-                        weapon.abilities = val.split(',').map(a => a.trim());
-                      }
-                      break;
-                  }
-                });
-              }
-              weapons.push(weapon);
-            }
-          }
-        });
-      }
-
-      // Recursively check nested selections for non-model nodes
-      if (selection.selections) {
-        dbg(`${indent}  -> Recursively processing ${selection.selections.length} nested selections`);
-        extractWeaponsFromSelections(selection.selections, depth + 1);
-      }
-    });
-  };
-  
-  dbg(`\n=== Starting weapon extraction for unit: ${unit.name} ===`);
-  if (selection.selections) {
-    extractWeaponsFromSelections(selection.selections);
-  }
-  
-  dbg(`\n=== Final results for unit: ${unit.name} ===`);
-  dbg(`Total models: ${unit.models}`);
-  dbg(`Total weapons: ${weapons.length}`);
-  
-  // Group weapons by name for summary
-  const weaponSummary = {};
-  weapons.forEach(weapon => {
-    weaponSummary[weapon.name] = (weaponSummary[weapon.name] || 0) + 1;
-  });
-  
-  dbg('Weapon summary:');
-  Object.entries(weaponSummary).forEach(([name, count]) => {
-    dbg(`  ${name}: ${count}`);
-  });
-  dbg('=== End weapon extraction ===\n');
-  
-  // If we have model groups, use them; otherwise fall back to the old weapons array
-  if (modelGroups.length > 0) {
-    // Group identical weapons within each model group
-    modelGroups.forEach(modelGroup => {
-      const groupedWeapons = [];
-      const weaponMap = new Map();
-      
-      modelGroup.weapons.forEach(weapon => {
-        const key = `${weapon.name}|${weapon.range}|${weapon.type}|${weapon.attacks}|${weapon.skill}|${weapon.strength}|${weapon.ap}|${weapon.damage}`;
-        
-        if (weaponMap.has(key)) {
-          weaponMap.get(key).count++;
-        } else {
-          const groupedWeapon = { ...weapon, count: 1 };
-          weaponMap.set(key, groupedWeapon);
-          groupedWeapons.push(groupedWeapon);
-        }
-      });
-      
-      modelGroup.weapons = groupedWeapons;
-    });
-    
-    // Store model groups in the unit
-    unit.modelGroups = modelGroups;
-    
-    // Also create a flattened weapons array for backward compatibility
-    unit.weapons = [];
-    modelGroups.forEach(group => {
-      unit.weapons.push(...group.weapons);
-    });
-    
-    dbg(`Model groups: ${modelGroups.length}`);
-    modelGroups.forEach(group => {
-      dbg(`  ${group.count}x ${group.name}: ${group.weapons.length} weapon types`);
-      group.weapons.forEach(weapon => {
-        dbg(`    ${weapon.name} (x${weapon.count})`);
-      });
-    });
-  } else {
-    // Fallback: group weapons in the main weapons array
-    const groupedWeapons = [];
-    const weaponMap = new Map();
-    
-    weapons.forEach(weapon => {
-      const key = `${weapon.name}|${weapon.range}|${weapon.type}|${weapon.attacks}|${weapon.skill}|${weapon.strength}|${weapon.ap}|${weapon.damage}`;
-      
-      if (weaponMap.has(key)) {
-        weaponMap.get(key).count++;
-      } else {
-        const groupedWeapon = { ...weapon, count: 1 };
-        weaponMap.set(key, groupedWeapon);
-        groupedWeapons.push(groupedWeapon);
-      }
-    });
-    
-    unit.weapons = groupedWeapons;
-    
-    dbg(`Grouped weapons: ${groupedWeapons.length} unique weapon types`);
-    groupedWeapons.forEach(weapon => {
-      dbg(`  ${weapon.name} (x${weapon.count})`);
-    });
-  }
-  
-  return unit;
 };
 
-const convertBattleScribeWeapon = (profile) => {
-  const weapon = {
-    name: profile.name || 'Unknown Weapon',
-    range: '12"', // Default
-    type: 'Assault 1', // Default
-    attacks: 1,
-    skill: 4,
-    strength: 4,
-    ap: 0,
-    damage: 1
-  };
-  
-  // Extract weapon stats from characteristics
-  const chars = profile.characteristics || [];
-  chars.forEach(char => {
-    switch (char.name) {
-      case 'Range':
-        weapon.range = char.$text || '12"';
-        break;
-      case 'Type':
-        weapon.type = char.$text || 'Assault 1';
-        break;
-      case 'Keywords':
-        weapon.abilities = char.$text ? [char.$text] : [];
-        break;
-      case 'A':
-        weapon.attacks = parseInt(char.$text) || 1;
-        break;
-      case 'BS':
-      case 'WS':
-        weapon.skill = parseInt(char.$text) || 4;
-        break;
-      case 'S':
-        weapon.strength = parseInt(char.$text) || 4;
-        break;
-      case 'AP':
-        weapon.ap = parseInt(char.$text) || 0;
-        break;
-      case 'D':
-        weapon.damage = parseInt(char.$text) || 1;
-        break;
+/**
+ * Helper functions
+ */
+const isUnitSelection = (selection) => {
+  return selection.type === 'model' || selection.type === 'unit';
+};
+
+const extractFaction = (force) => {
+  if (force.rules && force.rules.length > 0) {
+    return force.rules[0].name || 'Unknown';
+  }
+  return 'Unknown';
+};
+
+const extractSkillValue = (value) => {
+  if (typeof value === 'string') {
+    const match = value.match(/(\d+)/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      return isFinite(num) ? num : undefined;
     }
-  });
-  
-  return weapon;
+  }
+  return undefined;
 };
 
+/**
+ * Validates simple format army data
+ */
 const validateSimpleFormat = (armyData) => {
-  // Validate required fields
   if (!armyData.name) {
     throw new Error('Army must have a name');
   }
@@ -604,24 +375,31 @@ const validateSimpleFormat = (armyData) => {
     throw new Error('Army must have a units array');
   }
   
-  // Validate each unit
-  armyData.units.forEach((unit, index) => {
+  // Validate and set defaults for each unit
+  armyData.units.forEach((unit, unitIndex) => {
     if (!unit.name) {
-      throw new Error(`Unit at index ${index} must have a name`);
+      throw new Error(`Unit at index ${unitIndex} must have a name`);
     }
     
-    // Set defaults for missing fields
+    // Set defaults
     unit.type = unit.type || 'INFANTRY';
     unit.models = unit.models || 1;
     unit.wounds = unit.wounds || 1;
     unit.currentWounds = unit.currentWounds || unit.wounds;
+    unit.points = unit.points || 0;
     unit.weapons = unit.weapons || [];
+    unit.modelGroups = unit.modelGroups || [];
+    unit.abilities = unit.abilities || [];
+    unit.rules = unit.rules || [];
+    unit.keywords = unit.keywords || [];
     
     // Validate weapons
     unit.weapons.forEach((weapon, weaponIndex) => {
       if (!weapon.name) {
         throw new Error(`Weapon at index ${weaponIndex} in unit ${unit.name} must have a name`);
       }
+      
+      // Set weapon defaults
       weapon.range = weapon.range || '12"';
       weapon.type = weapon.type || 'Assault 1';
       weapon.attacks = weapon.attacks || 1;
@@ -629,12 +407,9 @@ const validateSimpleFormat = (armyData) => {
       weapon.strength = weapon.strength || 4;
       weapon.ap = weapon.ap || 0;
       weapon.damage = weapon.damage || 1;
+      weapon.abilities = weapon.abilities || [];
     });
   });
   
   return armyData;
-};
-
-const generateId = () => {
-  return Math.random().toString(36).substr(2, 9);
 };
