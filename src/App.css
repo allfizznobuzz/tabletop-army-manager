@@ -118,6 +118,52 @@
   background: #ecf0f1;
 }
 
+/* Drag and Drop Styles */
+.unit-card {
+  position: relative;
+  transition: all 0.2s ease;
+  cursor: default; /* Default cursor for the card */
+}
+
+.unit-card.dragging {
+  opacity: 0.5;
+  transform: rotate(2deg);
+  cursor: grabbing !important;
+}
+
+.drag-handle {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  color: #bdc3c7;
+  font-size: 12px;
+  user-select: none;
+  pointer-events: auto; /* Allow pointer events on the handle */
+  cursor: grab; /* Show grab cursor only on the handle */
+  padding: 4px; /* Make it easier to click */
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.drag-handle:hover {
+  color: #7f8c8d;
+  background: rgba(189, 195, 199, 0.1);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.unit-card.drag-over {
+  border-top: 3px solid #3498db;
+  background: #e3f2fd;
+  transform: translateY(-2px);
+}
+
+.units-list {
+  position: relative;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .app-header {

@@ -9,6 +9,9 @@ const GameSession = ({ gameId, user }) => {
   const [damageAmount, setDamageAmount] = useState(1);
   const [vpAmount, setVpAmount] = useState(1);
   const [vpReason, setVpReason] = useState('');
+  const [draggedUnit, setDraggedUnit] = useState(null);
+  const [draggedOverIndex, setDraggedOverIndex] = useState(null);
+  const [unitOrder, setUnitOrder] = useState([]);
 
   useEffect(() => {
     // Subscribe to game data changes
@@ -62,8 +65,53 @@ const GameSession = ({ gameId, user }) => {
     try {
       await nextTurn(gameId);
     } catch (error) {
-      console.error('Failed to advance turn:', error);
+      console.error('Error advancing turn:', error);
     }
+  };
+
+  const handleDragStart = (e, unit) => {
+    setDraggedUnit(unit);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', unit.id);
+  };
+
+  const handleDragEnd = (e) => {
+    setDraggedUnit(null);
+    setDraggedOverIndex(null);
+  };
+
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDraggedOverIndex(index);
+  };
+
+  const handleDragLeave = (e) => {
+    // Only clear if we're leaving the unit card entirely
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setDraggedOverIndex(null);
+    }
+  };
+
+  const handleDrop = (e, dropIndex) => {
+    e.preventDefault();
+    
+    if (draggedUnit && dropIndex !== undefined) {
+      const draggedIndex = orderedUnits.findIndex(unit => unit.id === draggedUnit.id);
+      
+      if (draggedIndex !== dropIndex) {
+        const newOrder = [...orderedUnits];
+        const [draggedItem] = newOrder.splice(draggedIndex, 1);
+        newOrder.splice(dropIndex, 0, draggedItem);
+        
+        // Update the unit order state
+        setUnitOrder(newOrder.map(unit => unit.id));
+        console.log(`Reordered: moved ${draggedUnit.name} to position ${dropIndex + 1}`);
+      }
+    }
+    
+    setDraggedUnit(null);
+    setDraggedOverIndex(null);
   };
 
   if (loading) {
@@ -80,17 +128,10 @@ const GameSession = ({ gameId, user }) => {
 
   // Get all units from player armies using actual army data
   const allUnits = [];
-  console.log('=== GAME DATA DEBUG ===');
-  console.log('Full gameData:', gameData);
-  console.log('playerArmies:', gameData.playerArmies);
   
   Object.entries(gameData.playerArmies || {}).forEach(([playerId, playerArmy]) => {
-    console.log(`Player ${playerId} army:`, playerArmy);
     if (playerArmy.armyData && playerArmy.armyData.units) {
-      console.log(`Units for player ${playerId}:`, playerArmy.armyData.units);
       playerArmy.armyData.units.forEach((unit, index) => {
-        console.log(`Unit ${index}:`, unit);
-        console.log(`Unit ${index} modelGroups:`, unit.modelGroups);
         allUnits.push({
           id: `${playerId}_unit_${index}`,
           name: unit.name || 'Unknown Unit',
@@ -102,11 +143,21 @@ const GameSession = ({ gameId, user }) => {
           points: unit.points || 0,
           models: unit.models || unit.size || 1,
           weapons: unit.weapons || [],
-          modelGroups: unit.modelGroups || [] // ✅ Include modelGroups!
+          modelGroups: unit.modelGroups || []
         });
       });
     }
   });
+
+  // Initialize unit order if not set
+  if (unitOrder.length === 0 && allUnits.length > 0) {
+    setUnitOrder(allUnits.map(unit => unit.id));
+  }
+
+  // Create ordered units array based on unitOrder state
+  const orderedUnits = unitOrder.length > 0 
+    ? unitOrder.map(id => allUnits.find(unit => unit.id === id)).filter(Boolean)
+    : allUnits;
 
   return (
     <div className="game-session">
@@ -123,12 +174,24 @@ const GameSession = ({ gameId, user }) => {
         <div className="units-sidebar">
           <h3>Units</h3>
           <div className="units-list">
-            {allUnits.map((unit) => (
+            {orderedUnits.map((unit, index) => (
               <div 
                 key={unit.id}
-                className={`unit-card ${selectedUnit?.id === unit.id ? 'selected' : ''}`}
+                className={`unit-card ${selectedUnit?.id === unit.id ? 'selected' : ''} ${draggedUnit?.id === unit.id ? 'dragging' : ''} ${draggedOverIndex === index ? 'drag-over' : ''}`}
                 onClick={() => setSelectedUnit(unit)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, index)}
               >
+                <div 
+                  className="drag-handle"
+                  draggable={true}
+                  onDragStart={(e) => handleDragStart(e, unit)}
+                  onDragEnd={handleDragEnd}
+                  title="Drag to reorder"
+                >
+                  ⋮⋮
+                </div>
                 <h4>{unit.name}</h4>
                 <div className="unit-status">
                   {unit.currentWounds === 0 ? '💀 Destroyed' : 
