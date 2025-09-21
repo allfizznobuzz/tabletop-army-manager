@@ -4,8 +4,8 @@ const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, confirmTex
   if (!isOpen) return null;
 
   return (
-    <div className="confirm-dialog-overlay">
-      <div className="confirm-dialog">
+    <div className="confirm-dialog-overlay" onClick={onCancel}>
+      <div className="confirm-dialog" onClick={(e) => e.stopPropagation()}>
         <div className="confirm-dialog-header">
           <h3>{title}</h3>
         </div>
@@ -27,7 +27,7 @@ const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, confirmTex
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .confirm-dialog-overlay {
           position: fixed;
           top: 0;

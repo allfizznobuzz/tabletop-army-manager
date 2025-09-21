@@ -78,19 +78,24 @@ const GameSession = ({ gameId, user }) => {
   const currentPlayer = gameData.players[currentPlayerIndex];
   const isMyTurn = currentPlayer === user.uid;
 
-  // Get all units from player armies (simplified for demo)
+  // Get all units from player armies using actual army data
   const allUnits = [];
-  Object.entries(gameData.playerArmies || {}).forEach(([playerId, armyId]) => {
-    // In a real app, you'd fetch the army data and extract units
-    // For demo, we'll create sample units
-    allUnits.push({
-      id: `${playerId}_unit1`,
-      name: "Tactical Squad",
-      playerId,
-      currentWounds: 10,
-      totalWounds: 10,
-      totalDamage: 0
-    });
+  Object.entries(gameData.playerArmies || {}).forEach(([playerId, playerArmy]) => {
+    if (playerArmy.armyData && playerArmy.armyData.units) {
+      playerArmy.armyData.units.forEach((unit, index) => {
+        allUnits.push({
+          id: `${playerId}_unit_${index}`,
+          name: unit.name || 'Unknown Unit',
+          playerId,
+          playerName: playerArmy.playerName || 'Unknown Player',
+          currentWounds: unit.wounds || 1,
+          totalWounds: unit.wounds || 1,
+          totalDamage: 0,
+          points: unit.points || 0,
+          weapons: unit.weapons || []
+        });
+      });
+    }
   });
 
   return (
@@ -105,27 +110,32 @@ const GameSession = ({ gameId, user }) => {
       </div>
 
       <div className="game-content">
-        <div className="game-main">
-          <div className="units-section">
-            <h3>Units</h3>
-            <div className="units-grid">
-              {allUnits.map((unit) => (
-                <div 
-                  key={unit.id} 
-                  className={`unit-card ${selectedUnit?.id === unit.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedUnit(unit)}
-                >
-                  <h4>{unit.name}</h4>
-                  <p>Wounds: {unit.currentWounds}/{unit.totalWounds}</p>
-                  <p>Damage Taken: {unit.totalDamage || 0}</p>
-                  <div className="unit-status">
-                    {unit.currentWounds === 0 ? '💀 Destroyed' : '✅ Active'}
-                  </div>
+        <div className="units-sidebar">
+          <h3>Units</h3>
+          <div className="units-list">
+            {allUnits.map((unit) => (
+              <div 
+                key={unit.id}
+                className={`unit-card ${selectedUnit?.id === unit.id ? 'selected' : ''}`}
+                onClick={() => setSelectedUnit(unit)}
+              >
+                <h4>{unit.name}</h4>
+                <p className="unit-player">Player: {unit.playerName}</p>
+                <p>Wounds: {unit.currentWounds}/{unit.totalWounds}</p>
+                <p>Points: {unit.points}</p>
+                <p>Damage Taken: {unit.totalDamage || 0}</p>
+                {unit.weapons && unit.weapons.length > 0 && (
+                  <p>Weapons: {unit.weapons.length}</p>
+                )}
+                <div className="unit-status">
+                  {unit.currentWounds === 0 ? '💀 Destroyed' : '✅ Active'}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
+        </div>
 
+        <div className="game-main">
           <div className="actions-section">
             <h3>Actions</h3>
             
@@ -246,8 +256,33 @@ const GameSession = ({ gameId, user }) => {
 
         .game-content {
           display: grid;
-          grid-template-columns: 1fr 300px;
+          grid-template-columns: 300px 1fr 300px;
           gap: 2rem;
+        }
+
+        .units-sidebar {
+          background: white;
+          padding: 1.5rem;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          height: fit-content;
+          max-height: 80vh;
+          overflow-y: auto;
+        }
+
+        .units-sidebar h3 {
+          margin: 0 0 1rem 0;
+          color: #2c3e50;
+          position: sticky;
+          top: 0;
+          background: white;
+          padding-bottom: 0.5rem;
+        }
+
+        .units-list {
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
         }
 
         .game-main {
@@ -256,30 +291,36 @@ const GameSession = ({ gameId, user }) => {
           gap: 2rem;
         }
 
-        .units-section, .actions-section {
+        .actions-section {
           background: white;
           padding: 1.5rem;
           border-radius: 8px;
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .units-section h3, .actions-section h3 {
+        .actions-section h3 {
           margin: 0 0 1rem 0;
           color: #2c3e50;
         }
 
-        .units-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-          gap: 1rem;
-        }
-
         .unit-card {
           border: 2px solid #ddd;
-          padding: 1rem;
+          padding: 0.75rem;
           border-radius: 6px;
           cursor: pointer;
           transition: all 0.3s;
+          font-size: 0.9rem;
+        }
+
+        .unit-card h4 {
+          margin: 0 0 0.5rem 0;
+          font-size: 1rem;
+          color: #2c3e50;
+        }
+
+        .unit-card p {
+          margin: 0.25rem 0;
+          font-size: 0.85rem;
         }
 
         .unit-card:hover {
