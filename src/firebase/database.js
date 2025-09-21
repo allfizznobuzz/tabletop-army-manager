@@ -137,6 +137,11 @@ export const updateGameState = async (gameId, updates) => {
   });
 };
 
+export const deleteGame = async (gameId) => {
+  const gameRef = doc(db, DATABASE_COLLECTIONS.GAMES, gameId);
+  await deleteDoc(gameRef);
+};
+
 // Real-time game updates
 export const subscribeToGame = (gameId, callback) => {
   const gameRef = doc(db, DATABASE_COLLECTIONS.GAMES, gameId);

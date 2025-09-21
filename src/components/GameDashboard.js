@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { getUserGames, createGame, joinGame } from '../firebase/database';
+import { getUserGames, createGame, joinGame, deleteGame } from '../firebase/database';
 import { parseArmyFile } from '../utils/armyParser';
+import ConfirmDialog from './ConfirmDialog';
 
 const GameDashboard = ({ user, onJoinGame }) => {
   const [recentGames, setRecentGames] = useState([]);
@@ -10,6 +11,7 @@ const GameDashboard = ({ user, onJoinGame }) => {
   const [uploadError, setUploadError] = useState('');
   const [armyFile, setArmyFile] = useState(null);
   const [gameName, setGameName] = useState('');
+  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, gameId: null, gameName: '' });
 
   useEffect(() => {
     loadUserGames();
@@ -102,6 +104,29 @@ const GameDashboard = ({ user, onJoinGame }) => {
       console.error('Failed to join game:', error);
       setUploadError('Failed to join game. Please check the Game ID.');
     }
+  };
+
+  const handleDeleteGame = (game) => {
+    setDeleteConfirm({
+      isOpen: true,
+      gameId: game.id,
+      gameName: game.name
+    });
+  };
+
+  const confirmDeleteGame = async () => {
+    try {
+      await deleteGame(deleteConfirm.gameId);
+      setDeleteConfirm({ isOpen: false, gameId: null, gameName: '' });
+      loadUserGames(); // Refresh the list
+    } catch (error) {
+      console.error('Failed to delete game:', error);
+      setUploadError('Failed to delete game. Please try again.');
+    }
+  };
+
+  const cancelDeleteGame = () => {
+    setDeleteConfirm({ isOpen: false, gameId: null, gameName: '' });
   };
 
   const formatDate = (dateString) => {
@@ -220,6 +245,13 @@ const GameDashboard = ({ user, onJoinGame }) => {
                   >
                     {game.status === 'active' ? 'Continue Game' : 'View Game'}
                   </button>
+                  <button 
+                    onClick={() => handleDeleteGame(game)}
+                    className="delete-game-btn"
+                    title="Delete Game"
+                  >
+                    🗑️
+                  </button>
                 </div>
               </div>
             ))}
@@ -242,6 +274,17 @@ const GameDashboard = ({ user, onJoinGame }) => {
           </button>
         </div>
       </div>
+
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        title="Delete Game"
+        message={`Are you sure you want to delete "${deleteConfirm.gameName}"? This action cannot be undone and will permanently remove all game data, including damage history and victory points.`}
+        onConfirm={confirmDeleteGame}
+        onCancel={cancelDeleteGame}
+        confirmText="Delete Game"
+        cancelText="Cancel"
+        isDestructive={true}
+      />
 
       <style jsx>{`
         .game-dashboard {
@@ -461,6 +504,24 @@ const GameDashboard = ({ user, onJoinGame }) => {
 
         .join-game-btn:hover {
           background: #2980b9;
+        }
+
+        .delete-game-btn {
+          background: #e74c3c;
+          color: white;
+          border: none;
+          padding: 8px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 40px;
+        }
+
+        .delete-game-btn:hover {
+          background: #c0392b;
         }
 
         .join-existing-section {
