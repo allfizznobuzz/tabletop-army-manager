@@ -80,9 +80,17 @@ const GameSession = ({ gameId, user }) => {
 
   // Get all units from player armies using actual army data
   const allUnits = [];
+  console.log('=== GAME DATA DEBUG ===');
+  console.log('Full gameData:', gameData);
+  console.log('playerArmies:', gameData.playerArmies);
+  
   Object.entries(gameData.playerArmies || {}).forEach(([playerId, playerArmy]) => {
+    console.log(`Player ${playerId} army:`, playerArmy);
     if (playerArmy.armyData && playerArmy.armyData.units) {
+      console.log(`Units for player ${playerId}:`, playerArmy.armyData.units);
       playerArmy.armyData.units.forEach((unit, index) => {
+        console.log(`Unit ${index}:`, unit);
+        console.log(`Unit ${index} modelGroups:`, unit.modelGroups);
         allUnits.push({
           id: `${playerId}_unit_${index}`,
           name: unit.name || 'Unknown Unit',
@@ -92,7 +100,9 @@ const GameSession = ({ gameId, user }) => {
           totalWounds: unit.wounds || 1,
           totalDamage: 0,
           points: unit.points || 0,
-          weapons: unit.weapons || []
+          models: unit.models || unit.size || 1,
+          weapons: unit.weapons || [],
+          modelGroups: unit.modelGroups || [] // ✅ Include modelGroups!
         });
       });
     }
@@ -152,7 +162,123 @@ const GameSession = ({ gameId, user }) => {
                 </button>
               </div>
               {selectedUnit && (
-                <p>Selected: {selectedUnit.name}</p>
+                <div className="selected-unit-info">
+                  <div className="unit-header">
+                    <h4>{selectedUnit.name}</h4>
+                    <div className="unit-stats">
+                      <span><strong>Total Models:</strong> {selectedUnit.models || 1}</span>
+                      <span><strong>Wounds:</strong> {selectedUnit.currentWounds}/{selectedUnit.totalWounds}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="model-groups-section">
+                    <h5>Model Groups:</h5>
+                    {selectedUnit.weapons && selectedUnit.weapons.length > 0 ? (
+                      (() => {
+                        // Debug logging
+                        console.log('=== GAME SESSION DEBUG ===');
+                        console.log('Selected Unit:', selectedUnit.name);
+                        console.log('Total Models:', selectedUnit.models);
+                        console.log('Weapons Array:', selectedUnit.weapons);
+                        console.log('Model Groups:', selectedUnit.modelGroups);
+                        console.log('Has Model Groups:', selectedUnit.modelGroups && selectedUnit.modelGroups.length > 0);
+                        if (selectedUnit.modelGroups) {
+                          selectedUnit.modelGroups.forEach((group, i) => {
+                            console.log(`Group ${i + 1}: ${group.count}x ${group.name}`);
+                            console.log('  Weapons:', group.weapons);
+                          });
+                        }
+                        console.log('=== END DEBUG ===');
+                        
+                        const totalModels = selectedUnit.models || 1;
+                        const modelGroupCards = [];
+                        
+                        // Check if unit has model groups (sergeant + standard marines)
+                        console.log('Checking modelGroups condition:', {
+                          hasModelGroups: !!selectedUnit.modelGroups,
+                          modelGroupsLength: selectedUnit.modelGroups ? selectedUnit.modelGroups.length : 0,
+                          modelGroups: selectedUnit.modelGroups
+                        });
+                        
+                        if (selectedUnit.modelGroups && selectedUnit.modelGroups.length > 0) {
+                          console.log('✅ Using model groups from parser');
+                          // Use the model groups from the parser
+                          selectedUnit.modelGroups.forEach((modelGroup, index) => {
+                            console.log(`Creating model group ${index + 1}:`, modelGroup);
+                            const weaponsWithCount = modelGroup.weapons.map(weapon => ({
+                              ...weapon,
+                              modelCount: weapon.count || 1
+                            }));
+                            
+                            modelGroupCards.push({
+                              count: modelGroup.count,
+                              weapons: weaponsWithCount,
+                              name: modelGroup.name // Use the exact name from the parser
+                            });
+                          });
+                        } else {
+                          console.log('❌ Falling back to old logic');
+                          // Fallback for single model units or units without model groups
+                          if (totalModels === 1 || totalModels === 0) {
+                            modelGroupCards.push({
+                              count: 1,
+                              weapons: selectedUnit.weapons,
+                              name: selectedUnit.name.replace(/ with.*$/, '')
+                            });
+                          } else {
+                            // For multi-model units, use pre-grouped weapons from parser
+                            const weaponsWithCount = selectedUnit.weapons.map(weapon => ({
+                              ...weapon,
+                              modelCount: weapon.count || 1
+                            }));
+                            
+                            modelGroupCards.push({
+                              count: totalModels,
+                              weapons: weaponsWithCount,
+                              name: selectedUnit.name.replace(/s$/, '').replace(/ with.*$/, '')
+                            });
+                          }
+                        }
+                        
+                        console.log('Model Group Cards:', modelGroupCards);
+                        
+                        return modelGroupCards.map((group, index) => (
+                          <div key={index} className="model-group-card">
+                            <h6>{group.count}x {group.name}{group.count > 1 ? 's' : ''}</h6>
+                            {group.weapons.map((weapon, weaponIndex) => (
+                              <div key={weaponIndex} className="weapon-entry">
+                                <div className="weapon-name">
+                                  • {weapon.name || 'Unknown Weapon'}
+                                  {weapon.modelCount && weapon.modelCount > 1 && (
+                                    <span className="weapon-count"> (x{weapon.modelCount})</span>
+                                  )}
+                                </div>
+                                <div className="weapon-stats">
+                                  {weapon.range && <span>Range: {weapon.range}</span>}
+                                  {weapon.attacks && <span>A: {weapon.attacks}</span>}
+                                  {weapon.skill && <span>WS/BS: {weapon.skill}</span>}
+                                  {weapon.strength && <span>S: {weapon.strength}</span>}
+                                  {weapon.ap && <span>AP: {weapon.ap}</span>}
+                                  {weapon.damage && <span>D: {weapon.damage}</span>}
+                                </div>
+                                {weapon.abilities && weapon.abilities.length > 0 && (
+                                  <div className="weapon-abilities">
+                                    <em>{weapon.abilities.join(', ')}</em>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ));
+                      })()
+                    ) : (
+                      <div className="model-group-card">
+                        <h6>{selectedUnit.models || 1}x {selectedUnit.name}</h6>
+                        <p>No weapons found for this unit.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
 
@@ -468,6 +594,76 @@ const GameSession = ({ gameId, user }) => {
         .update-details {
           color: #666;
           font-size: 14px;
+          margin-top: 0.25rem;
+        }
+
+        .selected-unit-info {
+          background: #f8f9fa;
+          border: 1px solid #dee2e6;
+          border-radius: 6px;
+          padding: 1rem;
+          margin-top: 1rem;
+        }
+
+        .unit-header h4 {
+          margin: 0 0 0.5rem 0;
+          color: #333;
+        }
+
+        .unit-stats {
+          display: flex;
+          gap: 1rem;
+          margin-bottom: 1rem;
+          font-size: 0.9rem;
+          color: #666;
+        }
+
+        .model-groups-section h5 {
+          margin: 0 0 0.75rem 0;
+          color: #495057;
+          font-size: 1rem;
+        }
+
+        .model-group-card {
+          border: 2px solid #ddd;
+          padding: 0.75rem;
+          border-radius: 6px;
+          margin-bottom: 1rem;
+          background: white;
+          transition: all 0.3s;
+        }
+
+        .model-group-card h6 {
+          margin: 0 0 0.5rem 0;
+          color: #2c3e50;
+          font-size: 1rem;
+          font-weight: 600;
+        }
+
+        .weapon-entry {
+          margin-bottom: 0.75rem;
+        }
+
+        .weapon-name {
+          font-weight: 500;
+          color: #333;
+          display: block;
+          margin-bottom: 0.25rem;
+          font-size: 0.9rem;
+        }
+
+        .weapon-stats {
+          display: flex;
+          gap: 0.75rem;
+          flex-wrap: wrap;
+          font-size: 0.8rem;
+          color: #666;
+          margin-bottom: 0.25rem;
+        }
+
+        .weapon-abilities {
+          font-size: 0.8rem;
+          color: #666;
           margin-top: 0.25rem;
         }
 

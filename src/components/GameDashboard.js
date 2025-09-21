@@ -53,6 +53,9 @@ const GameDashboard = ({ user, onJoinGame }) => {
       // Parse the army file (handles both BattleScribe and simple formats)
       const parsedArmy = parseArmyFile(jsonData);
       
+      // Debug: Log parsed army to check weapons
+      console.log('Parsed army data:', JSON.stringify(parsedArmy, null, 2));
+      
       // Create game with army snapshot
       const gameData = {
         name: gameName,
