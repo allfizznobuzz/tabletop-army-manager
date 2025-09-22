@@ -359,12 +359,33 @@ const GameSession = ({ gameId, user }) => {
     return 'Ready';
   };
 
-  // Leader detection - check if leader can attach to specific unit
+  // Quick leader check for visuals (orange glow)
+  const isLeaderUnit = (unit) => {
+    if (!unit) return false;
+    const keywords = (unit.keywords || []).map(k => String(k).toLowerCase());
+    const rules = (unit.rules || []).map(r => String(r).toLowerCase());
+    const abilities = unit.abilities || [];
+    const name = String(unit.name || '').toLowerCase();
+
+    const hasLeaderKeyword = keywords.includes('leader');
+    const hasCharacterKeyword = keywords.includes('character');
+    const hasLeaderRule = rules.some(r => r.includes('leader'));
+    const hasLeaderAbility = abilities.some(a => String(a.name || '').toLowerCase().includes('leader'));
+    const hasAttachText = abilities.some(a => String(a.description || a.text || '').toLowerCase().includes('this model can be attached to'));
+
+    const commonLeaderNames = ['captain','commander','lieutenant','librarian','chaplain','ancient','champion','sanguinary','priest','company master','apothecary','judiciar'];
+    const isCommonLeaderName = commonLeaderNames.some(n => name.includes(n));
+
+    return hasLeaderKeyword || hasCharacterKeyword || hasLeaderRule || hasLeaderAbility || hasAttachText || isCommonLeaderName;
+  };
+
+  // Leader detection - check if leader can attach to specific unit (strict)
   const canLeaderAttachToUnit = (leader, draggedUnit) => {
     if (!leader || !draggedUnit) return false;
-    const keywords = (leader.keywords || []).map(k => String(k).toLowerCase());
-    // Only real Leaders (and Characters) can attach
-    if (!(keywords.includes('leader') && keywords.includes('character'))) return false;
+    // Must actually have a Leader ability
+    const abilities = leader.abilities || [];
+    const hasLeaderAbility = abilities.some(a => String(a.name || '').toLowerCase().includes('leader'));
+    if (!hasLeaderAbility) return false;
 
     const normalize = (s) => String(s || '')
       .toLowerCase()
@@ -376,7 +397,6 @@ const GameSession = ({ gameId, user }) => {
     // Try without trailing "with ..." qualifiers for broader matching
     const unitBase = normalize(draggedUnit.name.replace(/\bwith\b.*$/, ''));
 
-    const abilities = leader.abilities || [];
     // Look for explicit attach permission mentioning the target unit
     return abilities.some(ability => {
       const name = normalize(ability.name);
@@ -446,7 +466,7 @@ const GameSession = ({ gameId, user }) => {
             <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
               <div className="units-list" ref={listRef}>
                 {orderedUnits.map((unit) => {
-                  const shouldGlowAsLeader = draggedUnit && canLeaderAttachToUnit(unit, draggedUnit) && draggedUnit.id !== unit.id;
+                  const shouldGlowAsLeader = !!draggedUnit && isLeaderUnit(unit) && draggedUnit.id !== unit.id;
                   const freezeTransform = !!(attachIntentLeaderId === unit.id);
                   const dropIntent = !!(attachIntentLeaderId === unit.id);
                   return (
