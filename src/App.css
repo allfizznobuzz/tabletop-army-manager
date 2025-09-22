@@ -207,6 +207,54 @@
   position: relative;
 }
 
+/* Ensure cards can host positioned children (attach-zone) */
+.unit-card {
+  position: relative;
+}
+
+/* Smaller attach hitbox area inside a leader card. Invisible by default. */
+.unit-card .attach-zone {
+  position: absolute;
+  /* a centered rectangle ~60% width, ~40% height */
+  left: 20%;
+  top: 30%;
+  width: 60%;
+  height: 40%;
+  pointer-events: none; /* dnd-kit uses rects; we don’t need pointer events */
+  opacity: 0;
+  border-radius: 8px;
+}
+
+/* When we have attach intent, glow the leader and show the attach zone */
+.leader-drop-intent {
+  box-shadow: 0 0 0 2px #facc15, 0 8px 18px rgba(250, 204, 21, 0.25);
+}
+.leader-drop-intent .attach-zone {
+  opacity: 1;
+  outline: 2px dashed #facc15;
+}
+
+/* Attached units under a leader */
+.attached-units {
+  margin-left: 1rem;
+  padding-left: 0.75rem;
+  border-left: 2px dashed var(--border-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.attached-unit.unit-card {
+  background: var(--color-tertiary);
+  border: 1px dashed var(--border-primary);
+  box-shadow: none;
+  transform: none;
+}
+
+.attached-unit .drag-handle {
+  opacity: 0.7;
+}
+
 /* Unit Profile Styles */
 .unit-basic-stats {
   display: flex;

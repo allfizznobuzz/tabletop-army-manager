@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay, useDraggable } from '@dnd-kit/core';
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -8,25 +8,27 @@ import { getGame, updateGame, subscribeToGame, subscribeToGameUpdates, assignDam
 import UnitDatasheet from './UnitDatasheet';
 
 // Sortable unit card powered by dnd-kit
-const SortableUnitBase = ({ unit, isSelected, onClick, statusClass, shouldGlowAsLeader }) => {
+const SortableUnitBase = ({ unit, isSelected, onClick, statusClass, shouldGlowAsLeader, freezeTransform, dropIntent }) => {
   const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({ id: unit.id });
   const style = {
-    transform: isDragging ? undefined : CSS.Transform.toString(transform),
+    transform: isDragging ? undefined : (freezeTransform ? undefined : CSS.Transform.toString(transform)),
     transition: isDragging ? undefined : transition,
     zIndex: isDragging ? 20 : 'auto',
     opacity: isDragging ? 0 : 1,
-    willChange: isDragging ? 'auto' : 'transform',
+    willChange: isDragging || freezeTransform ? 'auto' : 'transform',
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`unit-card ${isSelected ? 'selected' : ''} ${statusClass} ${shouldGlowAsLeader ? 'leader-glow' : ''}`}
+      className={`unit-card ${isSelected ? 'selected' : ''} ${statusClass} ${shouldGlowAsLeader ? 'leader-glow' : ''} ${dropIntent ? 'leader-drop-intent' : ''}`}
       onClick={() => onClick(unit)}
       {...attributes}
       {...listeners}
     >
+      {/* Smaller attach hitbox (visual only) inside the card */}
+      <div className="attach-zone" />
       <div className="drag-handle" title="Drag to reorder">⋮⋮</div>
       <h4>{unit.name}</h4>
     </div>
@@ -34,6 +36,28 @@ const SortableUnitBase = ({ unit, isSelected, onClick, statusClass, shouldGlowAs
 };
 SortableUnitBase.displayName = 'SortableUnit';
 const SortableUnit = React.memo(SortableUnitBase);
+
+// Draggable for attached units (to detach/move them)
+const AttachedUnitDraggable = ({ unit, isSelected, onClick, statusClass }) => {
+  const {attributes, listeners, setNodeRef, transform, isDragging} = useDraggable({ id: unit.id });
+  const style = {
+    opacity: isDragging ? 0 : 1,
+    transform: undefined, // keep in-flow; overlay shows the moving ghost
+  };
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`attached-unit unit-card ${isSelected ? 'selected' : ''} ${statusClass}`}
+      onClick={() => onClick(unit)}
+      {...attributes}
+      {...listeners}
+    >
+      <div className="drag-handle" title="Drag to detach">↳</div>
+      <h4>{unit.name}</h4>
+    </div>
+  );
+};
 
 const GameSession = ({ gameId, user }) => {
   const [gameData, setGameData] = useState(null);
@@ -44,8 +68,11 @@ const GameSession = ({ gameId, user }) => {
   const [vpAmount, setVpAmount] = useState(1);
   const [vpReason, setVpReason] = useState('');
   const [draggedUnit, setDraggedUnit] = useState(null);
+  const [overId, setOverId] = useState(null);
   const [unitOrder, setUnitOrder] = useState([]);
   const listRef = useRef(null);
+  const [attachments, setAttachments] = useState({});
+  const [attachIntentLeaderId, setAttachIntentLeaderId] = useState(null);
 
   useEffect(() => {
     if (!gameId) return;
@@ -65,17 +92,15 @@ const GameSession = ({ gameId, user }) => {
     };
   }, [gameId]);
 
-  // Create ordered units array based on unitOrder state
-  const orderedUnits = useMemo(() => {
+  // Build full units list (snapshot from gameData)
+  const allUnits = useMemo(() => {
     if (!gameData) return [];
-    
-    // Extract all units from all players
-    const allUnits = [];
+    const list = [];
     if (gameData.playerArmies) {
       Object.entries(gameData.playerArmies).forEach(([playerId, playerData]) => {
         if (playerData.armyData && playerData.armyData.units) {
           playerData.armyData.units.forEach((unit, index) => {
-            allUnits.push({
+            list.push({
               id: `${playerId}_unit_${index}`,
               name: unit.name || 'Unknown Unit',
               playerId,
@@ -108,11 +133,22 @@ const GameSession = ({ gameId, user }) => {
         }
       });
     }
+    return list;
+  }, [gameData]);
 
-    return unitOrder.length > 0
-      ? unitOrder.map(id => allUnits.find(unit => unit.id === id)).filter(Boolean)
-      : allUnits;
-  }, [gameData, unitOrder]);
+  const allUnitsById = useMemo(() => {
+    const map = {};
+    allUnits.forEach(u => { map[u.id] = u; });
+    return map;
+  }, [allUnits]);
+
+  // Top-level ordered units (exclude attached ones)
+  const orderedUnits = useMemo(() => {
+    const attachedSet = new Set(Object.values(attachments || {}).flat());
+    const baseOrderIds = unitOrder.length > 0 ? unitOrder : allUnits.map(u => u.id);
+    const topIds = baseOrderIds.filter(id => !attachedSet.has(id));
+    return topIds.map(id => allUnitsById[id]).filter(Boolean);
+  }, [allUnits, allUnitsById, unitOrder, attachments]);
 
   // Placeholder approach needs no visual order effect
 
@@ -171,18 +207,96 @@ const GameSession = ({ gameId, user }) => {
 
   const itemIds = useMemo(() => orderedUnits.map(u => u.id), [orderedUnits]);
 
+  const unitIsAttachedTo = useMemo(() => {
+    const look = {};
+    Object.entries(attachments || {}).forEach(([lid, arr]) => {
+      (arr || []).forEach(id => { look[id] = lid; });
+    });
+    return look;
+  }, [attachments]);
+
   const handleDndStart = (event) => {
     const activeId = event.active?.id;
-    const unit = orderedUnits.find(u => u.id === activeId) || null;
+    const unit = allUnitsById[activeId] || null;
     setDraggedUnit(unit);
+    setOverId(null);
+    setAttachIntentLeaderId(null);
+  };
+
+  const handleDndOver = (event) => {
+    const { over, active } = event;
+    const overVal = over?.id || null;
+    setOverId(overVal);
+    if (!over || !draggedUnit) { setAttachIntentLeaderId(null); return; }
+    const leader = allUnitsById[overVal];
+    if (!leader || !canLeaderAttachToUnit(leader, draggedUnit)) { setAttachIntentLeaderId(null); return; }
+    const overRect = over.rect?.current;
+    const activeRect = active.rect?.current?.translated || active.rect?.current;
+    if (!overRect || !activeRect) { setAttachIntentLeaderId(null); return; }
+    const centerX = activeRect.left + activeRect.width / 2;
+    const centerY = activeRect.top + activeRect.height / 2;
+    const innerLeft = overRect.left + overRect.width * 0.2;
+    const innerRight = overRect.left + overRect.width * 0.8;
+    const innerTop = overRect.top + overRect.height * 0.3;
+    const innerBottom = overRect.top + overRect.height * 0.7;
+    const inside = centerX >= innerLeft && centerX <= innerRight && centerY >= innerTop && centerY <= innerBottom;
+    setAttachIntentLeaderId(inside ? overVal : null);
   };
 
   const handleDndEnd = (event) => {
     const { active, over } = event;
     setDraggedUnit(null);
-    if (!over || active.id === over.id) return;
-    const oldIndex = itemIds.indexOf(active.id);
-    const newIndex = itemIds.indexOf(over.id);
+    setOverId(null);
+    setAttachIntentLeaderId(null);
+    const activeId = active?.id;
+    const overId = over?.id;
+    if (!overId || activeId === overId) return;
+
+    const activeUnit = allUnitsById[activeId];
+    const leaderId = attachIntentLeaderId;
+    if (leaderId) {
+      const leader = allUnitsById[leaderId];
+      if (activeUnit && leader && canLeaderAttachToUnit(leader, activeUnit)) {
+        setAttachments(prev => {
+          const next = { ...prev };
+          // Remove from any existing attachments
+          Object.keys(next).forEach(lid => {
+            next[lid] = (next[lid] || []).filter(id => id !== activeId);
+            if (next[lid].length === 0) delete next[lid];
+          });
+          // Add under the leader
+          next[leaderId] = Array.from(new Set([...(next[leaderId] || []), activeId]));
+          return next;
+        });
+        // Ensure not in top-level order
+        setUnitOrder(prev => prev.filter(id => id !== activeId));
+        return;
+      }
+    }
+
+    // Otherwise, if dragged from an attachment and dropped over a top-level unit, detach and insert
+    const wasAttachedLeader = unitIsAttachedTo[activeId];
+    if (wasAttachedLeader && itemIds.includes(String(overId))) {
+      // Remove from attachments
+      setAttachments(prev => {
+        const next = { ...prev };
+        Object.keys(next).forEach(lid => {
+          next[lid] = (next[lid] || []).filter(id => id !== activeId);
+          if (next[lid].length === 0) delete next[lid];
+        });
+        return next;
+      });
+      // Insert into top order at index of over
+      const insertIndex = itemIds.indexOf(String(overId));
+      const newTop = itemIds.filter(id => id !== activeId);
+      newTop.splice(insertIndex, 0, activeId);
+      setUnitOrder(newTop);
+      return;
+    }
+
+    // Otherwise reorder top-level
+    const oldIndex = itemIds.indexOf(activeId);
+    const newIndex = itemIds.indexOf(overId);
     if (oldIndex === -1 || newIndex === -1) return;
     const newOrderIds = arrayMove(itemIds, oldIndex, newIndex);
     setUnitOrder(newOrderIds);
@@ -274,6 +388,7 @@ const GameSession = ({ gameId, user }) => {
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
             onDragStart={handleDndStart}
+            onDragOver={handleDndOver}
             onDragEnd={handleDndEnd}
             onDragCancel={() => setDraggedUnit(null)}
           >
@@ -281,15 +396,37 @@ const GameSession = ({ gameId, user }) => {
               <div className="units-list" ref={listRef}>
                 {orderedUnits.map((unit) => {
                   const shouldGlowAsLeader = draggedUnit && canLeaderAttachToUnit(unit, draggedUnit) && draggedUnit.id !== unit.id;
+                  const freezeTransform = !!(attachIntentLeaderId === unit.id);
+                  const dropIntent = !!(attachIntentLeaderId === unit.id);
                   return (
-                    <SortableUnit
-                      key={unit.id}
-                      unit={unit}
-                      isSelected={selectedUnit?.id === unit.id}
-                      onClick={setSelectedUnit}
-                      statusClass={getUnitStatusClass(unit)}
-                      shouldGlowAsLeader={!!shouldGlowAsLeader}
-                    />
+                    <React.Fragment key={unit.id}>
+                      <SortableUnit
+                        unit={unit}
+                        isSelected={selectedUnit?.id === unit.id}
+                        onClick={setSelectedUnit}
+                        statusClass={getUnitStatusClass(unit)}
+                        shouldGlowAsLeader={!!shouldGlowAsLeader}
+                        freezeTransform={freezeTransform}
+                        dropIntent={dropIntent}
+                      />
+                      {attachments[unit.id] && attachments[unit.id].length > 0 && (
+                        <div className="attached-units">
+                          {attachments[unit.id].map(attachedId => {
+                            const au = allUnitsById[attachedId];
+                            if (!au) return null;
+                            return (
+                              <AttachedUnitDraggable
+                                key={attachedId}
+                                unit={au}
+                                isSelected={selectedUnit?.id === attachedId}
+                                onClick={setSelectedUnit}
+                                statusClass={getUnitStatusClass(au)}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
+                    </React.Fragment>
                   );
                 })}
               </div>
