@@ -3,7 +3,10 @@ import { onAuthStateChange, signInWithGoogle, signOutUser } from './firebase/aut
 import { subscribeToGame } from './firebase/database';
 import GameDashboard from './components/GameDashboard';
 import GameSession from './components/GameSession';
+import ThemeToggle from './components/ThemeToggle';
+import { ThemeProvider } from './contexts/ThemeContext';
 import './App.css';
+import './styles/themes.css';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -66,43 +69,46 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>🎲 Tabletop Army Manager</h1>
-        <div className="user-info">
-          <span>Welcome, {user.displayName}</span>
-          <button onClick={handleSignOut} className="signout-button">
-            Sign Out
-          </button>
-        </div>
-      </header>
+    <ThemeProvider>
+      <div className="app">
+        <header className="app-header">
+          <h1>🎲 Tabletop Army Manager</h1>
+          <div className="user-info">
+            <span>Welcome, {user.displayName}</span>
+            <ThemeToggle />
+            <button onClick={handleSignOut} className="signout-button">
+              Sign Out
+            </button>
+          </div>
+        </header>
 
-      <nav className="app-nav">
-        <button 
-          onClick={() => setCurrentView('dashboard')}
-          className={currentView === 'dashboard' ? 'active' : ''}
-        >
-          Game Dashboard
-        </button>
-        {currentGameId && (
+        <nav className="app-nav">
           <button 
-            onClick={() => setCurrentView('game')}
-            className={currentView === 'game' ? 'active' : ''}
+            onClick={() => setCurrentView('dashboard')}
+            className={currentView === 'dashboard' ? 'active' : ''}
           >
-            Current Game
+            Game Dashboard
           </button>
-        )}
-      </nav>
+          {currentGameId && (
+            <button 
+              onClick={() => setCurrentView('game')}
+              className={currentView === 'game' ? 'active' : ''}
+            >
+              Current Game
+            </button>
+          )}
+        </nav>
 
-      <main className="app-main">
-        {currentView === 'dashboard' && (
-          <GameDashboard user={user} onJoinGame={joinGame} />
-        )}
-        {currentView === 'game' && currentGameId && (
-          <GameSession gameId={currentGameId} user={user} />
-        )}
-      </main>
-    </div>
+        <main className="app-main">
+          {currentView === 'dashboard' && (
+            <GameDashboard user={user} onJoinGame={joinGame} />
+          )}
+          {currentView === 'game' && currentGameId && (
+            <GameSession gameId={currentGameId} user={user} />
+          )}
+        </main>
+      </div>
+    </ThemeProvider>
   );
 }
 

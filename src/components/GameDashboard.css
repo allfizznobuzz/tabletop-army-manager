@@ -1,0 +1,345 @@
+/* Game Dashboard Styles */
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.dashboard-title {
+  color: var(--text-primary);
+  font-size: 2rem;
+  margin: 0;
+  text-shadow: 2px 2px 4px var(--shadow-primary);
+}
+
+.new-game-btn {
+  background: var(--action-success);
+  color: #000000;
+  border: 2px solid var(--action-success);
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+}
+
+.new-game-btn:hover {
+  background: transparent;
+  color: var(--action-success);
+  transform: translateY(-2px);
+}
+
+.recent-games-section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.game-card {
+  background: var(--gradient-primary);
+  border: 2px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 8px var(--shadow-primary);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.game-card:hover {
+  border-color: var(--accent-light);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px var(--shadow-primary);
+}
+
+.game-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.game-name {
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.game-status {
+  background: var(--accent-primary);
+  color: #ffffff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.game-info {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.game-armies {
+  margin-bottom: 1rem;
+}
+
+.army-info {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+  font-weight: 500;
+}
+
+.game-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: none;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.view-btn {
+  background: var(--action-primary);
+  color: var(--text-inverse);
+}
+
+.view-btn:hover {
+  background: transparent;
+  color: var(--action-primary);
+  border: 1px solid var(--action-primary);
+}
+
+.delete-btn {
+  background: var(--action-danger);
+  color: var(--text-inverse);
+}
+
+.delete-btn:hover {
+  background: transparent;
+  color: var(--action-danger);
+  border: 1px solid var(--action-danger);
+}
+
+/* Create Game Form */
+.create-game-form {
+  background: var(--gradient-primary);
+  border: 2px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 4px 8px var(--shadow-primary);
+  margin-bottom: 2rem;
+}
+
+.form-title {
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  font-weight: bold;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  color: var(--text-secondary);
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--border-primary);
+  border-radius: 4px;
+  background: var(--color-secondary);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent-light);
+}
+
+.file-input {
+  background: var(--color-tertiary);
+  border: 2px dashed var(--border-primary);
+  padding: 1rem;
+  text-align: center;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-input:hover {
+  border-color: var(--accent-light);
+  background: var(--color-secondary);
+}
+
+.error-message {
+  color: var(--accent-danger);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.cancel-btn {
+  background: transparent;
+  color: var(--action-secondary);
+  border: 2px solid var(--action-secondary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background: var(--action-secondary);
+  color: var(--text-inverse);
+}
+
+.create-btn {
+  background: var(--action-success);
+  color: #000000;
+  border: 2px solid var(--action-success);
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+.create-btn:hover {
+  background: transparent;
+  color: var(--action-success);
+}
+
+/* Join Game Form */
+.join-game-form {
+  background: var(--gradient-primary);
+  border: 2px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 4px 8px var(--shadow-primary);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.join-game-title {
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.game-id-input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 2px solid var(--border-primary);
+  border-radius: 4px;
+  background: var(--color-secondary);
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.game-id-input:focus {
+  outline: none;
+  border-color: var(--accent-light);
+}
+
+.join-btn {
+  background: var(--action-warning);
+  color: var(--text-inverse);
+  border: 2px solid var(--action-warning);
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.join-btn:hover {
+  background: transparent;
+  color: var(--action-warning);
+}
+
+/* Loading State */
+.loading {
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+  padding: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .games-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .join-game-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .game-id-input {
+    width: 100%;
+  }
+  
+  .form-actions {
+    justify-content: center;
+  }
+}

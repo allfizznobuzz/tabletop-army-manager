@@ -9,7 +9,8 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: #f5f5f5;
+  background: var(--color-primary);
+  color: var(--text-primary);
 }
 
 .app-signin {
@@ -17,55 +18,59 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-header);
 }
 
 .signin-container {
-  background: white;
+  background: var(--color-secondary);
   padding: 2rem;
   border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px var(--shadow-primary);
   text-align: center;
   max-width: 400px;
+  border: 2px solid var(--border-primary);
 }
 
 .signin-container h1 {
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 1rem;
 }
 
 .signin-container p {
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 2rem;
 }
 
 .signin-button {
-  background: #4285f4;
-  color: white;
-  border: none;
+  background: var(--accent-primary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-primary);
   padding: 12px 24px;
   border-radius: 5px;
   font-size: 16px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
 }
 
 .signin-button:hover {
-  background: #3367d6;
+  background: var(--accent-light);
+  transform: translateY(-2px);
 }
 
 .app-header {
-  background: #2c3e50;
-  color: white;
+  background: var(--gradient-header);
+  color: var(--text-primary);
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: 2px solid var(--border-primary);
 }
 
 .app-header h1 {
   margin: 0;
   font-size: 1.5rem;
+  text-shadow: 2px 2px 4px var(--shadow-primary);
 }
 
 .user-info {
@@ -75,47 +80,58 @@
 }
 
 .signout-button {
-  background: #e74c3c;
-  color: white;
-  border: none;
+  background: var(--accent-danger);
+  color: var(--text-primary);
+  border: 2px solid var(--accent-danger);
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  transition: all 0.3s ease;
 }
 
 .signout-button:hover {
-  background: #c0392b;
+  background: transparent;
+  color: var(--accent-danger);
 }
 
 .app-nav {
-  background: #34495e;
+  background: var(--color-tertiary);
   padding: 0;
   display: flex;
+  border-bottom: 2px solid var(--border-primary);
 }
 
 .app-nav button {
   background: none;
-  border: none;
-  color: white;
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
   padding: 1rem 2rem;
   cursor: pointer;
   font-size: 16px;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
 }
 
 .app-nav button:hover {
-  background: #4a6741;
+  background: var(--interactive-hover);
+  border-color: var(--border-focus);
+  border-bottom-color: var(--border-focus);
 }
 
 .app-nav button.active {
-  background: #27ae60;
+  background: var(--nav-active-bg);
+  color: #000000;
+  border: 1px solid var(--nav-active-bg);
+  border-bottom: 3px solid var(--nav-active-bg);
+  border-top: 3px solid var(--nav-active-bg);
+  margin-top: 0;
 }
 
 .app-main {
   flex: 1;
   padding: 2rem;
-  background: #ecf0f1;
+  background: var(--color-primary);
 }
 
 /* Drag and Drop Styles */
@@ -247,19 +263,19 @@
 
 .ability-item {
   padding: 0.5rem;
-  background: white;
+  background: transparent;
   border-radius: 4px;
-  border: 1px solid #ffeaa7;
+  border: 1px solid var(--border-light);
 }
 
 .ability-item strong {
-  color: #856404;
+  color: var(--accent-primary);
   margin-right: 0.5rem;
 }
 
 .ability-item p {
   margin: 0.5rem 0 0 0;
-  color: #333;
+  color: var(--text-primary);
   line-height: 1.4;
 }
 
@@ -321,6 +337,212 @@
   font-weight: 500;
 }
 
+/* Game Session Datasheet Styles */
+.game-session {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: var(--color-primary);
+  min-height: 100vh;
+  color: var(--text-primary);
+}
+
+.game-header {
+  background: var(--gradient-primary);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px var(--shadow-primary);
+  margin-bottom: 2rem;
+  border: 2px solid var(--border-primary);
+}
+
+.game-header h2 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  text-shadow: 2px 2px 4px var(--shadow-primary);
+}
+
+.game-info {
+  display: flex;
+  gap: 2rem;
+  color: var(--text-secondary);
+}
+
+.game-content {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 2rem;
+}
+
+.units-sidebar {
+  background: var(--gradient-primary);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px var(--shadow-primary);
+  border: 2px solid var(--border-primary);
+  height: fit-content;
+}
+
+.units-sidebar h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px var(--shadow-primary);
+}
+
+.units-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.unit-card {
+  background: var(--color-tertiary);
+  border: 2px solid var(--border-primary);
+  border-radius: 6px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  color: var(--text-primary);
+}
+
+.unit-card:hover {
+  border-color: var(--border-focus);
+  background: var(--interactive-hover);
+}
+
+.unit-card.selected {
+  border-color: var(--action-primary);
+  background: var(--action-primary);
+  box-shadow: 0 0 10px var(--interactive-focus);
+}
+
+.unit-card.selected h4,
+.unit-card.selected .unit-status {
+  color: var(--text-inverse);
+}
+
+.unit-card h4 {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.unit-status {
+  font-size: 0.8rem;
+  color: var(--status-waiting);
+  margin-bottom: 0.25rem;
+  font-weight: 600;
+}
+
+.unit-player {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.unit-wrapper {
+  position: relative;
+}
+
+.unit-status-overlay {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.status-indicator {
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  border: 1px solid;
+}
+
+.status-indicator.ready {
+  border-color: #27ae60;
+  background: rgba(39, 174, 96, 0.2);
+  color: #27ae60;
+}
+
+.status-indicator.waiting {
+  border-color: #f39c12;
+  background: rgba(243, 156, 18, 0.2);
+  color: #f39c12;
+}
+
+.status-indicator.destroyed {
+  border-color: #e74c3c;
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+}
+
+.player-indicator {
+  background: rgba(0, 0, 0, 0.8);
+  color: #bdc3c7;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  border: 1px solid #4a6741;
+}
+
+.game-main {
+  background: var(--gradient-primary);
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px var(--shadow-primary);
+  border: 2px solid var(--border-primary);
+  height: fit-content;
+}
+
+.actions-section h3 {
+  margin: 0 0 1.5rem 0;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  font-weight: bold;
+  text-shadow: 2px 2px 4px var(--shadow-primary);
+}
+
+.selected-unit-datasheet {
+  margin-bottom: 2rem;
+}
+
+.selected-unit-datasheet .unit-datasheet {
+  margin: 0;
+}
+
+.no-unit-selected {
+  background: var(--gradient-primary);
+  border: 2px solid var(--border-primary);
+  border-radius: 8px;
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.no-unit-selected h3 {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+}
+
+.no-unit-selected p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .app-header {
@@ -334,6 +556,14 @@
   }
   
   .app-main {
+    padding: 1rem;
+  }
+
+  .game-content {
+    grid-template-columns: 1fr;
+  }
+
+  .game-session {
     padding: 1rem;
   }
 }
