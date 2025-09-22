@@ -414,14 +414,13 @@
 }
 
 .unit-card.selected {
-  border-color: var(--action-primary);
-  background: var(--action-primary);
+  background: var(--action-primary) !important;
+  border-color: var(--action-primary) !important;
   box-shadow: 0 0 10px var(--interactive-focus);
 }
 
-.unit-card.selected h4,
-.unit-card.selected .unit-status {
-  color: var(--text-inverse);
+.unit-card.selected h4 {
+  color: var(--text-inverse) !important;
 }
 
 .unit-card h4 {
@@ -431,11 +430,70 @@
   font-weight: bold;
 }
 
-.unit-status {
-  font-size: 0.8rem;
-  color: var(--status-waiting);
-  margin-bottom: 0.25rem;
-  font-weight: 600;
+/* Status Legend */
+.status-legend {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: var(--color-tertiary);
+  border-radius: 4px;
+  border: 1px solid var(--border-primary);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.legend-color.ready {
+  background: var(--status-ready);
+}
+
+.legend-color.done {
+  background: var(--status-done);
+}
+
+.legend-color.dead {
+  background: var(--status-dead);
+}
+
+/* Unit Card Status Colors */
+.unit-card.ready {
+  background: var(--status-ready);
+  border-color: var(--status-ready);
+}
+
+.unit-card.ready h4 {
+  color: #000000;
+}
+
+.unit-card.done {
+  background: var(--status-done);
+  border-color: var(--status-done);
+}
+
+.unit-card.done h4 {
+  color: #000000;
+}
+
+.unit-card.dead {
+  background: var(--status-dead);
+  border-color: var(--status-dead);
+}
+
+.unit-card.dead h4 {
+  color: #ffffff;
 }
 
 .unit-player {

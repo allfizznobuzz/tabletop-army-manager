@@ -48,9 +48,9 @@
   --weapon-header-bg: var(--color-secondary);
   
   /* Unit status colors */
-  --status-active: var(--action-success);       /* Teal for active/ready */
-  --status-waiting: var(--action-warning);      /* Orange for waiting */
-  --status-inactive: var(--action-secondary);   /* Gray for inactive */
+  --status-ready: var(--action-success);        /* Green for ready */
+  --status-done: #fbbf24;                       /* Yellow for done */
+  --status-dead: var(--action-danger);          /* Red for dead */
   
   /* Ability and info sections */
   --info-header-bg: var(--action-primary);
@@ -108,9 +108,9 @@
   --weapon-header-bg: var(--color-tertiary);
   
   /* Unit status colors */
-  --status-active: var(--action-success);       /* Green for active/ready */
-  --status-waiting: var(--action-warning);      /* Orange for waiting */
-  --status-inactive: var(--action-secondary);   /* Gray for inactive */
+  --status-ready: var(--action-success);        /* Green for ready */
+  --status-done: #d97706;                       /* Yellow-orange for done */
+  --status-dead: var(--action-danger);          /* Red for dead */
   
   /* Ability and info sections */
   --info-header-bg: var(--action-primary);

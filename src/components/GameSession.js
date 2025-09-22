@@ -118,8 +118,21 @@ const GameSession = ({ gameId, user }) => {
     setDraggedOverIndex(null);
   };
 
+  // Helper functions for new unit status system
+  const getUnitStatusClass = (unit) => {
+    if (unit.currentWounds === 0) return 'dead';
+    if (unit.hasActed) return 'done'; // Assuming we'll add this field
+    return 'ready';
+  };
+
+  const getUnitStatusText = (unit) => {
+    if (unit.currentWounds === 0) return 'Dead';
+    if (unit.hasActed) return 'Done';
+    return 'Ready';
+  };
+
   if (loading) {
-    return <div className="loading">Loading game...</div>;
+    return <div>Loading...</div>;
   }
 
   if (!gameData) {
@@ -186,11 +199,28 @@ const GameSession = ({ gameId, user }) => {
       <div className="game-content">
         <div className="units-sidebar">
           <h3>{user?.displayName || user?.email || 'Player'}'s Army</h3>
+          
+          {/* Status Legend */}
+          <div className="status-legend">
+            <div className="legend-item">
+              <div className="legend-color ready"></div>
+              <span>Ready</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color done"></div>
+              <span>Done</span>
+            </div>
+            <div className="legend-item">
+              <div className="legend-color dead"></div>
+              <span>Dead</span>
+            </div>
+          </div>
+          
           <div className="units-list">
             {orderedUnits.map((unit, index) => (
               <div 
                 key={unit.id}
-                className={`unit-card ${selectedUnit?.id === unit.id ? 'selected' : ''} ${draggedUnit?.id === unit.id ? 'dragging' : ''} ${draggedOverIndex === index ? 'drag-over' : ''}`}
+                className={`unit-card ${selectedUnit?.id === unit.id ? 'selected' : ''} ${draggedUnit?.id === unit.id ? 'dragging' : ''} ${draggedOverIndex === index ? 'drag-over' : ''} ${getUnitStatusClass(unit)}`}
                 onClick={() => setSelectedUnit(unit)}
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDragLeave={handleDragLeave}
@@ -206,10 +236,6 @@ const GameSession = ({ gameId, user }) => {
                   ⋮⋮
                 </div>
                 <h4>{unit.name}</h4>
-                <div className="unit-status">
-                  {unit.currentWounds === 0 ? '💀 Destroyed' : 
-                   isMyTurn && unit.playerId === user.uid ? '⚡ Ready' : '⏸️ Waiting'}
-                </div>
               </div>
             ))}
           </div>
