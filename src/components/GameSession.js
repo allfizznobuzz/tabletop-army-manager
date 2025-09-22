@@ -22,7 +22,7 @@ const SortableUnitBase = ({ unit, isSelected, onClick, statusClass, shouldGlowAs
     <div
       ref={setNodeRef}
       style={style}
-      className={`unit-card ${isSelected ? 'selected' : ''} ${statusClass} ${shouldGlowAsLeader ? 'leader-glow' : ''} ${dropIntent ? 'leader-drop-intent' : ''}`}
+      className={`unit-card ${isSelected ? 'selected' : ''} ${statusClass} ${dropIntent ? 'leader-drop-intent' : (shouldGlowAsLeader ? 'leader-glow' : '')}`}
       data-unit-id={unit.id}
       onClick={() => onClick(unit)}
       {...attributes}
@@ -234,36 +234,54 @@ const GameSession = ({ gameId, user }) => {
     const centerX = activeRect.left + activeRect.width / 2;
     const centerY = activeRect.top + activeRect.height / 2;
 
-    // Prefer dnd-kit's over when it's a top-level unit id
+    // Prefer dnd-kit's over when it refers to a top-level unit
     let candidateId = over?.id && itemIds.includes(String(over.id)) ? String(over.id) : null;
+    let inside = false;
 
-    // Fallback: find card under cursor among top-level items
-    if (!candidateId) {
+    if (candidateId) {
+      const candidate = allUnitsById[candidateId];
+      if (!candidate || candidate.id === String(active.id) || !canLeaderAttachToUnit(candidate, draggedUnit)) {
+        setAttachIntentLeaderId(null);
+        return;
+      }
+      // Inner rectangle to avoid accidental attach during reorder
+      const overRect = over?.rect?.current;
+      if (overRect) {
+        const innerLeft = overRect.left + overRect.width * 0.45;
+        const innerRight = overRect.left + overRect.width * 0.55;
+        const innerTop = overRect.top + overRect.height * 0.4;
+        const innerBottom = overRect.top + overRect.height * 0.6;
+        inside = centerX >= innerLeft && centerX <= innerRight && centerY >= innerTop && centerY <= innerBottom;
+      }
+    }
+
+    // Fallback to DOM hit-testing if needed
+    if (!candidateId || !inside) {
       const cards = Array.from(document.querySelectorAll('.units-list .unit-card[data-unit-id]'));
       const hit = cards.find(c => {
         const r = c.getBoundingClientRect();
         return centerX >= r.left && centerX <= r.right && centerY >= r.top && centerY <= r.bottom;
       });
-      candidateId = hit?.dataset?.unitId || null;
+      const fallbackId = hit?.dataset?.unitId;
+      if (fallbackId && itemIds.includes(fallbackId)) {
+        const candidate = allUnitsById[fallbackId];
+        if (candidate && candidate.id !== String(active.id) && canLeaderAttachToUnit(candidate, draggedUnit)) {
+          const r = hit.getBoundingClientRect();
+          const innerLeft = r.left + r.width * 0.45;
+          const innerRight = r.left + r.width * 0.55;
+          const innerTop = r.top + r.height * 0.4;
+          const innerBottom = r.top + r.height * 0.6;
+          inside = centerX >= innerLeft && centerX <= innerRight && centerY >= innerTop && centerY <= innerBottom;
+          candidateId = inside ? fallbackId : null;
+        } else {
+          candidateId = null;
+        }
+      } else {
+        candidateId = null;
+      }
     }
 
-    if (!candidateId) { setAttachIntentLeaderId(null); return; }
-    const candidate = allUnitsById[candidateId];
-    if (!candidate || !canLeaderAttachToUnit(candidate, draggedUnit) || candidate.id === draggedUnit.id) {
-      setAttachIntentLeaderId(null);
-      return;
-    }
-
-    // Apply slightly larger inner hitbox for easier attach
-    const rect = document.querySelector(`.unit-card[data-unit-id="${candidateId}"]`)?.getBoundingClientRect();
-    if (!rect) { setAttachIntentLeaderId(null); return; }
-    const innerLeft = rect.left + rect.width * 0.15;
-    const innerRight = rect.left + rect.width * 0.85;
-    const innerTop = rect.top + rect.height * 0.25;
-    const innerBottom = rect.top + rect.height * 0.75;
-    const inside = centerX >= innerLeft && centerX <= innerRight && centerY >= innerTop && centerY <= innerBottom;
-    const nextIntent = inside ? candidateId : null;
-    setAttachIntentLeaderId(nextIntent);
+    setAttachIntentLeaderId(candidateId || null);
   };
 
   const handleDndEnd = (event) => {
@@ -344,26 +362,31 @@ const GameSession = ({ gameId, user }) => {
   // Leader detection - check if leader can attach to specific unit
   const canLeaderAttachToUnit = (leader, draggedUnit) => {
     if (!leader || !draggedUnit) return false;
-    const abilities = leader.abilities || [];
     const keywords = (leader.keywords || []).map(k => String(k).toLowerCase());
-    if (keywords.includes('leader') || keywords.includes('character')) return true;
-    return abilities.some(ability => {
-      const name = (ability.name || '').toLowerCase();
-      const text = (ability.description || ability.text || '').toLowerCase();
-      if (name.includes('leader') || text.includes('can be attached to') || text.includes('this model can be attached to')) return true;
-      return false;
-    });
-  };
+    // Only real Leaders (and Characters) can attach
+    if (!(keywords.includes('leader') && keywords.includes('character'))) return false;
 
-  // Extra heuristic: treat common character names as leaders if no explicit keywords
-  const isLikelyLeaderName = (unitName) => {
-    const n = (unitName || '').toLowerCase();
-    const patterns = [
-      'captain','commander','lieutenant','priest','librarian','chaplain','ancient','champion','sergeant',
-      'boss','warboss','nob','lord','overlord','autarch','patriarch','broodlord','archon','succubus','haemonculus',
-      'daemon prince','prince','farseer','exarch','company master','sanguinary','dante','mephiston','astorath','corbulo'
-    ];
-    return patterns.some(p => n.includes(p));
+    const normalize = (s) => String(s || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const unitFull = normalize(draggedUnit.name);
+    // Try without trailing "with ..." qualifiers for broader matching
+    const unitBase = normalize(draggedUnit.name.replace(/\bwith\b.*$/, ''));
+
+    const abilities = leader.abilities || [];
+    // Look for explicit attach permission mentioning the target unit
+    return abilities.some(ability => {
+      const name = normalize(ability.name);
+      const text = normalize(ability.description || ability.text);
+      if (!(name.includes('leader') || text.includes('this model can be attached to') || text.includes('can be attached to'))) {
+        return false;
+      }
+      // Must reference the unit by name (full or base)
+      return text.includes(unitFull) || text.includes(unitBase);
+    });
   };
 
 

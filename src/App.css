@@ -227,11 +227,14 @@
 
 /* When we have attach intent, glow the leader and show the attach zone */
 .leader-drop-intent {
-  box-shadow: 0 0 0 2px #facc15, 0 8px 18px rgba(250, 204, 21, 0.25);
+  /* Bright yellow glow to indicate a confirmed attach target */
+  box-shadow: 0 0 0 2px #facc15, 0 0 28px 6px rgba(250, 204, 21, 0.55);
+  border-color: #facc15 !important;
 }
 .leader-drop-intent .attach-zone {
-  opacity: 1;
-  outline: 2px dashed #facc15;
+  /* Hide the inner dashed guide to avoid visual clutter */
+  opacity: 0;
+  outline: none;
 }
 
 /* Attached units under a leader */
