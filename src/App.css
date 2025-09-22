@@ -149,25 +149,29 @@
 
 .drag-handle {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  color: #bdc3c7;
-  font-size: 12px;
+  right: 0.5rem;
+  top: 0.5rem;
+  cursor: grab;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1;
   user-select: none;
   pointer-events: auto; /* Allow pointer events on the handle */
-  cursor: grab; /* Show grab cursor only on the handle */
-  padding: 4px; /* Make it easier to click */
-  border-radius: 2px;
-  transition: all 0.2s ease;
 }
 
 .drag-handle:hover {
-  color: #7f8c8d;
+  color: var(--text-primary);
   background: rgba(189, 195, 199, 0.1);
 }
 
 .drag-handle:active {
   cursor: grabbing;
+}
+
+/* Dark mode: make drag handle more visible */
+.dark-theme .drag-handle {
+  color: #000000;
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
 }
 
 .unit-card.drag-over {
@@ -495,6 +499,7 @@
 .unit-card.dead h4 {
   color: #ffffff;
 }
+
 
 .unit-player {
   font-size: 0.7rem;

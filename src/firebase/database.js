@@ -120,13 +120,28 @@ export const createGame = async (gameData) => {
   return gameRef.id;
 };
 
-export const joinGame = async (gameId, userId, armyId) => {
+export const joinGame = async (gameId, userId, playerName, armyData = null) => {
   const gameRef = doc(db, DATABASE_COLLECTIONS.GAMES, gameId);
-  await updateDoc(gameRef, {
+  const updateData = {
     players: arrayUnion(userId),
-    [`playerArmies.${userId}`]: armyId,
     updatedAt: serverTimestamp()
-  });
+  };
+  
+  // If army data is provided, add it to playerArmies
+  if (armyData) {
+    updateData[`playerArmies.${userId}`] = {
+      playerName: playerName,
+      armyData: armyData
+    };
+  } else {
+    // Just add the player name for now
+    updateData[`playerArmies.${userId}`] = {
+      playerName: playerName,
+      armyData: null
+    };
+  }
+  
+  await updateDoc(gameRef, updateData);
 };
 
 export const updateGameState = async (gameId, updates) => {

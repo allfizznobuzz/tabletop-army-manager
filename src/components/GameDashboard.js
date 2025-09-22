@@ -55,6 +55,7 @@ const GameDashboard = ({ user, onJoinGame }) => {
       const gameData = await createGame({
         name: gameName.trim(),
         createdBy: user.uid,
+        players: [user.uid], // Add players array for security rules
         playerArmies: {
           [user.uid]: {
             playerName: user.displayName || user.email,

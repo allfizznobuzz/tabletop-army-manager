@@ -131,6 +131,7 @@ const GameSession = ({ gameId, user }) => {
     return 'Ready';
   };
 
+
   if (loading) {
     return <div>Loading...</div>;
   }
