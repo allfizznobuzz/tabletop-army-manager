@@ -23,6 +23,7 @@ const SortableUnitBase = ({ unit, isSelected, onClick, statusClass, shouldGlowAs
       ref={setNodeRef}
       style={style}
       className={`unit-card ${isSelected ? 'selected' : ''} ${statusClass} ${shouldGlowAsLeader ? 'leader-glow' : ''} ${dropIntent ? 'leader-drop-intent' : ''}`}
+      data-unit-id={unit.id}
       onClick={() => onClick(unit)}
       {...attributes}
       {...listeners}
@@ -224,36 +225,59 @@ const GameSession = ({ gameId, user }) => {
   };
 
   const handleDndOver = (event) => {
-    const { over, active } = event;
-    const overVal = over?.id || null;
-    setOverId(overVal);
-    if (!over || !draggedUnit) { setAttachIntentLeaderId(null); return; }
-    const leader = allUnitsById[overVal];
-    if (!leader || !canLeaderAttachToUnit(leader, draggedUnit)) { setAttachIntentLeaderId(null); return; }
-    const overRect = over.rect?.current;
+    const { active, over } = event;
+    if (!draggedUnit) { setAttachIntentLeaderId(null); return; }
+
+    // Compute cursor/drag center
     const activeRect = active.rect?.current?.translated || active.rect?.current;
-    if (!overRect || !activeRect) { setAttachIntentLeaderId(null); return; }
+    if (!activeRect) { setAttachIntentLeaderId(null); return; }
     const centerX = activeRect.left + activeRect.width / 2;
     const centerY = activeRect.top + activeRect.height / 2;
-    const innerLeft = overRect.left + overRect.width * 0.2;
-    const innerRight = overRect.left + overRect.width * 0.8;
-    const innerTop = overRect.top + overRect.height * 0.3;
-    const innerBottom = overRect.top + overRect.height * 0.7;
+
+    // Prefer dnd-kit's over when it's a top-level unit id
+    let candidateId = over?.id && itemIds.includes(String(over.id)) ? String(over.id) : null;
+
+    // Fallback: find card under cursor among top-level items
+    if (!candidateId) {
+      const cards = Array.from(document.querySelectorAll('.units-list .unit-card[data-unit-id]'));
+      const hit = cards.find(c => {
+        const r = c.getBoundingClientRect();
+        return centerX >= r.left && centerX <= r.right && centerY >= r.top && centerY <= r.bottom;
+      });
+      candidateId = hit?.dataset?.unitId || null;
+    }
+
+    if (!candidateId) { setAttachIntentLeaderId(null); return; }
+    const candidate = allUnitsById[candidateId];
+    if (!candidate || !canLeaderAttachToUnit(candidate, draggedUnit) || candidate.id === draggedUnit.id) {
+      setAttachIntentLeaderId(null);
+      return;
+    }
+
+    // Apply slightly larger inner hitbox for easier attach
+    const rect = document.querySelector(`.unit-card[data-unit-id="${candidateId}"]`)?.getBoundingClientRect();
+    if (!rect) { setAttachIntentLeaderId(null); return; }
+    const innerLeft = rect.left + rect.width * 0.15;
+    const innerRight = rect.left + rect.width * 0.85;
+    const innerTop = rect.top + rect.height * 0.25;
+    const innerBottom = rect.top + rect.height * 0.75;
     const inside = centerX >= innerLeft && centerX <= innerRight && centerY >= innerTop && centerY <= innerBottom;
-    setAttachIntentLeaderId(inside ? overVal : null);
+    const nextIntent = inside ? candidateId : null;
+    setAttachIntentLeaderId(nextIntent);
   };
 
   const handleDndEnd = (event) => {
     const { active, over } = event;
+    const activeId = active?.id;
+    const overId = over?.id;
+    const leaderId = attachIntentLeaderId; // capture before clearing state
     setDraggedUnit(null);
     setOverId(null);
     setAttachIntentLeaderId(null);
-    const activeId = active?.id;
-    const overId = over?.id;
-    if (!overId || activeId === overId) return;
 
     const activeUnit = allUnitsById[activeId];
-    const leaderId = attachIntentLeaderId;
+
+    // 1) Attach if we had attach intent over a valid leader
     if (leaderId) {
       const leader = allUnitsById[leaderId];
       if (activeUnit && leader && canLeaderAttachToUnit(leader, activeUnit)) {
@@ -264,6 +288,7 @@ const GameSession = ({ gameId, user }) => {
             next[lid] = (next[lid] || []).filter(id => id !== activeId);
             if (next[lid].length === 0) delete next[lid];
           });
+        
           // Add under the leader
           next[leaderId] = Array.from(new Set([...(next[leaderId] || []), activeId]));
           return next;
@@ -274,9 +299,9 @@ const GameSession = ({ gameId, user }) => {
       }
     }
 
-    // Otherwise, if dragged from an attachment and dropped over a top-level unit, detach and insert
+    // 2) Detach case: dragged from an attachment and dropped over a top-level item
     const wasAttachedLeader = unitIsAttachedTo[activeId];
-    if (wasAttachedLeader && itemIds.includes(String(overId))) {
+    if (wasAttachedLeader && overId && itemIds.includes(String(overId))) {
       // Remove from attachments
       setAttachments(prev => {
         const next = { ...prev };
@@ -294,7 +319,8 @@ const GameSession = ({ gameId, user }) => {
       return;
     }
 
-    // Otherwise reorder top-level
+    // 3) Reorder top-level
+    if (!overId || activeId === overId) return;
     const oldIndex = itemIds.indexOf(activeId);
     const newIndex = itemIds.indexOf(overId);
     if (oldIndex === -1 || newIndex === -1) return;
@@ -317,25 +343,27 @@ const GameSession = ({ gameId, user }) => {
 
   // Leader detection - check if leader can attach to specific unit
   const canLeaderAttachToUnit = (leader, draggedUnit) => {
-    if (!leader.abilities || !draggedUnit) return false;
-    
-    // Check if leader has attachment ability that mentions the dragged unit
-    return leader.abilities.some(ability => {
-      const abilityText = (ability.description || ability.text || '').toLowerCase();
-      const draggedUnitName = draggedUnit.name.toLowerCase();
-      
-      // Must have attachment phrase AND mention the specific unit name (or key parts of it)
-      if (!abilityText.includes('this model can be attached to')) {
-        return false;
-      }
-      
-      // Check for exact name match or key unit type matches
-      return abilityText.includes(draggedUnitName) ||
-             // Handle common unit type variations
-             (draggedUnitName.includes('assault intercessor') && abilityText.includes('assault intercessor')) ||
-             (draggedUnitName.includes('vanguard veteran') && abilityText.includes('vanguard veteran')) ||
-             (draggedUnitName.includes('jump pack') && abilityText.includes('jump pack'));
+    if (!leader || !draggedUnit) return false;
+    const abilities = leader.abilities || [];
+    const keywords = (leader.keywords || []).map(k => String(k).toLowerCase());
+    if (keywords.includes('leader') || keywords.includes('character')) return true;
+    return abilities.some(ability => {
+      const name = (ability.name || '').toLowerCase();
+      const text = (ability.description || ability.text || '').toLowerCase();
+      if (name.includes('leader') || text.includes('can be attached to') || text.includes('this model can be attached to')) return true;
+      return false;
     });
+  };
+
+  // Extra heuristic: treat common character names as leaders if no explicit keywords
+  const isLikelyLeaderName = (unitName) => {
+    const n = (unitName || '').toLowerCase();
+    const patterns = [
+      'captain','commander','lieutenant','priest','librarian','chaplain','ancient','champion','sergeant',
+      'boss','warboss','nob','lord','overlord','autarch','patriarch','broodlord','archon','succubus','haemonculus',
+      'daemon prince','prince','farseer','exarch','company master','sanguinary','dante','mephiston','astorath','corbulo'
+    ];
+    return patterns.some(p => n.includes(p));
   };
 
 
