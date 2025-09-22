@@ -137,14 +137,19 @@
 /* Drag and Drop Styles */
 .unit-card {
   position: relative;
+  cursor: grab; /* Show grab cursor to indicate draggable */
+}
+
+.unit-card:active {
+  cursor: grabbing;
+}
+
+.unit-card:not(.dragging) {
   transition: all 0.2s ease;
-  cursor: default; /* Default cursor for the card */
 }
 
 .unit-card.dragging {
-  opacity: 0.5;
-  transform: rotate(2deg);
-  cursor: grabbing !important;
+  opacity: 0.8;
 }
 
 .drag-handle {
@@ -175,9 +180,27 @@
 }
 
 .unit-card.drag-over {
-  border-top: 3px solid #3498db;
-  background: #e3f2fd;
-  transform: translateY(-2px);
+  border-top: 3px solid var(--action-primary);
+  background: var(--interactive-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Placeholder shown where the card will drop */
+.drag-placeholder {
+  background: var(--interactive-active);
+  border: 2px dashed var(--action-primary);
+  border-radius: 6px;
+  margin: 0.25rem 0;
+  opacity: 0.6;
+  transition: height 0.1s ease;
+}
+
+/* Tail drop zone to allow dropping after the last card */
+.drag-tail-dropzone {
+  height: 12px;
+  margin-top: 8px;
+  border-top: 3px solid var(--action-primary);
 }
 
 .units-list {
@@ -401,20 +424,42 @@
   gap: 0.5rem;
 }
 
+/* Smooth transitions for cards moving to make space */
+.unit-card:not(.dragging):not(.drag-over) {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Add space above drag-over target */
+.unit-card.drag-over::before {
+  content: '';
+  display: block;
+  height: 3px;
+  margin-bottom: 8px;
+  background: var(--action-primary);
+  border-radius: 2px;
+  opacity: 0.7;
+}
+
 .unit-card {
-  background: var(--color-tertiary);
+  background: var(--color-secondary);
   border: 2px solid var(--border-primary);
   border-radius: 6px;
   padding: 1rem;
   cursor: pointer;
-  transition: all 0.2s ease;
   position: relative;
   color: var(--text-primary);
+  transform-origin: center;
 }
 
-.unit-card:hover {
+.unit-card:not(.dragging) {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.unit-card:hover:not(.dragging):not(.drag-over) {
   border-color: var(--border-focus);
   background: var(--interactive-hover);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Selected unit cards - darker/brighter versions of status colors */

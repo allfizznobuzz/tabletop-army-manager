@@ -1,8 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { DndContext, closestCenter, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
+import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
+import { arrayMove, SortableContext, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { getGame, updateGame, subscribeToGame, subscribeToGameUpdates, assignDamage } from '../firebase/database';
 // AuthContext will be implemented later
 import UnitDatasheet from './UnitDatasheet';
+
+// Sortable unit card powered by dnd-kit
+const SortableUnitBase = ({ unit, isSelected, onClick, statusClass, shouldGlowAsLeader }) => {
+  const {attributes, listeners, setNodeRef, transform, transition, isDragging} = useSortable({ id: unit.id });
+  const style = {
+    transform: isDragging ? undefined : CSS.Transform.toString(transform),
+    transition: isDragging ? undefined : transition,
+    zIndex: isDragging ? 20 : 'auto',
+    opacity: isDragging ? 0 : 1,
+    willChange: isDragging ? 'auto' : 'transform',
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`unit-card ${isSelected ? 'selected' : ''} ${statusClass} ${shouldGlowAsLeader ? 'leader-glow' : ''}`}
+      onClick={() => onClick(unit)}
+      {...attributes}
+      {...listeners}
+    >
+      <div className="drag-handle" title="Drag to reorder">⋮⋮</div>
+      <h4>{unit.name}</h4>
+    </div>
+  );
+};
+SortableUnitBase.displayName = 'SortableUnit';
+const SortableUnit = React.memo(SortableUnitBase);
 
 const GameSession = ({ gameId, user }) => {
   const [gameData, setGameData] = useState(null);
@@ -13,8 +44,8 @@ const GameSession = ({ gameId, user }) => {
   const [vpAmount, setVpAmount] = useState(1);
   const [vpReason, setVpReason] = useState('');
   const [draggedUnit, setDraggedUnit] = useState(null);
-  const [draggedOverIndex, setDraggedOverIndex] = useState(null);
   const [unitOrder, setUnitOrder] = useState([]);
+  const listRef = useRef(null);
 
   useEffect(() => {
     if (!gameId) return;
@@ -33,6 +64,65 @@ const GameSession = ({ gameId, user }) => {
       unsubscribeUpdates();
     };
   }, [gameId]);
+
+  // Create ordered units array based on unitOrder state
+  const orderedUnits = useMemo(() => {
+    if (!gameData) return [];
+    
+    // Extract all units from all players
+    const allUnits = [];
+    if (gameData.playerArmies) {
+      Object.entries(gameData.playerArmies).forEach(([playerId, playerData]) => {
+        if (playerData.armyData && playerData.armyData.units) {
+          playerData.armyData.units.forEach((unit, index) => {
+            allUnits.push({
+              id: `${playerId}_unit_${index}`,
+              name: unit.name || 'Unknown Unit',
+              playerId,
+              playerName: playerData.playerName || 'Unknown Player',
+              currentWounds: unit.currentWounds !== undefined ? unit.currentWounds : (unit.wounds || 1),
+              totalWounds: unit.wounds || 1,
+              totalDamage: unit.totalDamage || 0,
+              victoryPoints: unit.victoryPoints || 0,
+              points: unit.points || 0,
+              models: unit.models || unit.size || 1,
+              // Preserve all unit data
+              movement: unit.movement,
+              weapon_skill: unit.weapon_skill,
+              ballistic_skill: unit.ballistic_skill,
+              strength: unit.strength,
+              toughness: unit.toughness,
+              wounds: unit.wounds,
+              attacks: unit.attacks,
+              leadership: unit.leadership,
+              armor_save: unit.armor_save,
+              invulnerable_save: unit.invulnerable_save,
+              objective_control: unit.objective_control,
+              weapons: unit.weapons || [],
+              modelGroups: unit.modelGroups || [],
+              abilities: unit.abilities || [],
+              rules: unit.rules || [],
+              keywords: unit.keywords || []
+            });
+          });
+        }
+      });
+    }
+
+    return unitOrder.length > 0
+      ? unitOrder.map(id => allUnits.find(unit => unit.id === id)).filter(Boolean)
+      : allUnits;
+  }, [gameData, unitOrder]);
+
+  // Placeholder approach needs no visual order effect
+
+  // Initialize unit order if not set
+  useEffect(() => {
+    if (unitOrder.length === 0 && orderedUnits.length > 0) {
+      setUnitOrder(orderedUnits.map(unit => unit.id));
+    }
+  }, [unitOrder.length, orderedUnits]);
+
 
   const handleAssignDamage = async () => {
     if (!selectedUnit || !damageAmount) return;
@@ -76,46 +166,26 @@ const GameSession = ({ gameId, user }) => {
       console.error('Error advancing turn:', error);
     }
   };
+  // dnd-kit sensors and handlers
+  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 1 } }));
 
-  const handleDragStart = (e, unit) => {
+  const itemIds = useMemo(() => orderedUnits.map(u => u.id), [orderedUnits]);
+
+  const handleDndStart = (event) => {
+    const activeId = event.active?.id;
+    const unit = orderedUnits.find(u => u.id === activeId) || null;
     setDraggedUnit(unit);
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/html', unit.id);
   };
 
-  const handleDragEnd = () => {
+  const handleDndEnd = (event) => {
+    const { active, over } = event;
     setDraggedUnit(null);
-    setDraggedOverIndex(null);
-  };
-
-  const handleDragOver = (e, index) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    setDraggedOverIndex(index);
-  };
-
-  const handleDragLeave = () => {
-    setDraggedOverIndex(null);
-  };
-
-  const handleDrop = (e, dropIndex) => {
-    e.preventDefault();
-
-    if (draggedUnit && dropIndex !== undefined) {
-      const draggedIndex = orderedUnits.findIndex(unit => unit.id === draggedUnit.id);
-
-      if (draggedIndex !== dropIndex) {
-        const newOrder = [...orderedUnits];
-        const [draggedItem] = newOrder.splice(draggedIndex, 1);
-        newOrder.splice(dropIndex, 0, draggedItem);
-
-        setUnitOrder(newOrder.map(unit => unit.id));
-        console.log(`Reordered: moved ${draggedUnit.name} to position ${dropIndex + 1}`);
-      }
-    }
-
-    setDraggedUnit(null);
-    setDraggedOverIndex(null);
+    if (!over || active.id === over.id) return;
+    const oldIndex = itemIds.indexOf(active.id);
+    const newIndex = itemIds.indexOf(over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const newOrderIds = arrayMove(itemIds, oldIndex, newIndex);
+    setUnitOrder(newOrderIds);
   };
 
   // Helper functions for new unit status system
@@ -163,48 +233,7 @@ const GameSession = ({ gameId, user }) => {
     return <div className="error">Game not found</div>;
   }
 
-  // Extract all units from all players
-  const allUnits = [];
-  if (gameData.playerArmies) {
-    Object.entries(gameData.playerArmies).forEach(([playerId, playerArmy]) => {
-      if (playerArmy.armyData && playerArmy.armyData.units) {
-        playerArmy.armyData.units.forEach((unit, index) => {
-          allUnits.push({
-            id: `${playerId}_unit_${index}`,
-            name: unit.name || 'Unknown Unit',
-            playerId,
-            playerName: playerArmy.playerName || 'Unknown Player',
-            currentWounds: unit.wounds || 1,
-            totalWounds: unit.wounds || 1,
-            totalDamage: 0,
-            points: unit.points || 0,
-            models: unit.models || unit.size || 1,
-            weapons: unit.weapons || [],
-            modelGroups: unit.modelGroups || [],
-            abilities: unit.abilities || [],
-            rules: unit.rules || [],
-            keywords: unit.keywords || [],
-            // Include all unit stats
-            weapon_skill: unit.weapon_skill,
-            ballistic_skill: unit.ballistic_skill,
-            toughness: unit.toughness,
-            armor_save: unit.armor_save,
-            invulnerable_save: unit.invulnerable_save
-          });
-        });
-      }
-    });
-  }
 
-  // Initialize unit order if not set
-  if (unitOrder.length === 0 && allUnits.length > 0) {
-    setUnitOrder(allUnits.map(unit => unit.id));
-  }
-
-  // Create ordered units array based on unitOrder state
-  const orderedUnits = unitOrder.length > 0
-    ? unitOrder.map(id => allUnits.find(unit => unit.id === id)).filter(Boolean)
-    : allUnits;
 
   // Determine whose turn it is
   const isMyTurn = gameData.currentTurn === user?.uid;
@@ -240,33 +269,40 @@ const GameSession = ({ gameId, user }) => {
             </div>
           </div>
           
-          <div className="units-list">
-            {orderedUnits.map((unit, index) => {
-              const shouldGlowAsLeader = draggedUnit && canLeaderAttachToUnit(unit, draggedUnit) && draggedUnit.id !== unit.id;
-              
-              return (
-              <div 
-                key={unit.id}
-                className={`unit-card ${selectedUnit?.id === unit.id ? 'selected' : ''} ${draggedUnit?.id === unit.id ? 'dragging' : ''} ${draggedOverIndex === index ? 'drag-over' : ''} ${getUnitStatusClass(unit)} ${shouldGlowAsLeader ? 'leader-glow' : ''}`}
-                onClick={() => setSelectedUnit(unit)}
-                onDragOver={(e) => handleDragOver(e, index)}
-                onDragLeave={handleDragLeave}
-                onDrop={(e) => handleDrop(e, index)}
-              >
-                <div 
-                  className="drag-handle"
-                  draggable={true}
-                  onDragStart={(e) => handleDragStart(e, unit)}
-                  onDragEnd={handleDragEnd}
-                  title="Drag to reorder"
-                >
-                  ⋮⋮
-                </div>
-                <h4>{unit.name}</h4>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            modifiers={[restrictToVerticalAxis]}
+            onDragStart={handleDndStart}
+            onDragEnd={handleDndEnd}
+            onDragCancel={() => setDraggedUnit(null)}
+          >
+            <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
+              <div className="units-list" ref={listRef}>
+                {orderedUnits.map((unit) => {
+                  const shouldGlowAsLeader = draggedUnit && canLeaderAttachToUnit(unit, draggedUnit) && draggedUnit.id !== unit.id;
+                  return (
+                    <SortableUnit
+                      key={unit.id}
+                      unit={unit}
+                      isSelected={selectedUnit?.id === unit.id}
+                      onClick={setSelectedUnit}
+                      statusClass={getUnitStatusClass(unit)}
+                      shouldGlowAsLeader={!!shouldGlowAsLeader}
+                    />
+                  );
+                })}
               </div>
-              );
-            })}
-          </div>
+            </SortableContext>
+            <DragOverlay adjustScale={false} dropAnimation={null}>
+              {draggedUnit ? (
+                <div className={`unit-card dragging ${getUnitStatusClass(draggedUnit)} ${selectedUnit?.id === draggedUnit.id ? 'selected' : ''}`} style={{ pointerEvents: 'none', cursor: 'grabbing', boxShadow: '0 10px 20px rgba(0,0,0,0.25)', border: '2px solid var(--action-primary)' }}>
+                  <div className="drag-handle" title="Drag to reorder">⋮⋮</div>
+                  <h4>{draggedUnit.name}</h4>
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         </div>
 
         <div className="game-main">
