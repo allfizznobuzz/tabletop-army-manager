@@ -417,14 +417,28 @@
   background: var(--interactive-hover);
 }
 
-.unit-card.selected {
-  background: var(--action-primary) !important;
-  border-color: var(--action-primary) !important;
-  box-shadow: 0 0 10px var(--interactive-focus);
+/* Selected unit cards - darker/brighter versions of status colors */
+.unit-card.selected.ready {
+  background: #16a34a !important; /* Darker green */
+  border-color: #16a34a !important;
+  box-shadow: 0 0 15px rgba(22, 163, 74, 0.5);
+}
+
+.unit-card.selected.done {
+  background: #d97706 !important; /* Darker yellow/orange */
+  border-color: #d97706 !important;
+  box-shadow: 0 0 15px rgba(217, 119, 6, 0.5);
+}
+
+.unit-card.selected.dead {
+  background: #dc2626 !important; /* Darker red */
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
 }
 
 .unit-card.selected h4 {
-  color: var(--text-inverse) !important;
+  color: #ffffff !important;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 .unit-card h4 {
@@ -498,6 +512,22 @@
 
 .unit-card.dead h4 {
   color: #ffffff;
+}
+
+/* Leader glow effect when dragging any unit */
+.unit-card.leader-glow {
+  box-shadow: 0 0 15px var(--action-warning), 0 0 30px var(--action-warning);
+  border: 2px solid var(--action-warning) !important;
+  animation: leader-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes leader-glow {
+  from {
+    box-shadow: 0 0 15px var(--action-warning), 0 0 30px var(--action-warning);
+  }
+  to {
+    box-shadow: 0 0 20px var(--action-warning), 0 0 40px var(--action-warning);
+  }
 }
 
 

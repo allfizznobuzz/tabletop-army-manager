@@ -131,6 +131,29 @@ const GameSession = ({ gameId, user }) => {
     return 'Ready';
   };
 
+  // Leader detection - check if leader can attach to specific unit
+  const canLeaderAttachToUnit = (leader, draggedUnit) => {
+    if (!leader.abilities || !draggedUnit) return false;
+    
+    // Check if leader has attachment ability that mentions the dragged unit
+    return leader.abilities.some(ability => {
+      const abilityText = (ability.description || ability.text || '').toLowerCase();
+      const draggedUnitName = draggedUnit.name.toLowerCase();
+      
+      // Must have attachment phrase AND mention the specific unit name (or key parts of it)
+      if (!abilityText.includes('this model can be attached to')) {
+        return false;
+      }
+      
+      // Check for exact name match or key unit type matches
+      return abilityText.includes(draggedUnitName) ||
+             // Handle common unit type variations
+             (draggedUnitName.includes('assault intercessor') && abilityText.includes('assault intercessor')) ||
+             (draggedUnitName.includes('vanguard veteran') && abilityText.includes('vanguard veteran')) ||
+             (draggedUnitName.includes('jump pack') && abilityText.includes('jump pack'));
+    });
+  };
+
 
   if (loading) {
     return <div>Loading...</div>;
@@ -218,10 +241,13 @@ const GameSession = ({ gameId, user }) => {
           </div>
           
           <div className="units-list">
-            {orderedUnits.map((unit, index) => (
+            {orderedUnits.map((unit, index) => {
+              const shouldGlowAsLeader = draggedUnit && canLeaderAttachToUnit(unit, draggedUnit) && draggedUnit.id !== unit.id;
+              
+              return (
               <div 
                 key={unit.id}
-                className={`unit-card ${selectedUnit?.id === unit.id ? 'selected' : ''} ${draggedUnit?.id === unit.id ? 'dragging' : ''} ${draggedOverIndex === index ? 'drag-over' : ''} ${getUnitStatusClass(unit)}`}
+                className={`unit-card ${selectedUnit?.id === unit.id ? 'selected' : ''} ${draggedUnit?.id === unit.id ? 'dragging' : ''} ${draggedOverIndex === index ? 'drag-over' : ''} ${getUnitStatusClass(unit)} ${shouldGlowAsLeader ? 'leader-glow' : ''}`}
                 onClick={() => setSelectedUnit(unit)}
                 onDragOver={(e) => handleDragOver(e, index)}
                 onDragLeave={handleDragLeave}
@@ -238,7 +264,8 @@ const GameSession = ({ gameId, user }) => {
                 </div>
                 <h4>{unit.name}</h4>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
