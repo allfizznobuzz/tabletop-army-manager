@@ -109,9 +109,10 @@ const GameSession = ({ gameId, user }) => {
   const [overlayInBounds, setOverlayInBounds] = useState(true);
   const listRef = useRef(null);
   const [attachments, setAttachments] = useState({});
-  const [attachIntentLeaderId, setAttachIntentLeaderId] = useState(null);
   const [hoveredLeaderId, setHoveredLeaderId] = useState(null);
-  const [insertGuide, setInsertGuide] = useState({ id: null, edge: null, scope: 'top', leaderId: null });
+  // Unified drag intent store
+  // { type: 'none' } | { type: 'attach', leaderId } | { type: 'insert', id, edge: 'top'|'bottom', scope: 'top'|'children', leaderId?: string }
+  const [dndIntent, setDndIntent] = useState({ type: 'none' });
   const [pulseLeaderId, setPulseLeaderId] = useState(null);
   const [leadershipOverrides, setLeadershipOverrides] = useState({});
   const pointerRef = useRef({ x: 0, y: 0, has: false });
@@ -123,9 +124,8 @@ const GameSession = ({ gameId, user }) => {
   const cleanupDragState = () => {
     setDraggedUnit(null);
     setOverId(null);
-    setAttachIntentLeaderId(null);
     setHoveredLeaderId(null);
-    setInsertGuide({ id: null, edge: null, scope: 'top', leaderId: null });
+    setDndIntent({ type: 'none' });
     draggingRef.current = false;
     if (pointerRef.current._onMove) {
       window.removeEventListener('pointermove', pointerRef.current._onMove);
@@ -284,9 +284,8 @@ const GameSession = ({ gameId, user }) => {
     const unit = allUnitsById[activeId] || null;
     setDraggedUnit(unit);
     setOverId(null);
-    setAttachIntentLeaderId(null);
     setHoveredLeaderId(null);
-    setInsertGuide({ id: null, edge: null, scope: 'top', leaderId: null });
+    setDndIntent({ type: 'none' });
     setOverlayInBounds(true);
 
     // Begin pointer tracking & autoscroll
@@ -324,7 +323,7 @@ const GameSession = ({ gameId, user }) => {
 
   const handleDndOver = (event) => {
     const { active, over } = event;
-    if (!draggedUnit) { setAttachIntentLeaderId(null); return; }
+    if (!draggedUnit) { setDndIntent({ type: 'none' }); return; }
 
     // Pointer-driven detection first: between-slot hit
     const EDGE_PX = 14;
@@ -356,11 +355,9 @@ const GameSession = ({ gameId, user }) => {
       const now = Date.now();
       const sameAnchor = prev.id === newGuide.id && prev.scope === newGuide.scope && prev.leaderId === newGuide.leaderId;
       if (!sameAnchor || prev.edge !== newGuide.edge || (now - prev.ts) > 100) {
-        setInsertGuide(newGuide);
+        setDndIntent({ type: 'insert', ...newGuide });
         lastGuideRef.current = { ...newGuide, ts: now };
       }
-      // Clear attach intent when hovering a gap
-      setAttachIntentLeaderId(null);
       // Freeze leader while its edge is hovered
       const anchorUnit = allUnitsById[targetId];
       if (anchorUnit && isLeaderUnit(anchorUnit)) setHoveredLeaderId(targetId); else setHoveredLeaderId(null);
@@ -379,8 +376,26 @@ const GameSession = ({ gameId, user }) => {
       if (isLeaderUnit(candidate)) {
         setHoveredLeaderId(candidateId);
         const eligible = !isLeaderUnit(draggedUnit) && canLeaderAttachToUnit(candidate, draggedUnit);
-        setAttachIntentLeaderId(inEdges || !eligible ? null : candidateId);
-        setInsertGuide(inEdges ? { id: candidateId, edge: inTopEdge ? 'top' : 'bottom', scope: 'top', leaderId: null } : { id: null, edge: null, scope: 'top', leaderId: null });
+        if (inEdges) {
+          const newGuide = { id: candidateId, edge: inTopEdge ? 'top' : 'bottom', scope: 'top', leaderId: null };
+          const prev = lastGuideRef.current; const now = Date.now();
+          const sameAnchor = prev.id === newGuide.id && prev.scope === newGuide.scope;
+          if (!sameAnchor || prev.edge !== newGuide.edge || (now - prev.ts) > 100) {
+            setDndIntent({ type: 'insert', ...newGuide });
+            lastGuideRef.current = { ...newGuide, ts: now };
+          }
+        } else if (eligible) {
+          setDndIntent({ type: 'attach', leaderId: candidateId });
+        } else {
+          const edge = py < (r.top + r.bottom) / 2 ? 'top' : 'bottom';
+          const newGuide = { id: candidateId, edge, scope: 'top', leaderId: null };
+          const prev = lastGuideRef.current; const now = Date.now();
+          const sameAnchor = prev.id === newGuide.id && prev.scope === newGuide.scope;
+          if (!sameAnchor || prev.edge !== newGuide.edge || (now - prev.ts) > 100) {
+            setDndIntent({ type: 'insert', ...newGuide });
+            lastGuideRef.current = { ...newGuide, ts: now };
+          }
+        }
       } else {
         const parentLeaderId = unitIsAttachedTo[candidateId] || null;
         if (parentLeaderId) {
@@ -392,16 +407,14 @@ const GameSession = ({ gameId, user }) => {
             const now = Date.now();
             const sameAnchor = prev.id === newGuide.id && prev.scope === newGuide.scope && prev.leaderId === newGuide.leaderId;
             if (!sameAnchor || prev.edge !== newGuide.edge || (now - prev.ts) > 100) {
-              setInsertGuide(newGuide);
+              setDndIntent({ type: 'insert', ...newGuide });
               lastGuideRef.current = { ...newGuide, ts: now };
             }
             setHoveredLeaderId(parentLeaderId);
-            setAttachIntentLeaderId(null);
           } else {
             // Different leader's child; allow only top-level gaps
             setHoveredLeaderId(null);
-            setAttachIntentLeaderId(null);
-            setInsertGuide({ id: null, edge: null, scope: 'top', leaderId: null });
+            setDndIntent({ type: 'none' });
           }
         } else {
           // Normal top-level card
@@ -410,17 +423,15 @@ const GameSession = ({ gameId, user }) => {
           const prev = lastGuideRef.current; const now = Date.now();
           const sameAnchor = prev.id === newGuide.id && prev.scope === newGuide.scope;
           if (!sameAnchor || prev.edge !== newGuide.edge || (now - prev.ts) > 100) {
-            setInsertGuide(newGuide);
+            setDndIntent({ type: 'insert', ...newGuide });
             lastGuideRef.current = { ...newGuide, ts: now };
           }
           setHoveredLeaderId(null);
-          setAttachIntentLeaderId(null);
         }
       }
     } else {
       setHoveredLeaderId(null);
-      setAttachIntentLeaderId(null);
-      setInsertGuide({ id: null, edge: null, scope: 'top', leaderId: null });
+      setDndIntent({ type: 'none' });
     }
   };
 
@@ -428,8 +439,7 @@ const GameSession = ({ gameId, user }) => {
     const { active, over } = event;
     const activeId = active?.id;
     const overItemId = over?.id;
-    const leaderHoverId = attachIntentLeaderId; // capture before clearing – center attach intent only
-    const guide = insertGuide; // capture insert guide before clearing
+    const intent = dndIntent; // capture before clearing
     // Clear hover state & stop tracking
     cleanupDragState();
 
@@ -440,8 +450,8 @@ const GameSession = ({ gameId, user }) => {
 
     const activeUnit = allUnitsById[activeId];
     // If attach intent was active and valid, perform attach and persist
-    if (leaderHoverId && activeUnit && !isLeaderUnit(activeUnit)) {
-      const leader = allUnitsById[leaderHoverId];
+    if (intent.type === 'attach' && activeUnit && !isLeaderUnit(activeUnit)) {
+      const leader = allUnitsById[intent.leaderId];
       if (leader && canLeaderAttachToUnit(leader, activeUnit)) {
         const next = (() => {
           const next = { ...(attachments || {}) };
@@ -451,13 +461,13 @@ const GameSession = ({ gameId, user }) => {
             if (next[lid].length === 0) delete next[lid];
           });
           // add to this leader if not already present
-          const arr = next[leaderHoverId] || [];
+          const arr = next[intent.leaderId] || [];
           if (arr.includes(activeId)) {
             // reorder within children: move to end
-            next[leaderHoverId] = arr.filter(id => id !== activeId).concat(activeId);
+            next[intent.leaderId] = arr.filter(id => id !== activeId).concat(activeId);
           } else {
             arr.push(activeId);
-            next[leaderHoverId] = arr;
+            next[intent.leaderId] = arr;
           }
           return next;
         })();
@@ -467,15 +477,15 @@ const GameSession = ({ gameId, user }) => {
         setUnitOrder(newTop);
         // persist to Firebase
         updateGameState(gameId, { 'gameState.attachments': next, 'gameState.unitOrder': newTop }).catch(err => console.error('persist attach failed', err));
-        setPulseLeaderId(leaderHoverId);
+        setPulseLeaderId(intent.leaderId);
         setTimeout(() => setPulseLeaderId(null), 500);
         return;
       }
     }
 
     // Reorder using insert guide (respects before/after)
-    if (guide.id) {
-      if (guide.scope === 'top') {
+    if (intent.type === 'insert' && intent.id) {
+      if (intent.scope === 'top') {
         const wasAttached = !!unitIsAttachedTo[activeId];
         let next = attachments;
         if (wasAttached) {
@@ -488,9 +498,9 @@ const GameSession = ({ gameId, user }) => {
           setAttachments(next);
         }
         const newTop = itemIds.filter(id => id !== activeId);
-        const anchorIndex = newTop.indexOf(guide.id);
+        const anchorIndex = newTop.indexOf(intent.id);
         if (anchorIndex !== -1) {
-          const insertAt = guide.edge === 'bottom' ? anchorIndex + 1 : anchorIndex;
+          const insertAt = intent.edge === 'bottom' ? anchorIndex + 1 : anchorIndex;
           newTop.splice(insertAt, 0, activeId);
           setUnitOrder(newTop);
           // persist
@@ -499,18 +509,18 @@ const GameSession = ({ gameId, user }) => {
           updateGameState(gameId, update).catch(err => console.error('persist reorder failed', err));
           return;
         }
-      } else if (guide.scope === 'children' && guide.leaderId && unitIsAttachedTo[activeId] === guide.leaderId) {
+      } else if (intent.scope === 'children' && intent.leaderId && unitIsAttachedTo[activeId] === intent.leaderId) {
         // reorder inside leader's children
-        const arr = Array.from(attachments[guide.leaderId] || []);
+        const arr = Array.from(attachments[intent.leaderId] || []);
         const fromIdx = arr.indexOf(activeId);
-        const anchorIdx = arr.indexOf(guide.id);
+        const anchorIdx = arr.indexOf(intent.id);
         if (fromIdx !== -1 && anchorIdx !== -1) {
           const without = arr.filter(id => id !== activeId);
-          const insertAt = guide.edge === 'bottom' ? (anchorIdx + (fromIdx < anchorIdx ? 0 : 1)) : (anchorIdx + (fromIdx < anchorIdx ? -1 : 0));
+          const insertAt = intent.edge === 'bottom' ? (anchorIdx + (fromIdx < anchorIdx ? 0 : 1)) : (anchorIdx + (fromIdx < anchorIdx ? -1 : 0));
           const bounded = Math.max(0, Math.min(without.length, insertAt));
           without.splice(bounded, 0, activeId);
           const next = { ...(attachments || {}) };
-          next[guide.leaderId] = without;
+          next[intent.leaderId] = without;
           setAttachments(next);
           updateGameState(gameId, { 'gameState.attachments': next }).catch(err => console.error('persist child-reorder failed', err));
           return;
@@ -710,9 +720,9 @@ const GameSession = ({ gameId, user }) => {
               <div className="units-list" ref={listRef}>
                 {orderedUnits.map((unit, idx) => {
                   const shouldGlowAsLeader = !!draggedUnit && isLeaderUnit(unit) && draggedUnit.id !== unit.id && canLeaderAttachToUnit(unit, draggedUnit);
-                  const freezeTransform = !!(hoveredLeaderId === unit.id || attachIntentLeaderId === unit.id);
-                  const dropIntent = !!(attachIntentLeaderId === unit.id);
-                  const insertEdge = insertGuide.id === unit.id ? insertGuide.edge : null;
+                  const freezeTransform = !!(hoveredLeaderId === unit.id || (dndIntent.type === 'insert' && dndIntent.scope === 'top' && dndIntent.id === unit.id));
+                  const dropIntent = !!(dndIntent.type === 'attach' && dndIntent.leaderId === unit.id);
+                  const insertEdge = (dndIntent.type === 'insert' && dndIntent.scope === 'top' && dndIntent.id === unit.id) ? dndIntent.edge : null;
                   const titleText = dropIntent
                     ? `Attach to ${unit.name}`
                     : (insertEdge ? 'Drop to reorder' : undefined);
@@ -741,7 +751,7 @@ const GameSession = ({ gameId, user }) => {
                             {attachments[unit.id].map((attachedId) => {
                               const au = allUnitsById[attachedId];
                               if (!au) return null;
-                              const childInsert = insertGuide.scope === 'children' && insertGuide.id === attachedId ? insertGuide.edge : null;
+                              const childInsert = (dndIntent.type === 'insert' && dndIntent.scope === 'children' && dndIntent.id === attachedId) ? dndIntent.edge : null;
                               const childOv = leadershipOverrides[attachedId] || {};
                               const childOverrideActive = ovHasActive(childOv);
                               const childOverrideSummary = ovSummary(childOv, (id) => allUnitsById[id]?.name || id);
