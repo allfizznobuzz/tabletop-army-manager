@@ -795,6 +795,8 @@ const GameSession = ({ gameId, user }) => {
   const [updates, setUpdates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedUnit, setSelectedUnit] = useState(null);
+  const [overlayOpen, setOverlayOpen] = useState(false);
+  const [isNarrow, setIsNarrow] = useState(false);
   const [damageAmount, setDamageAmount] = useState(1);
   const [vpAmount, setVpAmount] = useState(1);
   const [vpReason, setVpReason] = useState("");
@@ -831,6 +833,27 @@ const GameSession = ({ gameId, user }) => {
       if (typeof unsubscribeUpdates === "function") unsubscribeUpdates();
     };
   }, [gameId]);
+
+  // Narrow layout detection for overlay fallback
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mql = window.matchMedia("(max-width: 768px)");
+    const handle = (e) => setIsNarrow(!!e.matches);
+    // Initialize
+    handle(mql);
+    if (mql.addEventListener) mql.addEventListener("change", handle);
+    else if (mql.addListener) mql.addListener(handle);
+    return () => {
+      if (mql.removeEventListener) mql.removeEventListener("change", handle);
+      else if (mql.removeListener) mql.removeListener(handle);
+    };
+  }, []);
+
+  // Close overlay when deselecting or when exiting narrow mode
+  useEffect(() => {
+    if (!isNarrow) setOverlayOpen(false);
+    if (!selectedUnit) setOverlayOpen(false);
+  }, [isNarrow, selectedUnit]);
 
   // Build full units list (snapshot from gameData)
   const allUnitsA = useMemo(() => {
@@ -1197,9 +1220,21 @@ const GameSession = ({ gameId, user }) => {
           <span>Current Turn: {isMyTurn ? "Your Turn" : "Waiting..."}</span>
           <span>Game ID: {gameId}</span>
         </div>
+        {isNarrow && selectedUnit ? (
+          <div style={{ marginTop: "0.5rem" }}>
+            <button
+              type="button"
+              className="action-btn"
+              aria-label="Open Datasheet overlay"
+              onClick={() => setOverlayOpen(true)}
+            >
+              Open Datasheet
+            </button>
+          </div>
+        ) : null}
       </div>
 
-      <div className="game-content">
+      <div className="game-content" data-testid="game-content">
         {/* Column 1: Player A */}
         <div className="units-sidebar">
           <div className="column-header">
@@ -1273,47 +1308,44 @@ const GameSession = ({ gameId, user }) => {
           )}
         </div>
 
-        {/* Column 2: Center datasheet */}
-        <div className="game-main">
-          {selectedUnit ? (
-            <UnitDatasheet
-              unit={selectedUnit}
-              isSelected={true}
-              onClick={() => {}}
-              overrides={
-                leadershipOverrides[selectedUnit.id] || {
-                  canLead: "auto",
-                  canBeLed: "auto",
-                  allowList: [],
-                }
+        {/* Column 2: Center datasheet (render only the datasheet or placeholder) */}
+        {selectedUnit ? (
+          <UnitDatasheet
+            unit={selectedUnit}
+            isSelected={true}
+            onClick={() => {}}
+            overrides={
+              leadershipOverrides[selectedUnit.id] || {
+                canLead: "auto",
+                canBeLed: "auto",
+                allowList: [],
               }
-              allUnits={allUnits}
-              onUpdateOverrides={(partial) =>
-                updateUnitOverrides(selectedUnit.id, partial)
-              }
-            />
-          ) : (
-            <div className="no-unit-selected">
-              {!hasArmyA && !hasArmyB ? (
-                <>
-                  <h3>Start by adding armies to both columns</h3>
-                  <p>
-                    Use the Upload army controls in each column to import an
-                    army JSON.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h3>Select a unit from either column to view details</h3>
-                  <p>
-                    Click on any unit to see its datasheet and available
-                    actions.
-                  </p>
-                </>
-              )}
-            </div>
-          )}
-        </div>
+            }
+            allUnits={allUnits}
+            onUpdateOverrides={(partial) =>
+              updateUnitOverrides(selectedUnit.id, partial)
+            }
+          />
+        ) : (
+          <div className="no-unit-selected">
+            {!hasArmyA && !hasArmyB ? (
+              <>
+                <h3>Start by adding armies to both columns</h3>
+                <p>
+                  Use the Upload army controls in each column to import an army
+                  JSON.
+                </p>
+              </>
+            ) : (
+              <>
+                <h3>Select a unit from either column to view details</h3>
+                <p>
+                  Click on any unit to see its datasheet and available actions.
+                </p>
+              </>
+            )}
+          </div>
+        )}
 
         {/* Column 3: Player B */}
         <div className="units-sidebar">
@@ -1388,6 +1420,38 @@ const GameSession = ({ gameId, user }) => {
           )}
         </div>
       </div>
+      {isNarrow && overlayOpen && selectedUnit ? (
+        <div
+          className="datasheet-overlay"
+          role="dialog"
+          aria-label="Datasheet Overlay"
+        >
+          <button
+            type="button"
+            className="overlay-close"
+            aria-label="Close Datasheet"
+            onClick={() => setOverlayOpen(false)}
+          >
+            ×
+          </button>
+          <UnitDatasheet
+            unit={selectedUnit}
+            isSelected={true}
+            onClick={() => {}}
+            overrides={
+              leadershipOverrides[selectedUnit.id] || {
+                canLead: "auto",
+                canBeLed: "auto",
+                allowList: [],
+              }
+            }
+            allUnits={allUnits}
+            onUpdateOverrides={(partial) =>
+              updateUnitOverrides(selectedUnit.id, partial)
+            }
+          />
+        </div>
+      ) : null}
     </div>
   );
 };

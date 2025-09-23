@@ -1,7 +1,8 @@
 .app {
-  min-height: 100vh;
+  height: 100vh; /* lock to viewport */
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* no page-level scrollbars */
 }
 
 .app-loading {
@@ -130,8 +131,10 @@
 
 .app-main {
   flex: 1;
-  padding: 2rem;
+  /* Safe gutters: full-width content with horizontal padding */
+  padding: 0 clamp(16px, 2vw, 24px);
   background: var(--color-primary);
+  overflow: hidden; /* columns will scroll internally */
 }
 
 /* Drag and Drop Styles */
@@ -506,12 +509,15 @@
 
 /* Game Session Datasheet Styles */
 .game-session {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0; /* rely on app-main gutters */
   background: var(--color-primary);
-  min-height: 100vh;
   color: var(--text-primary);
+  overflow: hidden; /* no outer scrolling */
+  display: flex;
+  flex-direction: column;
 }
 
 .game-header {
@@ -537,12 +543,23 @@
 
 .game-content {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(440px, 520px) minmax(
-      260px,
-      1fr
-    );
-  align-items: start;
-  gap: 2rem;
+  grid-template-columns:
+    minmax(300px, 1fr)
+    clamp(640px, 42vw, 880px)
+    minmax(300px, 1fr);
+  align-items: stretch;
+  column-gap: 16px;
+  row-gap: 0;
+  /* Fill remaining height beneath game header */
+  flex: 1;
+  min-height: 0; /* allow children to scroll */
+  overflow: hidden; /* children scroll */
+}
+
+/* Each column scrolls inside itself */
+.game-content > * {
+  min-height: 0; /* allow child overflow auto to work inside grid */
+  overflow: auto;
 }
 
 .units-sidebar {
@@ -551,9 +568,7 @@
   border-radius: 8px;
   box-shadow: 0 4px 8px var(--shadow-primary);
   border: 2px solid var(--border-primary);
-  /* Make this the scrollable ancestor for drag containment */
-  max-height: 80vh;
-  overflow-y: auto;
+  /* Column is scrollable via generic rule above */
 }
 
 .units-sidebar h3 {
@@ -856,18 +871,14 @@
   border: 1px solid #4a6741;
 }
 
-.game-main {
+/* Center column now renders only the UnitDatasheet or a placeholder directly */
+.no-unit-selected {
   background: var(--gradient-primary);
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px var(--shadow-primary);
   border: 2px solid var(--border-primary);
-  height: fit-content;
-  position: sticky;
-  top: 1rem;
-  align-self: start;
-  max-height: 80vh; /* keep panel readable and within viewport */
-  overflow: auto;
+  border-radius: 8px;
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-primary);
 }
 
 .actions-section h3 {
@@ -886,13 +897,44 @@
   margin: 0;
 }
 
-.no-unit-selected {
-  background: var(--gradient-primary);
-  border: 2px solid var(--border-primary);
-  border-radius: 8px;
-  padding: 3rem;
-  text-align: center;
-  color: var(--text-primary);
+/* Sticky header inside datasheet for better UX while scrolling */
+.unit-datasheet .datasheet-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Overlay for very narrow screens */
+.datasheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 2vw, 24px);
+  z-index: 1000;
+}
+
+.datasheet-overlay .unit-datasheet {
+  width: min(880px, 95vw);
+  max-height: 90vh;
+  overflow: auto; /* scroll inside overlay */
+}
+
+.overlay-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--action-danger);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  z-index: 1001;
 }
 
 .no-unit-selected h3 {
@@ -909,6 +951,17 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
+  .game-content {
+    /* Drop center column visually, keep A|B side-by-side when possible */
+    grid-template-columns: minmax(300px, 1fr) minmax(300px, 1fr);
+    row-gap: 12px;
+    column-gap: 12px;
+  }
+  /* Hide center (Datasheet) column; overlay is used instead at this size */
+  .game-content > :nth-child(2) {
+    display: none !important;
+  }
+
   .app-header {
     flex-direction: column;
     gap: 1rem;
@@ -926,11 +979,22 @@
     padding: 1rem;
   }
 
-  .game-content {
-    grid-template-columns: 1fr;
-  }
-
   .game-session {
     padding: 1rem;
+  }
+}
+
+/* Extremely narrow: stack A and B vertically */
+@media (max-width: 560px) {
+  .game-content {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+}
+
+/* Slightly tighter gaps on medium screens */
+@media (max-width: 1024px) {
+  .game-content {
+    column-gap: 12px;
   }
 }
