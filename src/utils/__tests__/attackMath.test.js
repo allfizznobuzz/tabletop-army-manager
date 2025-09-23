@@ -10,6 +10,13 @@ describe('attackMath.woundTarget', () => {
   ])('S=%s vs T=%s => %s+', (S, T, expected) => {
     expect(woundTarget(S, T)).toBe(expected);
   });
+
+  it('returns null when S or T missing', () => {
+    expect(woundTarget(undefined, 4)).toBeNull();
+    expect(woundTarget(4, undefined)).toBeNull();
+    expect(woundTarget(0, 4)).toBeNull();
+    expect(woundTarget(4, 0)).toBeNull();
+  });
 });
 
 describe('attackMath.probabilityFromTarget', () => {
@@ -18,6 +25,13 @@ describe('attackMath.probabilityFromTarget', () => {
     expect(probabilityFromTarget(3)).toBeCloseTo(4/6, 5);
     expect(probabilityFromTarget(6)).toBeCloseTo(1/6, 5);
   });
+
+  it('returns null for invalid/low targets', () => {
+    expect(probabilityFromTarget(undefined)).toBeNull();
+    expect(probabilityFromTarget(null)).toBeNull();
+    expect(probabilityFromTarget(1)).toBeNull();
+    expect(probabilityFromTarget(0)).toBeNull();
+  });
 });
 
 describe('attackMath.parseDiceNotation', () => {
@@ -25,6 +39,11 @@ describe('attackMath.parseDiceNotation', () => {
     const r = parseDiceNotation(5);
     expect(r.kind).toBe('fixed');
     expect(r.value).toBe(5);
+  });
+
+  it('treats undefined/null as fixed 0', () => {
+    expect(parseDiceNotation(undefined)).toEqual({ kind: 'fixed', value: 0 });
+    expect(parseDiceNotation(null)).toEqual({ kind: 'fixed', value: 0 });
   });
 
   it('parses D3', () => {
@@ -65,5 +84,11 @@ describe('attackMath.saves', () => {
 
   it('prefers invuln when armour after AP is worse', () => {
     expect(bestSaveTargetAfterAp('6+', -3, '4+')).toBe(4);
+  });
+
+  it('returns the available save when one is missing', () => {
+    expect(bestSaveTargetAfterAp(null, -1, '4+')).toBe(4);
+    expect(bestSaveTargetAfterAp('3+', 0, null)).toBe(3);
+    expect(applyApToSave(null, -1)).toBeNull();
   });
 });

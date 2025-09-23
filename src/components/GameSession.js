@@ -626,11 +626,28 @@ const ArmyColumn = ({
                     if (attackHelper?.open && selectedUnit) {
                       const enemyCol = selectedUnit.column === "A" ? "B" : "A";
                       if (u.column === enemyCol) {
-                        setAttackHelper((prev) => ({ ...prev, targetUnitId: u.id }));
+                        setAttackHelper((prev) => ({
+                          ...prev,
+                          targetUnitId: u.id,
+                          open: true,
+                          intent: "open_with_target",
+                        }));
                         setPulseTargetId(u.id);
                         setTimeout(() => setPulseTargetId(null), 1000);
                         return;
                       }
+                    }
+                    // Friendly unit click while helper open: collapse helper, then switch datasheet
+                    if (attackHelper?.open) {
+                      setAttackHelper((prev) => ({
+                        ...prev,
+                        open: false,
+                        section: null,
+                        index: null,
+                        modelsInRange: null,
+                        targetUnitId: null,
+                        intent: "idle",
+                      }));
                     }
                     setSelectedUnit(u);
                   }}
@@ -674,11 +691,27 @@ const ArmyColumn = ({
                                 if (attackHelper?.open && selectedUnit) {
                                   const enemyCol = selectedUnit.column === "A" ? "B" : "A";
                                   if (u.column === enemyCol) {
-                                    setAttackHelper((prev) => ({ ...prev, targetUnitId: u.id }));
+                                    setAttackHelper((prev) => ({
+                                      ...prev,
+                                      targetUnitId: u.id,
+                                      open: true,
+                                      intent: "open_with_target",
+                                    }));
                                     setPulseTargetId(u.id);
                                     setTimeout(() => setPulseTargetId(null), 1000);
                                     return;
                                   }
+                                }
+                                if (attackHelper?.open) {
+                                  setAttackHelper((prev) => ({
+                                    ...prev,
+                                    open: false,
+                                    section: null,
+                                    index: null,
+                                    modelsInRange: null,
+                                    targetUnitId: null,
+                                    intent: "idle",
+                                  }));
                                 }
                                 setSelectedUnit(u);
                               }}
@@ -841,6 +874,7 @@ const GameSession = ({ gameId, user }) => {
     index: null,
     modelsInRange: null,
     targetUnitId: null,
+    intent: "idle", // idle | open_no_target | open_with_target
   });
   const [pulseTargetId, setPulseTargetId] = useState(null);
   const [attachmentsA, setAttachmentsA] = useState({});
@@ -899,7 +933,15 @@ const GameSession = ({ gameId, user }) => {
 
   // Collapse Attack Helper if attacker changes
   useEffect(() => {
-    setAttackHelper((prev) => ({ ...prev, open: false, section: null, index: null, targetUnitId: null }));
+    setAttackHelper((prev) => ({
+      ...prev,
+      open: false,
+      section: null,
+      index: null,
+      targetUnitId: null,
+      modelsInRange: null,
+      intent: "idle",
+    }));
   }, [selectedUnit?.id]);
 
   // Collapse when clicking outside both the panel and enemy unit cards
@@ -913,7 +955,14 @@ const GameSession = ({ gameId, user }) => {
         // Allow unit click handlers to process (enemy selection)
         return;
       }
-      setAttackHelper({ open: false, section: null, index: null, modelsInRange: null, targetUnitId: null });
+      setAttackHelper({
+        open: false,
+        section: null,
+        index: null,
+        modelsInRange: null,
+        targetUnitId: null,
+        intent: "idle",
+      });
     };
     document.addEventListener("pointerdown", onDocPointer, true);
     return () => document.removeEventListener("pointerdown", onDocPointer, true);
@@ -1356,13 +1405,29 @@ const GameSession = ({ gameId, user }) => {
             onToggleWeapon={(section, index) => {
               setAttackHelper((prev) => {
                 const same = prev.open && prev.section === section && prev.index === index;
-                if (same) return { open: false, section: null, index: null, modelsInRange: null, targetUnitId: null };
+                if (same)
+                  return {
+                    open: false,
+                    section: null,
+                    index: null,
+                    modelsInRange: null,
+                    targetUnitId: null,
+                    intent: "idle",
+                  };
                 const defaultModels = selectedUnit?.models || 1;
-                return { open: true, section, index, modelsInRange: defaultModels, targetUnitId: prev.targetUnitId || null };
+                const hasTarget = !!prev.targetUnitId;
+                return {
+                  open: true,
+                  section,
+                  index,
+                  modelsInRange: defaultModels,
+                  targetUnitId: prev.targetUnitId || null,
+                  intent: hasTarget ? "open_with_target" : "open_no_target",
+                };
               });
             }}
             onCloseAttackHelper={() =>
-              setAttackHelper({ open: false, section: null, index: null, modelsInRange: null, targetUnitId: null })
+              setAttackHelper({ open: false, section: null, index: null, modelsInRange: null, targetUnitId: null, intent: "idle" })
             }
             onChangeModelsInRange={(val) =>
               setAttackHelper((prev) => ({ ...prev, modelsInRange: Math.max(1, Number(val) || 1) }))
