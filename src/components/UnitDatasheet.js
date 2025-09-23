@@ -19,6 +19,7 @@ const UnitDatasheet = ({
   onToggleWeapon,
   onCloseAttackHelper,
   onChangeModelsInRange,
+  onToggleExpected,
   selectedTargetUnit,
 }) => {
   // Group identical weapons for display (parser now expands to 1 entry per weapon instance)
@@ -210,6 +211,42 @@ const UnitDatasheet = ({
               <div className="helper-sub">Each failed save: {String(damage)}</div>
             ) : null}
           </div>
+        </div>
+
+        {/* Expected results toggle and summary */}
+        <div className="helper-section" style={{ marginTop: '0.5rem' }}>
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+            <input
+              type="checkbox"
+              aria-label="Show expected results"
+              checked={!!attackHelper?.showExpected}
+              onChange={() => onToggleExpected?.()}
+            />
+            Show expected results
+          </label>
+          {attackHelper?.showExpected ? (
+            (() => {
+              const attacksAvg =
+                AParsed.kind === 'fixed'
+                  ? Number(AParsed.value || 0) * modelsInRange
+                  : (Number(AParsed.avg || 0) * modelsInRange);
+              const pHit = toHitP ?? 0;
+              const pWound = woundP ?? 0;
+              const pSave = bestSv ? (probabilityFromTarget(bestSv) || 0) : 0;
+              const pFail = 1 - pSave;
+              const dmgParsed = parseDiceNotation(damage);
+              const dmgAvg = dmgParsed.kind === 'fixed' ? Number(dmgParsed.value || 0) : Number(dmgParsed.avg || 0);
+              const expHits = attacksAvg * pHit;
+              const expWounds = expHits * pWound;
+              const expUnsaved = expWounds * pFail;
+              const expDamage = expUnsaved * dmgAvg;
+              return (
+                <div className="helper-sub" aria-label="Expected results">
+                  Expected hits: {expHits.toFixed(1)} • Expected wounds: {expWounds.toFixed(1)} • Expected unsaved: {expUnsaved.toFixed(1)} • Expected damage: {expDamage.toFixed(1)}
+                </div>
+              );
+            })()
+          ) : null}
         </div>
       </div>
     );

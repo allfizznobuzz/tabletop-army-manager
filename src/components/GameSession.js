@@ -647,6 +647,7 @@ const ArmyColumn = ({
                         modelsInRange: null,
                         targetUnitId: null,
                         intent: "idle",
+                        showExpected: prev.showExpected,
                       }));
                     }
                     setSelectedUnit(u);
@@ -696,6 +697,7 @@ const ArmyColumn = ({
                                       targetUnitId: u.id,
                                       open: true,
                                       intent: "open_with_target",
+                                      showExpected: prev.showExpected,
                                     }));
                                     setPulseTargetId(u.id);
                                     setTimeout(() => setPulseTargetId(null), 1000);
@@ -711,6 +713,7 @@ const ArmyColumn = ({
                                     modelsInRange: null,
                                     targetUnitId: null,
                                     intent: "idle",
+                                    showExpected: prev.showExpected,
                                   }));
                                 }
                                 setSelectedUnit(u);
@@ -875,6 +878,7 @@ const GameSession = ({ gameId, user }) => {
     modelsInRange: null,
     targetUnitId: null,
     intent: "idle", // idle | open_no_target | open_with_target
+    showExpected: false,
   });
   const [pulseTargetId, setPulseTargetId] = useState(null);
   const [attachmentsA, setAttachmentsA] = useState({});
@@ -941,6 +945,7 @@ const GameSession = ({ gameId, user }) => {
       targetUnitId: null,
       modelsInRange: null,
       intent: "idle",
+      showExpected: prev.showExpected,
     }));
   }, [selectedUnit?.id]);
 
@@ -955,14 +960,15 @@ const GameSession = ({ gameId, user }) => {
         // Allow unit click handlers to process (enemy selection)
         return;
       }
-      setAttackHelper({
+      setAttackHelper((prev) => ({
         open: false,
         section: null,
         index: null,
         modelsInRange: null,
         targetUnitId: null,
         intent: "idle",
-      });
+        showExpected: prev.showExpected,
+      }));
     };
     document.addEventListener("pointerdown", onDocPointer, true);
     return () => document.removeEventListener("pointerdown", onDocPointer, true);
@@ -1431,6 +1437,9 @@ const GameSession = ({ gameId, user }) => {
             }
             onChangeModelsInRange={(val) =>
               setAttackHelper((prev) => ({ ...prev, modelsInRange: Math.max(1, Number(val) || 1) }))
+            }
+            onToggleExpected={() =>
+              setAttackHelper((prev) => ({ ...prev, showExpected: !prev.showExpected }))
             }
             selectedTargetUnit={attackHelper.targetUnitId ? allUnitsById[attackHelper.targetUnitId] : null}
           />
