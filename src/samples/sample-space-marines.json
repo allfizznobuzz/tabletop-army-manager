@@ -1,0 +1,66 @@
+{
+  "name": "Ultramarines Patrol",
+  "faction": "Space Marines",
+  "units": [
+    {
+      "name": "Captain",
+      "models": 1,
+      "wounds": 6,
+      "weapons": [
+        {
+          "name": "Master-crafted bolt rifle",
+          "range": "24\"",
+          "type": "Rapid Fire 1",
+          "attacks": 2,
+          "skill": 2,
+          "strength": 4,
+          "ap": 1,
+          "damage": 2
+        },
+        {
+          "name": "Power sword",
+          "range": "Melee",
+          "type": "Melee",
+          "attacks": 5,
+          "skill": 2,
+          "strength": 5,
+          "ap": 3,
+          "damage": 2
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Leader",
+          "description": "This model can be attached to... Intercessors"
+        }
+      ],
+      "rules": ["Oath of Moment"],
+      "keywords": ["LEADER", "CHARACTER", "INFANTRY"]
+    },
+    {
+      "name": "Intercessor Squad",
+      "models": 10,
+      "wounds": 2,
+      "weapons": [
+        {
+          "name": "Bolt rifle",
+          "range": "24\"",
+          "type": "Rapid Fire 1",
+          "attacks": 2,
+          "skill": 3,
+          "strength": 4,
+          "ap": 1,
+          "damage": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Grim Resolve",
+          "description": "Reroll Hit roll of 1 when stationary."
+        }
+      ],
+      "rules": ["Battleline"],
+      "keywords": ["INFANTRY", "ADEPTUS ASTARTES"]
+    }
+  ]
+}
