@@ -1,86 +1,89 @@
 # Tabletop Army Manager
 
-A web-based real-time multiplayer application for managing tabletop wargaming armies, tracking combat, and managing game sessions using Firebase.
+A modern, game-centric app to run tabletop games with live unit management, attachments, damage, and victory points powered by Firebase and the Firebase emulators.
 
-## Features
-
-- **Real-time Multiplayer**: Live game sessions with instant updates
-- **Army Management**: Load armies from JSON files or BattleScribe format
-- **Combat System**: Calculate damage, track wounds, assign victory points
-- **Turn Management**: Automated turn tracking with real-time notifications
-- **Authentication**: Google Sign-In and email/password options
-- **Cloud Storage**: Armies and game data stored in Firebase
-- **Offline Support**: Continue playing when internet connection drops
-
-## Quick Start
+## Quick Start (Emulator-Friendly)
 
 ### Prerequisites
-- Node.js 16+ installed
-- Firebase CLI: `npm install -g firebase-tools`
+- Node.js 18+
+- NPM (or PNPM/Yarn)
+- Firebase CLI: `npm i -g firebase-tools`
+- Java JRE (required for Firebase Emulators)
 
-### Setup
-1. **Clone and install dependencies**:
-   ```bash
-   git clone <repository-url>
-   cd tabletop-army-manager
-   npm install
-   ```
-
-2. **Set up Firebase**:
-   ```bash
-   firebase login
-   firebase init
-   ```
-
-3. **Update Firebase config** in `src/firebase/config.js` with your project details
-
-4. **Start development**:
-   ```bash
-   npm run firebase:emulators  # Terminal 1
-   npm start                   # Terminal 2
-   ```
-
-### Deploy to Production
+### 1) Install dependencies
 ```bash
-npm run firebase:deploy
+npm install
 ```
 
-## Usage
+### 2) Environment (.env.local)
+Create `.env.local` in the project root with emulator-friendly values:
+```
+REACT_APP_USE_EMULATORS=true
+REACT_APP_FIREBASE_API_KEY=demo
+REACT_APP_FIREBASE_AUTH_DOMAIN=localhost
+REACT_APP_FIREBASE_PROJECT_ID=demo-project
+REACT_APP_FIREBASE_STORAGE_BUCKET=demo-project.appspot.com
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=1234567890
+REACT_APP_FIREBASE_APP_ID=1:1234567890:web:demo
+```
 
-1. **Sign in** with Google or create an account
-2. **Create armies** by uploading JSON files or using the army builder
-3. **Start a game** and invite friends via game ID
-4. **Play in real-time** with automatic updates across all devices
+### 3) Start emulators and app
+Use two terminals:
+```bash
+# Terminal 1
+npm run firebase:emulators
 
-## Project Structure
+# Terminal 2
+npm start
+```
+Default dev server: http://localhost:3000
 
-### Frontend (React)
-- `src/firebase/` - Firebase configuration and database operations
-- `src/components/` - React components
-- `src/hooks/` - Custom React hooks
+### 4) Seed sample data (optional)
+Add a sample army JSON in the UI or load from BattleScribe; the app auto-detects and converts.
 
-### Legacy Desktop Code (Reference)
-- `army_loader.py` - Army data loading (migrated to Firebase functions)
-- `combat_mechanics.py` - Combat calculations (migrated to client-side)
-- `turn_tracker.py` - Turn management (migrated to Firebase)
-- `tests/` - Test suite for legacy code
-
-### Firebase Configuration
-- `firebase.json` - Firebase project configuration
-- `firestore.rules` - Database security rules
-- `storage.rules` - File upload security
+## Scripts
+- `npm start` – Run React app (CRA)
+- `npm test` – Run unit/component tests (Jest)
+- `npm run firebase:emulators` – Start Firebase emulators (auth/firestore/storage as configured)
+- `npm run firebase:deploy` – Build and deploy
 
 ## Testing
 
+### Unit
 ```bash
-# Run React tests
 npm test
-
-# Run legacy Python tests
-pytest
 ```
+Included: `src/utils/eligibility.test.js` (override logic and precedence).
 
-## Cost
+### Component (RTL) & E2E (Cypress/Playwright)
+- Suggested next steps (not yet installed):
+  - Edge vs center zones for drag intent
+  - Badge not overlapping title
+  - List spacing stable while dragging
+  - Constrained drag outside list snaps back
 
-- **Development**: Free (Firebase emulators)
-- **Production**: $0-2/month (Firebase free tier covers typical gaming group usage)
+## Troubleshooting
+- Ports in use: stop previous `npm start` or emulators; or change ports via `.firebaserc` / `firebase.json`.
+- Emulator data stale: stop emulators and delete the local `.firebase/` directory to reset.
+- White screen: check `.env.local`, console for Firebase emulator connection logs.
+- CSS jitters while dragging: verify `.units-sidebar { overflow-y: auto; }` and that `@dnd-kit` modifiers include `restrictToFirstScrollableAncestor`.
+
+## Design Notes
+
+- **Game-centric**: Games are the primary entity; unit/army state is captured per-game (snapshot) for historical reporting.
+- **Drag intents**: One of `insert-before`, `insert-after`, or `attach`. Edge zones choose insert; center (eligible) chooses attach. UI shows exactly one indicator at a time.
+- **Eligibility precedence** (centralized in `src/utils/eligibility.js`):
+  1) Pairwise Allow
+  2) Flags (Can lead / Can be led)
+  3) Auto (source data)
+- **Override UI**: Compact, collapsed section named `Override` with two checkboxes (Can lead/Can be led), an Allow multi-select with chips, and a Reset. Status chip reads `Overridden (n)` or `Off`.
+
+## Project Structure
+
+- `src/components/` – React components (`GameSession`, `UnitDatasheet`, etc.)
+- `src/utils/` – Utilities (`eligibility.js`, parsing)
+- `src/firebase/` – Firebase config and database code
+
+## Notes on Costs
+- Development is free using the Firebase emulators.
+- Production typically falls within Firebase free tier for small groups.

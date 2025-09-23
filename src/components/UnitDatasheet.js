@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import './UnitDatasheet.css';
 
-const UnitDatasheet = ({ unit, isSelected, onClick }) => {
+const UnitDatasheet = ({ unit, isSelected, onClick, overrides, allUnits = [], onUpdateOverrides }) => {
   if (!unit) return null;
 
   // Separate weapons by type
@@ -172,6 +172,150 @@ const UnitDatasheet = ({ unit, isSelected, onClick }) => {
               </div>
             </div>
           )}
+
+          {/* Leadership Overrides - Compact Collapsible */}
+          <OverridesCollapsible
+            unit={unit}
+            overrides={overrides}
+            allUnits={allUnits}
+            onUpdateOverrides={onUpdateOverrides}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const OverridesCollapsible = ({ unit, overrides, allUnits, onUpdateOverrides }) => {
+  const [open, setOpen] = useState(false);
+
+  const activeCount = useMemo(() => {
+    let n = 0;
+    if (overrides?.canLead && overrides.canLead !== 'auto') n += 1;
+    if (overrides?.canBeLed && overrides.canBeLed !== 'auto') n += 1;
+    n += (overrides?.allowList?.length || 0);
+    return n;
+  }, [overrides]);
+
+  const statusText = activeCount > 0 ? `Overridden (${activeCount})` : 'Off';
+  const statusClass = activeCount > 0 ? 'overridden' : 'off';
+
+  const onToggleLead = (checked) => {
+    onUpdateOverrides?.({ canLead: checked ? 'yes' : 'auto' });
+  };
+  const onToggleLed = (checked) => {
+    onUpdateOverrides?.({ canBeLed: checked ? 'yes' : 'auto' });
+  };
+
+  const onReset = () => {
+    onUpdateOverrides?.({ canLead: 'auto', canBeLed: 'auto', allowList: [], blockList: [] });
+  };
+
+  return (
+    <div className="overrides-collapsible">
+      <button type="button" className="overrides-header" onClick={() => setOpen(!open)}>
+        <span className={`chevron ${open ? 'open' : ''}`}>▸</span>
+        <span>Override</span>
+        <span className={`status-chip ${statusClass}`}>{statusText}</span>
+      </button>
+      {open && (
+        <div className="overrides-panel">
+          <div className="flags-row" role="group" aria-label="Override flags">
+            <label className="flag-item" aria-label="Can lead">
+              <input
+                type="checkbox"
+                checked={overrides?.canLead === 'yes'}
+                onChange={(e) => onToggleLead(e.target.checked)}
+              />
+              <span>Can lead</span>
+            </label>
+            <label className="flag-item" aria-label="Can be led">
+              <input
+                type="checkbox"
+                checked={overrides?.canBeLed === 'yes'}
+                onChange={(e) => onToggleLed(e.target.checked)}
+              />
+              <span>Can be led</span>
+            </label>
+          </div>
+
+          <PairwiseControls
+            unit={unit}
+            allUnits={allUnits}
+            overrides={overrides}
+            onUpdateOverrides={onUpdateOverrides}
+          />
+
+          <div className="override-actions">
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={onReset}
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PairwiseControls = ({ unit, allUnits, overrides, onUpdateOverrides }) => {
+  const [allowSelect, setAllowSelect] = useState('');
+  const [allowQuery, setAllowQuery] = useState('');
+  const unitOptions = useMemo(() => {
+    return allUnits.filter(u => u.id !== unit.id).map(u => ({ id: u.id, name: u.name }));
+  }, [allUnits, unit.id]);
+
+  const filteredAllow = useMemo(() => {
+    const q = allowQuery.trim().toLowerCase();
+    return q ? unitOptions.filter(o => o.name.toLowerCase().includes(q)) : unitOptions;
+  }, [allowQuery, unitOptions]);
+
+  const addAllow = () => {
+    if (!allowSelect) return;
+    const next = Array.from(new Set([...(overrides?.allowList || []), allowSelect]));
+    onUpdateOverrides?.({ allowList: next });
+    setAllowSelect('');
+  };
+  const removeAllow = (id) => {
+    const next = (overrides?.allowList || []).filter(x => x !== id);
+    onUpdateOverrides?.({ allowList: next });
+  };
+
+  return (
+    <div className="pairwise-overrides single">
+      <div className="pair-column" aria-label="Allow specific pairings">
+        <label htmlFor="allow-search">Allow specific pairings</label>
+        <div className="pair-search-row">
+          <input
+            id="allow-search"
+            type="text"
+            placeholder="Search units…"
+            value={allowQuery}
+            onChange={(e) => setAllowQuery(e.target.value)}
+          />
+        </div>
+        <div className="pair-add-row">
+          <select aria-label="Select unit to allow" value={allowSelect} onChange={(e) => setAllowSelect(e.target.value)}>
+            <option value="">Select a unit…</option>
+            {filteredAllow.map(opt => (
+              <option key={opt.id} value={opt.id}>{opt.name}</option>
+            ))}
+          </select>
+          <button type="button" className="btn-primary" onClick={addAllow}>Add</button>
+        </div>
+        <div className="chips" aria-label="Allowed list">
+          {(overrides?.allowList || []).map(id => {
+            const u = allUnits.find(x => x.id === id);
+            return (
+              <span key={id} className="chip">
+                {u ? u.name : id}
+                <button type="button" aria-label={`Remove ${u ? u.name : id} from allow list`} onClick={() => removeAllow(id)}>×</button>
+              </span>
+            );
+          })}
         </div>
       </div>
     </div>
