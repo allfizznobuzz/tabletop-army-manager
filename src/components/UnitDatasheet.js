@@ -1,4 +1,10 @@
 import React, { useMemo, useState } from "react";
+import {
+  woundTarget,
+  probabilityFromTarget,
+  parseDiceNotation,
+  bestSaveTargetAfterAp,
+} from "../utils/attackMath";
 import "./UnitDatasheet.css";
 
 const UnitDatasheet = ({
@@ -8,6 +14,12 @@ const UnitDatasheet = ({
   overrides,
   allUnits = [],
   onUpdateOverrides,
+  // Attack Helper props
+  attackHelper,
+  onToggleWeapon,
+  onCloseAttackHelper,
+  onChangeModelsInRange,
+  selectedTargetUnit,
 }) => {
   // Group identical weapons for display (parser now expands to 1 entry per weapon instance)
   const groupedWeapons = useMemo(() => {
@@ -53,6 +65,155 @@ const UnitDatasheet = ({
 
   // Guard after hooks to satisfy rules-of-hooks
   if (!unit) return null;
+
+  const isOpen = (section, index) =>
+    !!(
+      attackHelper?.open &&
+      attackHelper.section === section &&
+      attackHelper.index === index
+    );
+
+  const toHitTarget = (weapon, section) => {
+    // Use weapon.skill if provided, else fallback to unit BS/WS
+    const skill = weapon?.skill;
+    if (typeof skill === "number" && skill >= 2 && skill <= 6) return skill;
+    if (section === "ranged") {
+      const bs = Number(unit.ballistic_skill || 0);
+      return bs >= 2 && bs <= 6 ? bs : null;
+    }
+    const ws = Number(unit.weapon_skill || 0);
+    return ws >= 2 && ws <= 6 ? ws : null;
+  };
+
+  const renderAttackHelper = (weapon, section, index) => {
+    if (!isOpen(section, index)) return null;
+
+    const modelsInRange = attackHelper?.modelsInRange || unit.models || 1;
+    const A = weapon?.attacks;
+    const AParsed = parseDiceNotation(A);
+    const sVal = Number(weapon?.strength || unit.strength || 0);
+    const tVal = Number(selectedTargetUnit?.toughness || 0);
+    const woundT = tVal ? woundTarget(sVal, tVal) : null;
+    const toHitT = toHitTarget(weapon, section);
+    const toHitP = toHitT ? probabilityFromTarget(toHitT) : null;
+    const woundP = woundT ? probabilityFromTarget(woundT) : null;
+    const armour = selectedTargetUnit?.armor_save;
+    const invuln = selectedTargetUnit?.invulnerable_save;
+    const ap = Number(weapon?.ap || 0);
+    const bestSv = bestSaveTargetAfterAp(armour, ap, invuln);
+    const damage = weapon?.damage;
+
+    const formatPct = (p) => (p == null ? "" : `(p≈${(p * 100).toFixed(1)}%)`);
+
+    // total attacks for fixed values include modelsInRange
+    let totalAttacks = null;
+    if (AParsed.kind === "fixed") {
+      totalAttacks = Number(AParsed.value || 0) * modelsInRange;
+    }
+
+    const apMod = Math.abs(Number(ap || 0));
+
+    return (
+      <div className="attack-helper-panel" role="region" aria-label="Attack Helper">
+        <div className="attack-helper-header">
+          <div className="attack-helper-title">Attack Helper — {weapon?.name}</div>
+          <button
+            type="button"
+            className="overlay-close"
+            aria-label="Close Attack Helper"
+            onClick={() => onCloseAttackHelper?.()}
+          >
+            ×
+          </button>
+        </div>
+        <div className="attack-helper-grid">
+          <div className="helper-section">
+            <div className="helper-label">Attacks</div>
+            {AParsed.kind === "fixed" ? (
+              <div className="helper-value">{totalAttacks ?? "—"}</div>
+            ) : (
+              <div className="helper-value">
+                Roll {AParsed.value} to determine attacks
+                <div className="helper-sub">
+                  Avg: {((AParsed.avg || 0) * modelsInRange).toFixed(1)}; Range: {(AParsed.min || 0) * modelsInRange}
+                  –{(AParsed.max || 0) * modelsInRange}
+                </div>
+              </div>
+            )}
+            <label className="models-input-row">
+              <span>Models in range/engaged</span>
+              <input
+                type="number"
+                min={1}
+                aria-label="Models in range"
+                value={modelsInRange}
+                onChange={(e) => onChangeModelsInRange?.(e.target.value)}
+              />
+            </label>
+          </div>
+
+          <div className="helper-section">
+            <div className="helper-label">To Hit</div>
+            <div className="helper-value">
+              {toHitT ? (
+                <>
+                  {toHitT}+
+                  <span className="helper-sub"> {formatPct(toHitP)}</span>
+                </>
+              ) : (
+                <>
+                  — <span className="missing-chip">missing</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="helper-section">
+            <div className="helper-label">To Wound</div>
+            <div className="helper-value">
+              {woundT ? (
+                <>
+                  {woundT}+
+                  <span className="helper-sub"> {formatPct(woundP)}</span>
+                </>
+              ) : (
+                <>
+                  — <span className="missing-chip">missing</span>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="helper-section">
+            <div className="helper-label">Defender Save</div>
+            <div className="helper-value">
+              {bestSv ? (
+                <>
+                  <div className="save-row">
+                    <span className={`save-pill ${bestSv === bestSaveTargetAfterAp(armour, ap, null) ? "best" : ""}`}>
+                      Armour{apMod ? ` (mod +${apMod})` : ""}: {bestSaveTargetAfterAp(armour, ap, null) || "—"}+
+                    </span>
+                    {invuln ? (
+                      <span className={`save-pill ${bestSv === Number(String(invuln).replace(/[^0-9]/g, "")) ? "best" : ""}`}>
+                        Invuln: {Number(String(invuln).replace(/[^0-9]/g, ""))}+
+                      </span>
+                    ) : null}
+                  </div>
+                </>
+              ) : (
+                <>
+                  — <span className="missing-chip">missing</span>
+                </>
+              )}
+            </div>
+            {damage ? (
+              <div className="helper-sub">Each failed save: {String(damage)}</div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div
@@ -118,7 +279,17 @@ const UnitDatasheet = ({
                 <div className="weapon-stat-col">D</div>
               </div>
               {rangedWeapons.map((weapon, index) => (
-                <div key={index} className="weapon-row">
+                <React.Fragment key={`ranged-${index}`}>
+                  <div
+                    className="weapon-row"
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={isOpen("ranged", index)}
+                    onClick={() => onToggleWeapon?.("ranged", index)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") onToggleWeapon?.("ranged", index);
+                    }}
+                  >
                   <div className="weapon-name-col">
                     <div className="weapon-name">{weapon.name}</div>
                     {weapon.count > 1 && (
@@ -133,7 +304,9 @@ const UnitDatasheet = ({
                   <div className="weapon-stat-col">{weapon.strength}</div>
                   <div className="weapon-stat-col">{weapon.ap}</div>
                   <div className="weapon-stat-col">{weapon.damage}</div>
-                </div>
+                  </div>
+                  {renderAttackHelper(weapon, "ranged", index)}
+                </React.Fragment>
               ))}
             </div>
           </div>
@@ -157,7 +330,17 @@ const UnitDatasheet = ({
                 <div className="weapon-stat-col">D</div>
               </div>
               {meleeWeapons.map((weapon, index) => (
-                <div key={index} className="weapon-row">
+                <React.Fragment key={`melee-${index}`}>
+                  <div
+                    className="weapon-row"
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={isOpen("melee", index)}
+                    onClick={() => onToggleWeapon?.("melee", index)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") onToggleWeapon?.("melee", index);
+                    }}
+                  >
                   <div className="weapon-name-col">
                     <div className="weapon-name">{weapon.name}</div>
                     {weapon.count > 1 && (
@@ -172,7 +355,9 @@ const UnitDatasheet = ({
                   <div className="weapon-stat-col">{weapon.strength}</div>
                   <div className="weapon-stat-col">{weapon.ap}</div>
                   <div className="weapon-stat-col">{weapon.damage}</div>
-                </div>
+                  </div>
+                  {renderAttackHelper(weapon, "melee", index)}
+                </React.Fragment>
               ))}
             </div>
           </div>

@@ -171,6 +171,113 @@
   border-right: none;
 }
 
+/* Attack Helper Panel */
+.attack-helper-panel {
+  background: var(--color-tertiary);
+  border-top: 1px solid var(--border-primary);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 0.5rem;
+}
+
+.attack-helper-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.attack-helper-title {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.attack-helper-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.helper-section {
+  background: var(--color-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: 4px;
+  padding: 0.5rem;
+}
+
+.helper-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.helper-value {
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.helper-sub {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.models-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.models-input-row input[type="number"] {
+  width: 80px;
+  padding: 0.25rem 0.35rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 4px;
+  background: var(--color-tertiary);
+  color: var(--text-primary);
+}
+
+.save-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.save-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border-primary);
+  border-radius: 999px;
+  background: var(--color-tertiary);
+}
+
+.save-pill.best {
+  border-color: var(--action-success);
+  background: rgba(39, 174, 96, 0.15);
+}
+
+.missing-chip {
+  display: inline-block;
+  margin-left: 0.35rem;
+  font-size: 0.7rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  color: var(--text-secondary);
+  background: var(--color-secondary);
+  border: 1px solid var(--border-primary);
+}
+
+@media (max-width: 768px) {
+  .attack-helper-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .weapon-name-col {
   text-align: left !important;
   justify-content: flex-start !important;

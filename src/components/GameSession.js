@@ -22,7 +22,6 @@ import {
   updateGameState,
   subscribeToGame,
   subscribeToGameUpdates,
-  assignDamage,
 } from "../firebase/database";
 // AuthContext will be implemented later
 import UnitDatasheet from "./UnitDatasheet";
@@ -71,11 +70,20 @@ const SortableUnitBase = ({
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className={`unit-card ${isSelected ? "selected" : ""} ${statusClass} ${dropIntent ? "leader-drop-intent" : shouldGlowAsLeader ? "leader-glow" : ""} ${insertEdge === "top" ? "drag-over-before" : ""} ${insertEdge === "bottom" ? "drag-over-after" : ""} ${pulse ? "leader-pulse" : ""}`}
+      style={{
+        ...style,
+        zIndex: isDragging ? 20 : "auto",
+      }}
+      className={`unit-card ${isSelected ? "selected" : ""} ${statusClass} ${shouldGlowAsLeader ? "can-attach" : ""} ${dropIntent ? "drop-intent" : ""} ${insertEdge === "top" ? "drag-over-before" : ""} ${insertEdge === "bottom" ? "drag-over-after" : ""} ${pulse ? "pulse" : ""}`}
+      data-column={unit.column}
       data-unit-id={unit.id}
-      title={titleText || undefined}
+      title={titleText}
+      role="button"
+      tabIndex={0}
       onClick={() => onClick(unit)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") onClick(unit);
+      }}
     >
       {/* Between-slot overlays for top-level insert targeting */}
       <div
@@ -151,6 +159,9 @@ const ArmyColumn = ({
   pointerRef,
   scrollRafRef,
   draggingRef,
+  attackHelper,
+  setAttackHelper,
+  pulseTargetId,
 }) => {
   const [overlayInBounds, setOverlayInBounds] = useState(true);
   const [dndIntent, setDndIntent] = useState({ type: "none" });
@@ -610,14 +621,26 @@ const ArmyColumn = ({
                 <SortableUnit
                   unit={unit}
                   isSelected={selectedUnit?.id === unit.id}
-                  onClick={setSelectedUnit}
+                  onClick={(u) => {
+                    // Attack Helper targeting: if open and this is an enemy unit, select as target; otherwise select unit
+                    if (attackHelper?.open && selectedUnit) {
+                      const enemyCol = selectedUnit.column === "A" ? "B" : "A";
+                      if (u.column === enemyCol) {
+                        setAttackHelper((prev) => ({ ...prev, targetUnitId: u.id }));
+                        setPulseTargetId(u.id);
+                        setTimeout(() => setPulseTargetId(null), 1000);
+                        return;
+                      }
+                    }
+                    setSelectedUnit(u);
+                  }}
                   statusClass={getUnitStatusClass(unit)}
                   shouldGlowAsLeader={!!shouldGlowAsLeader}
                   freezeTransform={freezeTransform}
                   dropIntent={dropIntent}
                   insertEdge={insertEdge}
                   titleText={titleText}
-                  pulse={false}
+                  pulse={pulseTargetId === unit.id}
                   overrideActive={overrideActive}
                   overrideSummary={overrideSummary}
                 />
@@ -647,7 +670,18 @@ const ArmyColumn = ({
                             <AttachedUnitSortable
                               unit={au}
                               isSelected={selectedUnit?.id === attachedId}
-                              onClick={setSelectedUnit}
+                              onClick={(u) => {
+                                if (attackHelper?.open && selectedUnit) {
+                                  const enemyCol = selectedUnit.column === "A" ? "B" : "A";
+                                  if (u.column === enemyCol) {
+                                    setAttackHelper((prev) => ({ ...prev, targetUnitId: u.id }));
+                                    setPulseTargetId(u.id);
+                                    setTimeout(() => setPulseTargetId(null), 1000);
+                                    return;
+                                  }
+                                }
+                                setSelectedUnit(u);
+                              }}
                               statusClass={getUnitStatusClass(au)}
                               insertEdge={childInsert}
                               leaderName={unit.name}
@@ -728,6 +762,8 @@ const AttachedUnitSortable = ({
       ref={setNodeRef}
       style={style}
       className={`attached-unit unit-card ${isSelected ? "selected" : ""} ${statusClass} ${insertEdge === "top" ? "drag-over-before" : ""} ${insertEdge === "bottom" ? "drag-over-after" : ""}`}
+      data-column={unit.column}
+      data-unit-id={unit.id}
       onClick={() => onClick(unit)}
     >
       {/* Between-slot overlays for child insert targeting */}
@@ -797,10 +833,16 @@ const GameSession = ({ gameId, user }) => {
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
   const [isNarrow, setIsNarrow] = useState(false);
-  const [damageAmount, setDamageAmount] = useState(1);
-  const [vpAmount, setVpAmount] = useState(1);
-  const [vpReason, setVpReason] = useState("");
   const [draggedUnit, setDraggedUnit] = useState(null);
+  // Attack Helper state
+  const [attackHelper, setAttackHelper] = useState({
+    open: false,
+    section: null, // 'ranged' | 'melee'
+    index: null,
+    modelsInRange: null,
+    targetUnitId: null,
+  });
+  const [pulseTargetId, setPulseTargetId] = useState(null);
   const [attachmentsA, setAttachmentsA] = useState({});
   const [attachmentsB, setAttachmentsB] = useState({});
   const [unitOrderA, setUnitOrderA] = useState([]);
@@ -854,6 +896,28 @@ const GameSession = ({ gameId, user }) => {
     if (!isNarrow) setOverlayOpen(false);
     if (!selectedUnit) setOverlayOpen(false);
   }, [isNarrow, selectedUnit]);
+
+  // Collapse Attack Helper if attacker changes
+  useEffect(() => {
+    setAttackHelper((prev) => ({ ...prev, open: false, section: null, index: null, targetUnitId: null }));
+  }, [selectedUnit?.id]);
+
+  // Collapse when clicking outside both the panel and enemy unit cards
+  useEffect(() => {
+    if (!attackHelper.open) return;
+    const onDocPointer = (e) => {
+      const panel = e.target?.closest?.(".attack-helper-panel");
+      if (panel) return; // keep open when interacting with panel
+      const unitCard = e.target?.closest?.(".unit-card");
+      if (unitCard) {
+        // Allow unit click handlers to process (enemy selection)
+        return;
+      }
+      setAttackHelper({ open: false, section: null, index: null, modelsInRange: null, targetUnitId: null });
+    };
+    document.addEventListener("pointerdown", onDocPointer, true);
+    return () => document.removeEventListener("pointerdown", onDocPointer, true);
+  }, [attackHelper.open]);
 
   // Build full units list (snapshot from gameData)
   const allUnitsA = useMemo(() => {
@@ -966,48 +1030,6 @@ const GameSession = ({ gameId, user }) => {
     if (Array.isArray(orderB)) setUnitOrderB(orderB);
   }, [gameData?.gameState?.columns?.B?.unitOrder]);
 
-  const handleAssignDamage = async () => {
-    if (!selectedUnit || !damageAmount) return;
-
-    try {
-      const damage = parseInt(damageAmount);
-      const newWounds = Math.max(0, selectedUnit.currentWounds - damage);
-
-      const damageData = {
-        remainingWounds: newWounds,
-        totalDamage: (selectedUnit.totalDamage || 0) + damage,
-        damageDealt: damage,
-      };
-
-      await assignDamage(gameId, selectedUnit.id, damageData, user.uid);
-      setDamageAmount(1);
-      setSelectedUnit(null);
-    } catch (error) {
-      console.error("Failed to assign damage:", error);
-    }
-  };
-
-  const handleAssignVP = async () => {
-    if (!vpAmount || !vpReason.trim()) return;
-
-    try {
-      // TODO: Implement assignVictoryPoints function
-      console.log("Assigning VP:", vpAmount, vpReason);
-      setVpAmount(1);
-      setVpReason("");
-    } catch (error) {
-      console.error("Error assigning victory points:", error);
-    }
-  };
-
-  const handleNextTurn = async () => {
-    try {
-      // TODO: Implement nextTurn function
-      console.log("Advancing turn for game:", gameId);
-    } catch (error) {
-      console.error("Error advancing turn:", error);
-    }
-  };
 
   // dnd-kit sensors and handlers
   const sensors = useSensors(
@@ -1300,6 +1322,10 @@ const GameSession = ({ gameId, user }) => {
               pointerRef={pointerRef}
               scrollRafRef={scrollRafRef}
               draggingRef={draggingRef}
+              // Attack Helper wiring
+              attackHelper={attackHelper}
+              setAttackHelper={setAttackHelper}
+              pulseTargetId={pulseTargetId}
             />
           ) : (
             <div className="empty-army">
@@ -1325,6 +1351,23 @@ const GameSession = ({ gameId, user }) => {
             onUpdateOverrides={(partial) =>
               updateUnitOverrides(selectedUnit.id, partial)
             }
+            // Attack Helper props
+            attackHelper={attackHelper}
+            onToggleWeapon={(section, index) => {
+              setAttackHelper((prev) => {
+                const same = prev.open && prev.section === section && prev.index === index;
+                if (same) return { open: false, section: null, index: null, modelsInRange: null, targetUnitId: null };
+                const defaultModels = selectedUnit?.models || 1;
+                return { open: true, section, index, modelsInRange: defaultModels, targetUnitId: prev.targetUnitId || null };
+              });
+            }}
+            onCloseAttackHelper={() =>
+              setAttackHelper({ open: false, section: null, index: null, modelsInRange: null, targetUnitId: null })
+            }
+            onChangeModelsInRange={(val) =>
+              setAttackHelper((prev) => ({ ...prev, modelsInRange: Math.max(1, Number(val) || 1) }))
+            }
+            selectedTargetUnit={attackHelper.targetUnitId ? allUnitsById[attackHelper.targetUnitId] : null}
           />
         ) : (
           <div className="no-unit-selected">
@@ -1412,6 +1455,10 @@ const GameSession = ({ gameId, user }) => {
               pointerRef={pointerRef}
               scrollRafRef={scrollRafRef}
               draggingRef={draggingRef}
+              // Attack Helper wiring
+              attackHelper={attackHelper}
+              setAttackHelper={setAttackHelper}
+              pulseTargetId={pulseTargetId}
             />
           ) : (
             <div className="empty-army">
