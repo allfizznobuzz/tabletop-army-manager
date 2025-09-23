@@ -827,8 +827,8 @@ const GameSession = ({ gameId, user }) => {
     });
 
     return () => {
-      unsubscribeGame();
-      unsubscribeUpdates();
+      if (typeof unsubscribeGame === "function") unsubscribeGame();
+      if (typeof unsubscribeUpdates === "function") unsubscribeUpdates();
     };
   }, [gameId]);
 
@@ -1183,7 +1183,7 @@ const GameSession = ({ gameId, user }) => {
   };
 
   // Determine whose turn it is
-  const isMyTurn = gameData.currentTurn === user?.uid;
+  const isMyTurn = gameData?.currentTurn === user?.uid;
 
   const hasArmyA = !!gameData?.playerA?.armyData;
   const hasArmyB = !!gameData?.playerB?.armyData;
@@ -1191,15 +1191,16 @@ const GameSession = ({ gameId, user }) => {
   return (
     <div className="game-session">
       <div className="game-header">
-        <h2>{gameData.name}</h2>
+        <h2>{gameData?.name || "Game"}</h2>
         <div className="game-info">
-          <span>Round: {gameData.round || 1}</span>
+          <span>Round: {gameData?.round || 1}</span>
           <span>Current Turn: {isMyTurn ? "Your Turn" : "Waiting..."}</span>
           <span>Game ID: {gameId}</span>
         </div>
       </div>
 
       <div className="game-content">
+        {/* Column 1: Player A */}
         <div className="units-sidebar">
           <div className="column-header">
             <h3>Player A — {gameData?.playerA?.displayName || "Player A"}</h3>
@@ -1208,6 +1209,7 @@ const GameSession = ({ gameId, user }) => {
               type="file"
               accept=".json,application/json"
               style={{ display: "none" }}
+              aria-label="Upload army file for Player A"
               onChange={(e) => onFileInputChange("A", e)}
             />
             {hasArmyA ? (
@@ -1222,6 +1224,8 @@ const GameSession = ({ gameId, user }) => {
           {!hasArmyA && (
             <div
               className="upload-dropzone"
+              role="button"
+              aria-label="Upload army file dropzone for Player A"
               onDragOver={onDragOverZone}
               onDrop={(e) => onDropZone("A", e)}
               onClick={() => inputARef.current?.click()}
@@ -1269,6 +1273,7 @@ const GameSession = ({ gameId, user }) => {
           )}
         </div>
 
+        {/* Column 2: Center datasheet */}
         <div className="game-main">
           {selectedUnit ? (
             <UnitDatasheet
@@ -1293,8 +1298,8 @@ const GameSession = ({ gameId, user }) => {
                 <>
                   <h3>Start by adding armies to both columns</h3>
                   <p>
-                    Use the Add army buttons in each column to import or paste
-                    an army.
+                    Use the Upload army controls in each column to import an
+                    army JSON.
                   </p>
                 </>
               ) : (
@@ -1310,6 +1315,7 @@ const GameSession = ({ gameId, user }) => {
           )}
         </div>
 
+        {/* Column 3: Player B */}
         <div className="units-sidebar">
           <div className="column-header">
             <h3>Player B — {gameData?.playerB?.displayName || "Player B"}</h3>
@@ -1318,6 +1324,7 @@ const GameSession = ({ gameId, user }) => {
               type="file"
               accept=".json,application/json"
               style={{ display: "none" }}
+              aria-label="Upload army file for Player B"
               onChange={(e) => onFileInputChange("B", e)}
             />
             {hasArmyB ? (
@@ -1332,6 +1339,8 @@ const GameSession = ({ gameId, user }) => {
           {!hasArmyB && (
             <div
               className="upload-dropzone"
+              role="button"
+              aria-label="Upload army file dropzone for Player B"
               onDragOver={onDragOverZone}
               onDrop={(e) => onDropZone("B", e)}
               onClick={() => inputBRef.current?.click()}
