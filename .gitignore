@@ -138,3 +138,4 @@ Thumbs.db
 *.json.bak
 temp/
 logs/
+node_modules

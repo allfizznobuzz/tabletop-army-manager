@@ -1,0 +1,163 @@
+/* CSS Variables for Theme System */
+
+/* Dark Theme - Blue-Focused Harmony */
+.dark-theme {
+  /* Base colors - Blue-toned palette */
+  --color-primary: #0f1419;        /* Deep blue-black */
+  --color-secondary: #1e2a3a;      /* Dark blue-gray */
+  --color-tertiary: #2a3441;       /* Medium blue-gray */
+  
+  /* Text hierarchy */
+  --text-primary: #e6f1ff;         /* Light blue-white */
+  --text-secondary: #b8d4f0;       /* Medium blue-white */
+  --text-muted: #8bb3d9;           /* Muted blue */
+  --text-inverse: #ffffff;
+  
+  /* Semantic action colors - Rich tones */
+  --action-primary: #5ba3f5;       /* Rich blue */
+  --action-secondary: #6b7785;     /* Blue-gray */
+  --action-success: #2dd4bf;       /* Rich teal */
+  --action-warning: #f59e0b;       /* Rich amber */
+  --action-danger: #ef4444;        /* Rich red */
+  
+  /* Interactive states */
+  --interactive-hover: #2a3441;
+  --interactive-active: #3d4a5c;
+  --interactive-focus: rgba(91, 163, 245, 0.3);
+  
+  /* Borders and dividers - Blue tones */
+  --border-primary: #3d4a5c;       /* Blue-gray border */
+  --border-secondary: #2a3441;     /* Darker blue-gray */
+  --border-focus: #5ba3f5;         /* Rich blue focus */
+  
+  /* Shadows - Deeper blues */
+  --shadow-sm: 0 0.125rem 0.25rem rgba(15, 20, 25, 0.4);
+  --shadow-md: 0 0.5rem 1rem rgba(15, 20, 25, 0.5);
+  --shadow-lg: 0 1rem 3rem rgba(15, 20, 25, 0.6);
+  
+  /* Component-specific semantic colors */
+  --nav-active-bg: var(--action-success);
+  --nav-active-text: #000000;
+  --nav-inactive-bg: transparent;
+  --nav-inactive-text: var(--text-primary);
+  
+  /* Weapon categories (logical color coding) */
+  --weapon-ranged-bg: var(--action-primary);    /* Blue for ranged */
+  --weapon-melee-bg: var(--action-danger);      /* Red for melee */
+  --weapon-table-bg: var(--color-tertiary);
+  --weapon-header-bg: var(--color-secondary);
+  
+  /* Unit status colors */
+  --status-ready: var(--action-success);        /* Green for ready */
+  --status-done: #fbbf24;                       /* Yellow for done */
+  --status-dead: var(--action-danger);          /* Red for dead */
+  
+  /* Ability and info sections */
+  --info-header-bg: var(--action-primary);
+  --info-header-text: var(--text-inverse);
+  --info-content-bg: var(--color-secondary);
+  --info-item-bg: rgba(91, 163, 245, 0.1);
+  --info-border: var(--action-primary);
+}
+
+/* Light Theme - Semantic Color System */
+.light-theme {
+  /* Base colors */
+  --color-primary: #ffffff;
+  --color-secondary: #f8f9fa;
+  --color-tertiary: #e9ecef;
+  
+  /* Text hierarchy */
+  --text-primary: #212529;
+  --text-secondary: #495057;
+  --text-muted: #6c757d;
+  --text-inverse: #ffffff;
+  
+  /* Semantic action colors - Professional tones */
+  --action-primary: #0d6efd;      /* Primary blue */
+  --action-secondary: #6c757d;    /* Secondary actions (cancel) */
+  --action-success: #198754;      /* Success green */
+  --action-warning: #fd7e14;      /* Warning orange */
+  --action-danger: #dc3545;       /* Danger red */
+  
+  /* Interactive states */
+  --interactive-hover: #e9ecef;
+  --interactive-active: #dee2e6;
+  --interactive-focus: rgba(13, 110, 253, 0.25);
+  
+  /* Borders and dividers */
+  --border-primary: #dee2e6;
+  --border-secondary: #e9ecef;
+  --border-focus: #86b7fe;
+  
+  /* Shadows */
+  --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+  
+  /* Component-specific semantic colors */
+  --nav-active-bg: var(--action-success);
+  --nav-active-text: #000000;
+  --nav-inactive-bg: transparent;
+  --nav-inactive-text: var(--text-primary);
+  
+  /* Weapon categories (logical color coding) */
+  --weapon-ranged-bg: var(--action-primary);    /* Blue for ranged */
+  --weapon-melee-bg: var(--action-danger);      /* Red for melee */
+  --weapon-table-bg: var(--color-primary);
+  --weapon-header-bg: var(--color-tertiary);
+  
+  /* Unit status colors */
+  --status-ready: var(--action-success);        /* Green for ready */
+  --status-done: #d97706;                       /* Yellow-orange for done */
+  --status-dead: var(--action-danger);          /* Red for dead */
+  
+  /* Ability and info sections */
+  --info-header-bg: var(--action-primary);
+  --info-header-text: var(--text-inverse);
+  --info-content-bg: var(--color-secondary);
+  --info-item-bg: rgba(13, 110, 253, 0.1);
+  --info-border: var(--action-primary);
+}
+
+/* Base styles using CSS variables */
+body {
+  background-color: var(--color-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  background: var(--action-primary);
+  color: var(--text-inverse);
+  border: 2px solid var(--border-primary);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.theme-toggle:hover {
+  background: var(--interactive-active);
+  transform: scale(1.1);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Responsive theme toggle */
+@media (max-width: 768px) {
+  .theme-toggle {
+    width: 35px;
+    height: 35px;
+    font-size: 0.9rem;
+  }
+}
