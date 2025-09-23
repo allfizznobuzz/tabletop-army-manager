@@ -807,6 +807,10 @@ const GameSession = ({ gameId, user }) => {
   const pointerRef = useRef({ x: 0, y: 0, has: false });
   const scrollRafRef = useRef(null);
   const draggingRef = useRef(false);
+  const inputARef = useRef(null);
+  const inputBRef = useRef(null);
+  const [uploadErrorA, setUploadErrorA] = useState("");
+  const [uploadErrorB, setUploadErrorB] = useState("");
 
   // Cleanup handled within ArmyColumn
 
@@ -981,6 +985,7 @@ const GameSession = ({ gameId, user }) => {
       console.error("Error advancing turn:", error);
     }
   };
+
   // dnd-kit sensors and handlers
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 1 } }),
@@ -1027,8 +1032,6 @@ const GameSession = ({ gameId, user }) => {
     if (unit.hasActed) return "done"; // Assuming we'll add this field
     return "ready";
   };
-
-  //
 
   // Quick leader check for visuals (orange glow)
   const isLeaderUnit = (unit) => {
@@ -1127,28 +1130,18 @@ const GameSession = ({ gameId, user }) => {
     return canAttach(leader, draggedUnit, leadershipOverrides, sourceCanAttach);
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!gameData) {
-    return <div className="error">Game not found</div>;
-  }
-
-  // Determine whose turn it is
-  const isMyTurn = gameData.currentTurn === user?.uid;
-
-  // Helper to add/replace an army via pasted JSON
-  const addOrReplaceArmy = async (columnKey) => {
-    const pasted = window.prompt(
-      "Paste army JSON (BattleScribe or app format):",
-    );
-    if (!pasted) return;
+  // Import army from a selected or dropped file
+  const importArmyFromFile = async (columnKey, file) => {
+    if (!file || !file.name.toLowerCase().endsWith(".json")) {
+      const msg = `Unsupported file type for ${file ? file.name : "unknown file"}. Please select a .json file.`;
+      columnKey === "A" ? setUploadErrorA(msg) : setUploadErrorB(msg);
+      return;
+    }
     try {
-      const json = JSON.parse(pasted);
+      const text = await file.text();
+      const json = JSON.parse(text);
       const parsed = parseArmyFile(json);
       const base = columnKey === "A" ? "playerA" : "playerB";
-      // compute initial unitOrder for this column
       const order = (parsed.units || []).map(
         (_, i) => `${columnKey}_unit_${i}`,
       );
@@ -1157,10 +1150,40 @@ const GameSession = ({ gameId, user }) => {
         [`gameState.columns.${columnKey}.attachments`]: {},
         [`gameState.columns.${columnKey}.unitOrder`]: order,
       });
+      // clear errors
+      columnKey === "A" ? setUploadErrorA("") : setUploadErrorB("");
     } catch (e) {
-      alert("Invalid JSON. Please paste a valid army JSON.");
+      const msg = `Failed to import ${file.name}: ${e.message || e}`;
+      columnKey === "A" ? setUploadErrorA(msg) : setUploadErrorB(msg);
     }
   };
+
+  const onFileInputChange = async (columnKey, e) => {
+    const files = e.target.files;
+    if (files && files[0]) {
+      await importArmyFromFile(columnKey, files[0]);
+      // reset input so selecting the same file again triggers change
+      e.target.value = "";
+    }
+  };
+
+  const onDropZone = async (columnKey, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const file = e.dataTransfer?.files?.[0];
+    if (file) {
+      await importArmyFromFile(columnKey, file);
+    }
+  };
+
+  const onDragOverZone = (e) => {
+    // Only indicate copy for file drops
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+  };
+
+  // Determine whose turn it is
+  const isMyTurn = gameData.currentTurn === user?.uid;
 
   const hasArmyA = !!gameData?.playerA?.armyData;
   const hasArmyB = !!gameData?.playerB?.armyData;
@@ -1180,39 +1203,38 @@ const GameSession = ({ gameId, user }) => {
         <div className="units-sidebar">
           <div className="column-header">
             <h3>Player A — {gameData?.playerA?.displayName || "Player A"}</h3>
+            <input
+              ref={inputARef}
+              type="file"
+              accept=".json,application/json"
+              style={{ display: "none" }}
+              onChange={(e) => onFileInputChange("A", e)}
+            />
             {hasArmyA ? (
               <button
                 className="action-btn"
-                onClick={() => addOrReplaceArmy("A")}
+                onClick={() => inputARef.current?.click()}
               >
                 Replace army
               </button>
-            ) : (
-              <button
-                className="action-btn"
-                onClick={() => addOrReplaceArmy("A")}
-              >
-                Add army
-              </button>
-            )}
+            ) : null}
           </div>
-
-          {/* Status Legend */}
-          <div className="status-legend">
-            <div className="legend-item">
-              <div className="legend-color ready"></div>
-              <span>Ready</span>
+          {!hasArmyA && (
+            <div
+              className="upload-dropzone"
+              onDragOver={onDragOverZone}
+              onDrop={(e) => onDropZone("A", e)}
+              onClick={() => inputARef.current?.click()}
+            >
+              <p>
+                <strong>Upload army file</strong>
+              </p>
+              <p>Click to select or drag & drop a .json file</p>
+              {uploadErrorA && (
+                <div className="error-message">{uploadErrorA}</div>
+              )}
             </div>
-            <div className="legend-item">
-              <div className="legend-color done"></div>
-              <span>Done</span>
-            </div>
-            <div className="legend-item">
-              <div className="legend-color dead"></div>
-              <span>Dead</span>
-            </div>
-          </div>
-
+          )}
           {hasArmyA ? (
             <ArmyColumn
               columnKey="A"
@@ -1222,58 +1244,6 @@ const GameSession = ({ gameId, user }) => {
               setAttachments={setAttachmentsA}
               unitOrder={unitOrderA}
               setUnitOrder={setUnitOrderA}
-              leadershipOverrides={leadershipOverrides}
-              allUnitsById={allUnitsById}
-              selectedUnit={selectedUnit}
-              setSelectedUnit={setSelectedUnit}
-              updateUnitOverrides={updateUnitOverrides}
-              getUnitStatusClass={getUnitStatusClass}
-              isLeaderUnit={isLeaderUnit}
-              canLeaderAttachToUnit={canLeaderAttachToUnit}
-              ovHasActive={ovHasActive}
-              ovSummary={ovSummary}
-              gameId={gameId}
-              sensors={sensors}
-              draggedUnit={draggedUnit}
-              setDraggedUnit={setDraggedUnit}
-              pointerRef={pointerRef}
-              scrollRafRef={scrollRafRef}
-              draggingRef={draggingRef}
-            />
-          ) : (
-            <div className="empty-army">
-              <p>No army yet. Add one to begin.</p>
-            </div>
-          )}
-        </div>
-        <div className="units-sidebar">
-          <div className="column-header">
-            <h3>Player B — {gameData?.playerB?.displayName || "Player B"}</h3>
-            {hasArmyB ? (
-              <button
-                className="action-btn"
-                onClick={() => addOrReplaceArmy("B")}
-              >
-                Replace army
-              </button>
-            ) : (
-              <button
-                className="action-btn"
-                onClick={() => addOrReplaceArmy("B")}
-              >
-                Add army
-              </button>
-            )}
-          </div>
-          {hasArmyB ? (
-            <ArmyColumn
-              columnKey="B"
-              title="Player B"
-              units={allUnitsB}
-              attachments={attachmentsB}
-              setAttachments={setAttachmentsB}
-              unitOrder={unitOrderB}
-              setUnitOrder={setUnitOrderB}
               leadershipOverrides={leadershipOverrides}
               allUnitsById={allUnitsById}
               selectedUnit={selectedUnit}
@@ -1336,6 +1306,75 @@ const GameSession = ({ gameId, user }) => {
                   </p>
                 </>
               )}
+            </div>
+          )}
+        </div>
+
+        <div className="units-sidebar">
+          <div className="column-header">
+            <h3>Player B — {gameData?.playerB?.displayName || "Player B"}</h3>
+            <input
+              ref={inputBRef}
+              type="file"
+              accept=".json,application/json"
+              style={{ display: "none" }}
+              onChange={(e) => onFileInputChange("B", e)}
+            />
+            {hasArmyB ? (
+              <button
+                className="action-btn"
+                onClick={() => inputBRef.current?.click()}
+              >
+                Replace army
+              </button>
+            ) : null}
+          </div>
+          {!hasArmyB && (
+            <div
+              className="upload-dropzone"
+              onDragOver={onDragOverZone}
+              onDrop={(e) => onDropZone("B", e)}
+              onClick={() => inputBRef.current?.click()}
+            >
+              <p>
+                <strong>Upload army file</strong>
+              </p>
+              <p>Click to select or drag & drop a .json file</p>
+              {uploadErrorB && (
+                <div className="error-message">{uploadErrorB}</div>
+              )}
+            </div>
+          )}
+          {hasArmyB ? (
+            <ArmyColumn
+              columnKey="B"
+              title="Player B"
+              units={allUnitsB}
+              attachments={attachmentsB}
+              setAttachments={setAttachmentsB}
+              unitOrder={unitOrderB}
+              setUnitOrder={setUnitOrderB}
+              leadershipOverrides={leadershipOverrides}
+              allUnitsById={allUnitsById}
+              selectedUnit={selectedUnit}
+              setSelectedUnit={setSelectedUnit}
+              updateUnitOverrides={updateUnitOverrides}
+              getUnitStatusClass={getUnitStatusClass}
+              isLeaderUnit={isLeaderUnit}
+              canLeaderAttachToUnit={canLeaderAttachToUnit}
+              ovHasActive={ovHasActive}
+              ovSummary={ovSummary}
+              gameId={gameId}
+              sensors={sensors}
+              draggedUnit={draggedUnit}
+              setDraggedUnit={setDraggedUnit}
+              pointerRef={pointerRef}
+              scrollRafRef={scrollRafRef}
+              draggingRef={draggingRef}
+            />
+          ) : (
+            <div className="empty-army">
+              <p>No army yet. Add one to begin.</p>
             </div>
           )}
         </div>
