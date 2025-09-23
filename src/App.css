@@ -564,6 +564,26 @@
   text-shadow: 2px 2px 4px var(--shadow-primary);
 }
 
+/* Upload dropzone for army import */
+.upload-dropzone {
+  border: 2px dashed var(--border-primary);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+  background: var(--color-tertiary);
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+.upload-dropzone:hover {
+  background: var(--interactive-hover);
+  border-color: var(--border-focus);
+}
+.upload-dropzone .error-message {
+  margin-top: 0.5rem;
+  color: var(--action-danger);
+}
+
 .units-list {
   display: flex;
   flex-direction: column;
