@@ -362,7 +362,7 @@ const PairwiseControls = ({ unit, allUnits, overrides, onUpdateOverrides }) => {
             Add
           </button>
         </div>
-        <div className="chips" aria-label="Allowed list">
+        <div className="chips" role="group" aria-label="Allowed list">
           {(overrides?.allowList || []).map((id) => {
             const u = allUnits.find((x) => x.id === id);
             return (
