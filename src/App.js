@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { onAuthStateChange, signInWithGoogle, signOutUser } from './firebase/auth';
-import { subscribeToGame } from './firebase/database';
-import GameDashboard from './components/GameDashboard';
-import GameSession from './components/GameSession';
-import ThemeToggle from './components/ThemeToggle';
-import { ThemeProvider } from './contexts/ThemeContext';
-import './App.css';
-import './styles/themes.css';
+import React, { useState, useEffect } from "react";
+import {
+  onAuthStateChange,
+  signInWithGoogle,
+  signOutUser,
+} from "./firebase/auth";
+import GameDashboard from "./components/GameDashboard";
+import GameSession from "./components/GameSession";
+import ThemeToggle from "./components/ThemeToggle";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import "./App.css";
+import "./styles/themes.css";
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'game'
+  const [currentView, setCurrentView] = useState("dashboard"); // 'dashboard', 'game'
   const [currentGameId, setCurrentGameId] = useState(null);
 
   useEffect(() => {
@@ -27,23 +30,23 @@ function App() {
     try {
       await signInWithGoogle();
     } catch (error) {
-      console.error('Sign in failed:', error);
+      console.error("Sign in failed:", error);
     }
   };
 
   const handleSignOut = async () => {
     try {
       await signOutUser();
-      setCurrentView('dashboard');
+      setCurrentView("dashboard");
       setCurrentGameId(null);
     } catch (error) {
-      console.error('Sign out failed:', error);
+      console.error("Sign out failed:", error);
     }
   };
 
   const joinGame = (gameId) => {
     setCurrentGameId(gameId);
-    setCurrentView('game');
+    setCurrentView("game");
   };
 
   if (loading) {
@@ -83,16 +86,16 @@ function App() {
         </header>
 
         <nav className="app-nav">
-          <button 
-            onClick={() => setCurrentView('dashboard')}
-            className={currentView === 'dashboard' ? 'active' : ''}
+          <button
+            onClick={() => setCurrentView("dashboard")}
+            className={currentView === "dashboard" ? "active" : ""}
           >
             Game Dashboard
           </button>
           {currentGameId && (
-            <button 
-              onClick={() => setCurrentView('game')}
-              className={currentView === 'game' ? 'active' : ''}
+            <button
+              onClick={() => setCurrentView("game")}
+              className={currentView === "game" ? "active" : ""}
             >
               Current Game
             </button>
@@ -100,10 +103,10 @@ function App() {
         </nav>
 
         <main className="app-main">
-          {currentView === 'dashboard' && (
+          {currentView === "dashboard" && (
             <GameDashboard user={user} onJoinGame={joinGame} />
           )}
-          {currentView === 'game' && currentGameId && (
+          {currentView === "game" && currentGameId && (
             <GameSession gameId={currentGameId} user={user} />
           )}
         </main>

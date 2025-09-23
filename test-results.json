@@ -1,0 +1,517 @@
+{
+  "numFailedTestSuites": 1,
+  "numFailedTests": 2,
+  "numPassedTestSuites": 3,
+  "numPassedTests": 45,
+  "numPendingTestSuites": 0,
+  "numPendingTests": 0,
+  "numRuntimeErrorTestSuites": 0,
+  "numTodoTests": 0,
+  "numTotalTestSuites": 4,
+  "numTotalTests": 47,
+  "openHandles": [],
+  "snapshot": {
+    "added": 0,
+    "didUpdate": false,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0
+  },
+  "startTime": 1758626975423,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["eligibility utils"],
+          "failureMessages": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mfalse\u001b[39m\nReceived: \u001b[31mundefined\u001b[39m\n    at Object.<anonymous> (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\utils\\eligibility.test.js:8:36)\n    at Promise.then.completed (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\utils.js:391:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\utils.js:316:10)\n    at _callCircusTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:218:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:155:3)\n    at _runTestsForDescribeBlock (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:66:9)\n    at _runTestsForDescribeBlock (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:60:9)\n    at run (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:25:3)\n    at runAndTransformResultsToJestFormat (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\legacy-code-todo-rewrite\\jestAdapterInit.js:170:21)\n    at jestAdapter (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\legacy-code-todo-rewrite\\jestAdapter.js:82:19)\n    at runTestInternal (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\runTest.js:389:16)\n    at runTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\runTest.js:475:34)\n    at Object.worker (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\testWorker.js:133:12)"
+          ],
+          "fullName": "eligibility utils hasActiveOverrides returns false for empty or auto values",
+          "location": null,
+          "status": "failed",
+          "title": "hasActiveOverrides returns false for empty or auto values"
+        },
+        {
+          "ancestorTitles": ["eligibility utils"],
+          "failureMessages": [
+            "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31m1\u001b[39m\n    at Object.<anonymous> (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\utils\\eligibility.test.js:15:54)\n    at Promise.then.completed (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\utils.js:391:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\utils.js:316:10)\n    at _callCircusTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:218:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:155:3)\n    at _runTestsForDescribeBlock (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:66:9)\n    at _runTestsForDescribeBlock (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:60:9)\n    at run (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:25:3)\n    at runAndTransformResultsToJestFormat (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\legacy-code-todo-rewrite\\jestAdapterInit.js:170:21)\n    at jestAdapter (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\legacy-code-todo-rewrite\\jestAdapter.js:82:19)\n    at runTestInternal (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\runTest.js:389:16)\n    at runTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\runTest.js:475:34)\n    at Object.worker (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\testWorker.js:133:12)"
+          ],
+          "fullName": "eligibility utils hasActiveOverrides returns true when any flag or allow present",
+          "location": null,
+          "status": "failed",
+          "title": "hasActiveOverrides returns true when any flag or allow present"
+        },
+        {
+          "ancestorTitles": ["eligibility utils"],
+          "failureMessages": [],
+          "fullName": "eligibility utils countActiveOverrides counts flags and allow pairs",
+          "location": null,
+          "status": "passed",
+          "title": "countActiveOverrides counts flags and allow pairs"
+        },
+        {
+          "ancestorTitles": ["eligibility utils"],
+          "failureMessages": [],
+          "fullName": "eligibility utils getOverrideSummary composes readable summary",
+          "location": null,
+          "status": "passed",
+          "title": "getOverrideSummary composes readable summary"
+        },
+        {
+          "ancestorTitles": ["eligibility utils"],
+          "failureMessages": [],
+          "fullName": "eligibility utils canAttach precedence: allow > flags > auto(source)",
+          "location": null,
+          "status": "passed",
+          "title": "canAttach precedence: allow > flags > auto(source)"
+        }
+      ],
+      "endTime": 1758626977818,
+      "message": "\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1meligibility utils › hasActiveOverrides returns false for empty or auto values\u001b[39m\u001b[22m\n\n    \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\n    Expected: \u001b[32mfalse\u001b[39m\n    Received: \u001b[31mundefined\u001b[39m\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m  6 |\u001b[39m   test(\u001b[32m'hasActiveOverrides returns false for empty or auto values'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[22m\n\u001b[2m     \u001b[90m  7 |\u001b[39m     expect(hasActiveOverrides(undefined))\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m  8 |\u001b[39m     expect(hasActiveOverrides({}))\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m    |\u001b[39m                                    \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m  9 |\u001b[39m     expect(hasActiveOverrides({ canLead\u001b[33m:\u001b[39m \u001b[32m'auto'\u001b[39m\u001b[33m,\u001b[39m canBeLed\u001b[33m:\u001b[39m \u001b[32m'auto'\u001b[39m\u001b[33m,\u001b[39m allowList\u001b[33m:\u001b[39m [] }))\u001b[33m.\u001b[39mtoBe(\u001b[36mfalse\u001b[39m)\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 10 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 11 |\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36msrc/utils/eligibility.test.js\u001b[39m\u001b[0m\u001b[2m:8:36)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1meligibility utils › hasActiveOverrides returns true when any flag or allow present\u001b[39m\u001b[22m\n\n    \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\n    Expected: \u001b[32mtrue\u001b[39m\n    Received: \u001b[31m1\u001b[39m\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 13 |\u001b[39m     expect(hasActiveOverrides({ canLead\u001b[33m:\u001b[39m \u001b[32m'yes'\u001b[39m }))\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 14 |\u001b[39m     expect(hasActiveOverrides({ canBeLed\u001b[33m:\u001b[39m \u001b[32m'yes'\u001b[39m }))\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 15 |\u001b[39m     expect(hasActiveOverrides({ allowList\u001b[33m:\u001b[39m [\u001b[32m'A'\u001b[39m] }))\u001b[33m.\u001b[39mtoBe(\u001b[36mtrue\u001b[39m)\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m    |\u001b[39m                                                      \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 16 |\u001b[39m   })\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 17 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 18 |\u001b[39m   test(\u001b[32m'countActiveOverrides counts flags and allow pairs'\u001b[39m\u001b[33m,\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36msrc/utils/eligibility.test.js\u001b[39m\u001b[0m\u001b[2m:15:54)\u001b[22m\u001b[2m\u001b[22m\n",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\utils\\eligibility.test.js",
+      "startTime": 1758626976947,
+      "status": "failed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "Simple JSON format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Simple JSON format should parse valid simple army format",
+          "location": null,
+          "status": "passed",
+          "title": "should parse valid simple army format"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "Simple JSON format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Simple JSON format should set default values for missing unit fields",
+          "location": null,
+          "status": "passed",
+          "title": "should set default values for missing unit fields"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "Simple JSON format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Simple JSON format should set default values for missing weapon fields",
+          "location": null,
+          "status": "passed",
+          "title": "should set default values for missing weapon fields"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "Simple JSON format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Simple JSON format should throw error for army without name",
+          "location": null,
+          "status": "passed",
+          "title": "should throw error for army without name"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "Simple JSON format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Simple JSON format should throw error for army without units array",
+          "location": null,
+          "status": "passed",
+          "title": "should throw error for army without units array"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "Simple JSON format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Simple JSON format should throw error for unit without name",
+          "location": null,
+          "status": "passed",
+          "title": "should throw error for unit without name"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "Simple JSON format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Simple JSON format should throw error for weapon without name",
+          "location": null,
+          "status": "passed",
+          "title": "should throw error for weapon without name"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "BattleScribe format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile BattleScribe format should detect and convert BattleScribe format",
+          "location": null,
+          "status": "passed",
+          "title": "should detect and convert BattleScribe format"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "BattleScribe format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile BattleScribe format should handle BattleScribe with nested weapon selections",
+          "location": null,
+          "status": "passed",
+          "title": "should handle BattleScribe with nested weapon selections"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "BattleScribe format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile BattleScribe format should use default army name when force has no name",
+          "location": null,
+          "status": "passed",
+          "title": "should use default army name when force has no name"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "BattleScribe format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile BattleScribe format should throw error for BattleScribe with no forces",
+          "location": null,
+          "status": "passed",
+          "title": "should throw error for BattleScribe with no forces"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "BattleScribe format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile BattleScribe format should handle BattleScribe with missing roster",
+          "location": null,
+          "status": "passed",
+          "title": "should handle BattleScribe with missing roster"
+        },
+        {
+          "ancestorTitles": ["armyParser", "parseArmyFile", "Edge cases"],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Edge cases should handle empty units array",
+          "location": null,
+          "status": "passed",
+          "title": "should handle empty units array"
+        },
+        {
+          "ancestorTitles": ["armyParser", "parseArmyFile", "Edge cases"],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Edge cases should handle units with empty weapons array",
+          "location": null,
+          "status": "passed",
+          "title": "should handle units with empty weapons array"
+        },
+        {
+          "ancestorTitles": ["armyParser", "parseArmyFile", "Edge cases"],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Edge cases should handle numeric strings in characteristics",
+          "location": null,
+          "status": "passed",
+          "title": "should handle numeric strings in characteristics"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "Nested BattleScribe structure parsing"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser Nested BattleScribe structure parsing should correctly parse Assault Intercessors with sergeant and standard models",
+          "location": null,
+          "status": "passed",
+          "title": "should correctly parse Assault Intercessors with sergeant and standard models"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "Nested BattleScribe structure parsing"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser Nested BattleScribe structure parsing should correctly parse Death Company Marines with uniform equipment",
+          "location": null,
+          "status": "passed",
+          "title": "should correctly parse Death Company Marines with uniform equipment"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "Nested BattleScribe structure parsing"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser Nested BattleScribe structure parsing should correctly parse character units with multiple weapons",
+          "location": null,
+          "status": "passed",
+          "title": "should correctly parse character units with multiple weapons"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "Nested BattleScribe structure parsing"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser Nested BattleScribe structure parsing should handle edge case with no weapons",
+          "location": null,
+          "status": "passed",
+          "title": "should handle edge case with no weapons"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "Nested BattleScribe structure parsing"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser Nested BattleScribe structure parsing should handle deeply nested selections",
+          "location": null,
+          "status": "passed",
+          "title": "should handle deeply nested selections"
+        }
+      ],
+      "endTime": 1758626977824,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\utils\\armyParser.test.js",
+      "startTime": 1758626976945,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["ConfirmDialog", "Rendering"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Rendering should not render when isOpen is false",
+          "location": null,
+          "status": "passed",
+          "title": "should not render when isOpen is false"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Rendering"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Rendering should render when isOpen is true",
+          "location": null,
+          "status": "passed",
+          "title": "should render when isOpen is true"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Rendering"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Rendering should render with default button text",
+          "location": null,
+          "status": "passed",
+          "title": "should render with default button text"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Rendering"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Rendering should render with custom button text",
+          "location": null,
+          "status": "passed",
+          "title": "should render with custom button text"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Rendering"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Rendering should apply destructive styling when isDestructive is true",
+          "location": null,
+          "status": "passed",
+          "title": "should apply destructive styling when isDestructive is true"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Rendering"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Rendering should not apply destructive styling when isDestructive is false",
+          "location": null,
+          "status": "passed",
+          "title": "should not apply destructive styling when isDestructive is false"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "User Interactions"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog User Interactions should call onConfirm when confirm button is clicked",
+          "location": null,
+          "status": "passed",
+          "title": "should call onConfirm when confirm button is clicked"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "User Interactions"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog User Interactions should call onCancel when cancel button is clicked",
+          "location": null,
+          "status": "passed",
+          "title": "should call onCancel when cancel button is clicked"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "User Interactions"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog User Interactions should call onCancel when overlay is clicked",
+          "location": null,
+          "status": "passed",
+          "title": "should call onCancel when overlay is clicked"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "User Interactions"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog User Interactions should not call onCancel when dialog content is clicked",
+          "location": null,
+          "status": "passed",
+          "title": "should not call onCancel when dialog content is clicked"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "User Interactions"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog User Interactions should handle keyboard events for accessibility",
+          "location": null,
+          "status": "passed",
+          "title": "should handle keyboard events for accessibility"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Accessibility"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Accessibility should have proper ARIA roles and attributes",
+          "location": null,
+          "status": "passed",
+          "title": "should have proper ARIA roles and attributes"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Accessibility"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Accessibility should focus on confirm button when opened",
+          "location": null,
+          "status": "passed",
+          "title": "should focus on confirm button when opened"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Content Variations"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Content Variations should handle long messages",
+          "location": null,
+          "status": "passed",
+          "title": "should handle long messages"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Content Variations"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Content Variations should handle special characters in title and message",
+          "location": null,
+          "status": "passed",
+          "title": "should handle special characters in title and message"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Content Variations"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Content Variations should handle empty title and message",
+          "location": null,
+          "status": "passed",
+          "title": "should handle empty title and message"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Multiple Instances"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Multiple Instances should handle multiple dialog instances correctly",
+          "location": null,
+          "status": "passed",
+          "title": "should handle multiple dialog instances correctly"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Button States"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Button States should handle rapid clicking without multiple calls",
+          "location": null,
+          "status": "passed",
+          "title": "should handle rapid clicking without multiple calls"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Button States"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Button States should maintain button functionality after prop changes",
+          "location": null,
+          "status": "passed",
+          "title": "should maintain button functionality after prop changes"
+        }
+      ],
+      "endTime": 1758626978345,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\ConfirmDialog.test.js",
+      "startTime": 1758626976937,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["UnitDatasheet Override panel"],
+          "failureMessages": [],
+          "fullName": "UnitDatasheet Override panel shows header \"Override\" and status Off by default",
+          "location": null,
+          "status": "passed",
+          "title": "shows header \"Override\" and status Off by default"
+        },
+        {
+          "ancestorTitles": ["UnitDatasheet Override panel"],
+          "failureMessages": [],
+          "fullName": "UnitDatasheet Override panel no search input is visible and select+add exists",
+          "location": null,
+          "status": "passed",
+          "title": "no search input is visible and select+add exists"
+        },
+        {
+          "ancestorTitles": ["UnitDatasheet Override panel"],
+          "failureMessages": [],
+          "fullName": "UnitDatasheet Override panel badge count updates when toggling flags and adding allow",
+          "location": null,
+          "status": "passed",
+          "title": "badge count updates when toggling flags and adding allow"
+        }
+      ],
+      "endTime": 1758626978441,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\__tests__\\UnitOverrides.test.jsx",
+      "startTime": 1758626976951,
+      "status": "passed",
+      "summary": ""
+    }
+  ],
+  "wasInterrupted": false
+}
