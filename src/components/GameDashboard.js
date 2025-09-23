@@ -1,18 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { getUserGames, createGame, joinGame, deleteGame } from '../firebase/database';
-import { parseArmyFile } from '../utils/armyParser';
-import ConfirmDialog from './ConfirmDialog';
-import './GameDashboard.css';
+import React, { useState, useEffect } from "react";
+import {
+  getUserGames,
+  createGame,
+  joinGame,
+  deleteGame,
+} from "../firebase/database";
+import ConfirmDialog from "./ConfirmDialog";
+import "./GameDashboard.css";
 
 const GameDashboard = ({ user, onJoinGame }) => {
   const [recentGames, setRecentGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateGame, setShowCreateGame] = useState(false);
-  const [gameId, setGameId] = useState('');
-  const [uploadError, setUploadError] = useState('');
-  const [armyFile, setArmyFile] = useState(null);
-  const [gameName, setGameName] = useState('');
-  const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, gameId: null, gameName: '' });
+  const [gameId, setGameId] = useState("");
+  const [uploadError, setUploadError] = useState("");
+  const [gameName, setGameName] = useState("");
+  const [deleteConfirm, setDeleteConfirm] = useState({
+    isOpen: false,
+    gameId: null,
+    gameName: "",
+  });
 
   useEffect(() => {
     loadUserGames();
@@ -22,79 +29,74 @@ const GameDashboard = ({ user, onJoinGame }) => {
     try {
       const userGames = await getUserGames(user.uid);
       // Sort by most recent first
-      const sortedGames = userGames.sort((a, b) => 
-        new Date(b.createdAt) - new Date(a.createdAt)
+      const sortedGames = userGames.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
       );
       setRecentGames(sortedGames);
     } catch (error) {
-      console.error('Failed to load games:', error);
+      console.error("Failed to load games:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFileUpload = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    setUploadError('');
-    setArmyFile(file);
-  };
+  // No army upload for New Game; armies are added later inside the session
 
   const handleCreateGame = async () => {
-    if (!armyFile || !gameName.trim()) {
-      setUploadError('Please provide a game name and upload an army file');
-      return;
-    }
-
     try {
-      const text = await armyFile.text();
-      const jsonData = JSON.parse(text);
-      const armyData = parseArmyFile(jsonData);
-
-      const gameData = await createGame({
-        name: gameName.trim(),
+      const id = await createGame({
+        name: (gameName || "").trim() || "Untitled Game",
         createdBy: user.uid,
-        players: [user.uid], // Add players array for security rules
-        playerArmies: {
-          [user.uid]: {
-            playerName: user.displayName || user.email,
-            armyData: armyData
-          }
-        }
+        players: [user.uid],
+        // New two-army scaffolding: empty armies to be added in-session
+        playerA: {
+          displayName: user.displayName || user.email || "Player A",
+          armyRef: null,
+          armyData: null,
+        },
+        playerB: { displayName: "", armyRef: null, armyData: null },
+        gameState: {
+          columns: {
+            A: { attachments: {}, unitOrder: [] },
+            B: { attachments: {}, unitOrder: [] },
+          },
+          leadershipOverrides: {},
+          damageHistory: {},
+          totalVP: {},
+          victoryPoints: {},
+        },
       });
 
       // Reset form
-      setGameName('');
-      setArmyFile(null);
+      setGameName("");
       setShowCreateGame(false);
-      setUploadError('');
-      
+      setUploadError("");
+
       // Refresh games list
       loadUserGames();
-      
-      // Join the newly created game
-      onJoinGame(gameData.id);
+
+      // Open the newly created game session
+      onJoinGame(id);
     } catch (error) {
-      console.error('Failed to create game:', error);
-      setUploadError('Failed to create game. Please check your army file format.');
+      console.error("Failed to create game:", error);
+      setUploadError("Failed to create game.");
     }
   };
 
   const handleJoinGame = async () => {
     if (!gameId.trim()) {
-      setUploadError('Please enter a game ID');
+      setUploadError("Please enter a game ID");
       return;
     }
 
     try {
       await joinGame(gameId.trim(), user.uid, user.displayName || user.email);
       onJoinGame(gameId.trim());
-      setGameId('');
-      setUploadError('');
+      setGameId("");
+      setUploadError("");
     } catch (error) {
-      console.error('Failed to join game:', error);
-      setUploadError('Failed to join game. Please check the game ID.');
+      console.error("Failed to join game:", error);
+      setUploadError("Failed to join game. Please check the game ID.");
     }
   };
 
@@ -106,39 +108,39 @@ const GameDashboard = ({ user, onJoinGame }) => {
     setDeleteConfirm({
       isOpen: true,
       gameId: gameId,
-      gameName: gameName
+      gameName: gameName,
     });
   };
 
   const confirmDeleteGame = async () => {
     try {
       await deleteGame(deleteConfirm.gameId);
-      setDeleteConfirm({ isOpen: false, gameId: null, gameName: '' });
+      setDeleteConfirm({ isOpen: false, gameId: null, gameName: "" });
       loadUserGames(); // Refresh the list
     } catch (error) {
-      console.error('Failed to delete game:', error);
-      setUploadError('Failed to delete game. Please try again.');
+      console.error("Failed to delete game:", error);
+      setUploadError("Failed to delete game. Please try again.");
     }
   };
 
   const cancelDeleteGame = () => {
-    setDeleteConfirm({ isOpen: false, gameId: null, gameName: '' });
+    setDeleteConfirm({ isOpen: false, gameId: null, gameName: "" });
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const getGameStatus = (game) => {
-    if (game.status === 'completed') return '✅ Completed';
-    if (game.status === 'active') return '🎮 Active';
-    return '⏸️ Paused';
+    if (game.status === "completed") return "✅ Completed";
+    if (game.status === "active") return "🎮 Active";
+    return "⏸️ Paused";
   };
 
   if (loading) {
@@ -149,18 +151,18 @@ const GameDashboard = ({ user, onJoinGame }) => {
     <div className="dashboard-container">
       <div className="dashboard-header">
         <h1 className="dashboard-title">Game Dashboard</h1>
-        <button 
-          onClick={() => setShowCreateGame(!showCreateGame)} 
+        <button
+          onClick={() => setShowCreateGame(!showCreateGame)}
           className="new-game-btn"
         >
-          {showCreateGame ? 'Cancel' : 'New Game'}
+          {showCreateGame ? "Cancel" : "New Game"}
         </button>
       </div>
 
       {showCreateGame && (
         <div className="create-game-form">
           <h2 className="form-title">Create New Game</h2>
-          
+
           <div className="form-group">
             <label className="form-label">Game Name</label>
             <input
@@ -172,26 +174,13 @@ const GameDashboard = ({ user, onJoinGame }) => {
             />
           </div>
 
-          <div className="form-group">
-            <label className="form-label">Army File</label>
-            <div className="file-input" onClick={() => document.getElementById('army-file').click()}>
-              <input
-                id="army-file"
-                type="file"
-                accept=".json"
-                onChange={handleFileUpload}
-                style={{ display: 'none' }}
-              />
-              {armyFile ? `Selected: ${armyFile.name}` : 'Click to upload army file (.json)'}
-            </div>
-          </div>
-
-          {uploadError && (
-            <div className="error-message">{uploadError}</div>
-          )}
+          {uploadError && <div className="error-message">{uploadError}</div>}
 
           <div className="form-actions">
-            <button onClick={() => setShowCreateGame(false)} className="cancel-btn">
+            <button
+              onClick={() => setShowCreateGame(false)}
+              className="cancel-btn"
+            >
               Cancel
             </button>
             <button onClick={handleCreateGame} className="create-btn">
@@ -203,7 +192,7 @@ const GameDashboard = ({ user, onJoinGame }) => {
 
       <div className="recent-games-section">
         <h2 className="section-title">Recent Games</h2>
-        
+
         {recentGames.length === 0 ? (
           <div className="no-games">
             <p>No games found. Create your first game to get started!</p>
@@ -216,37 +205,45 @@ const GameDashboard = ({ user, onJoinGame }) => {
                   <h3 className="game-name">{game.name}</h3>
                   <span className="game-status">{getGameStatus(game)}</span>
                 </div>
-                
+
                 <div className="game-info">
                   Created: {formatDate(game.createdAt)}
                 </div>
                 <div className="game-info">
-                  Players: {Object.keys(game.playerArmies || {}).length}
+                  Armies:{" "}
+                  {(game.playerA?.armyData ? 1 : 0) +
+                    (game.playerB?.armyData ? 1 : 0)}
                 </div>
-                <div className="game-info">
-                  Round: {game.round || 1}
-                </div>
+                <div className="game-info">Round: {game.round || 1}</div>
 
                 <div className="game-armies">
-                  {Object.entries(game.playerArmies || {}).map(([playerId, playerArmy]) => (
-                    <div key={playerId} className="army-info">
-                      • {playerArmy.playerName}: {playerArmy.armyData?.name || 'Unknown Army'}
-                      {playerArmy.armyData?.faction && (
-                        <span className="faction"> ({playerArmy.armyData.faction})</span>
-                      )}
+                  {game.playerA && (
+                    <div className="army-info">
+                      • A: {game.playerA.displayName || "Player A"}{" "}
+                      {game.playerA.armyData?.name
+                        ? `— ${game.playerA.armyData.name}`
+                        : "(no army)"}
                     </div>
-                  ))}
+                  )}
+                  {game.playerB && (
+                    <div className="army-info">
+                      • B: {game.playerB.displayName || "Player B"}{" "}
+                      {game.playerB.armyData?.name
+                        ? `— ${game.playerB.armyData.name}`
+                        : "(no army)"}
+                    </div>
+                  )}
                 </div>
 
                 <div className="game-actions">
-                  <button 
+                  <button
                     onClick={() => handleViewGame(game.id)}
                     className="action-btn view-btn"
                   >
                     View Game
                   </button>
                   {game.createdBy === user.uid && (
-                    <button 
+                    <button
                       onClick={() => handleDeleteGame(game.id, game.name)}
                       className="action-btn delete-btn"
                     >
