@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Lint-staged handles lint+format on staged files
+npx lint-staged || exit 1
+
+# Typecheck the project (JS allowed via tsconfig)
+npm run typecheck --silent || exit 1
+
+# Run unit tests in CI mode (headless, non-watch)
+# For speed, this runs full test suite; can be optimized later to find related tests.
+npm run test:ci --silent || exit 1

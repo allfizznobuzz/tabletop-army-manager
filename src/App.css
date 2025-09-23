@@ -219,6 +219,7 @@
   right: 0;
   height: 16px; /* adjustable: 12–16px */
   pointer-events: auto; /* must be hit-testable */
+  z-index: 20; /* sit above card content and glow */
 }
 .unit-card .between-slot.top { top: -8px; }
 .unit-card .between-slot.bottom { bottom: -8px; }
@@ -232,9 +233,10 @@
   top: 30%;
   width: 60%;
   height: 40%;
-  pointer-events: none; /* dnd-kit uses rects; we don’t need pointer events */
-  opacity: 0;
+  border: 2px dashed rgba(250, 204, 21, 0.55);
   border-radius: 8px;
+  opacity: 0; /* invisible by default */
+  pointer-events: none; /* never intercept pointer events */
 }
 
 /* When we have attach intent, glow the leader and show the attach zone */
@@ -568,6 +570,7 @@
   background: var(--action-primary);
   border-radius: 2px;
   box-shadow: 0 0 6px var(--action-primary);
+  pointer-events: none; /* do not block edge hitboxes */
 }
 
 .unit-card.drag-over-after::after {
@@ -580,6 +583,7 @@
   background: var(--action-primary);
   border-radius: 2px;
   box-shadow: 0 0 6px var(--action-primary);
+  pointer-events: none; /* do not block edge hitboxes */
 }
 
 .unit-card {

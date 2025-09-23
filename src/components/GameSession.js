@@ -118,7 +118,6 @@ const GameSession = ({ gameId, user }) => {
   const scrollRafRef = useRef(null);
   const draggingRef = useRef(false);
   const lastGuideRef = useRef({ id: null, edge: null, scope: 'top', leaderId: null, ts: 0 });
-  const lastGuideRef = useRef({ id: null, edge: null, ts: 0 });
 
   // Cleanup drag-related UI and listeners
   const cleanupDragState = () => {
@@ -279,18 +278,7 @@ const GameSession = ({ gameId, user }) => {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 1 } }));
 
   const itemIds = useMemo(() => orderedUnits.map(u => u.id), [orderedUnits]);
-
-  // Map child id -> leader id
-  const unitIsAttachedTo = useMemo(() => {
-    const map = {};
-    Object.entries(attachments || {}).forEach(([lid, arr]) => {
-      (arr || []).forEach((cid) => { map[cid] = lid; });
-    });
-    return map;
-  }, [attachments]);
-
-  // Map of unitId -> leaderId (if attached). Currently not needed here but can be re-enabled if required.
-
+  
   const handleDndStart = (event) => {
     const activeId = event.active?.id;
     const unit = allUnitsById[activeId] || null;

@@ -208,7 +208,7 @@ const OverridesCollapsible = ({ unit, overrides, allUnits, onUpdateOverrides }) 
   };
 
   const onReset = () => {
-    onUpdateOverrides?.({ canLead: 'auto', canBeLed: 'auto', allowList: [], blockList: [] });
+    onUpdateOverrides?.({ canLead: 'auto', canBeLed: 'auto', allowList: [] });
   };
 
   return (
@@ -263,15 +263,9 @@ const OverridesCollapsible = ({ unit, overrides, allUnits, onUpdateOverrides }) 
 
 const PairwiseControls = ({ unit, allUnits, overrides, onUpdateOverrides }) => {
   const [allowSelect, setAllowSelect] = useState('');
-  const [allowQuery, setAllowQuery] = useState('');
   const unitOptions = useMemo(() => {
     return allUnits.filter(u => u.id !== unit.id).map(u => ({ id: u.id, name: u.name }));
   }, [allUnits, unit.id]);
-
-  const filteredAllow = useMemo(() => {
-    const q = allowQuery.trim().toLowerCase();
-    return q ? unitOptions.filter(o => o.name.toLowerCase().includes(q)) : unitOptions;
-  }, [allowQuery, unitOptions]);
 
   const addAllow = () => {
     if (!allowSelect) return;
@@ -288,19 +282,10 @@ const PairwiseControls = ({ unit, allUnits, overrides, onUpdateOverrides }) => {
     <div className="pairwise-overrides single">
       <div className="pair-column" aria-label="Allow specific pairings">
         <label htmlFor="allow-search">Allow specific pairings</label>
-        <div className="pair-search-row">
-          <input
-            id="allow-search"
-            type="text"
-            placeholder="Search units…"
-            value={allowQuery}
-            onChange={(e) => setAllowQuery(e.target.value)}
-          />
-        </div>
         <div className="pair-add-row">
           <select aria-label="Select unit to allow" value={allowSelect} onChange={(e) => setAllowSelect(e.target.value)}>
             <option value="">Select a unit…</option>
-            {filteredAllow.map(opt => (
+            {(unitOptions || []).map(opt => (
               <option key={opt.id} value={opt.id}>{opt.name}</option>
             ))}
           </select>
