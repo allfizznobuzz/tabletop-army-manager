@@ -100,7 +100,7 @@ jest.mock("../../firebase/database", () => {
                 wounds: 1,
                 toughness: 5,
                 armor_save: "3+",
-                invulnerable_save: "5+",
+                invulnerable_save: "4+",
                 weapons: [],
               },
               {
@@ -128,10 +128,8 @@ jest.mock("../../firebase/database", () => {
 const user = { uid: "user-1" };
 
 function clickCardByText(txt) {
-  const title = screen.getByText(txt);
-  // Click the closest unit card (role="button")
-  const card = title.closest(".unit-card");
-  if (!card) throw new Error("unit card not found for " + txt);
+  const name = txt instanceof RegExp ? txt : new RegExp(String(txt), "i");
+  const card = screen.getByRole("button", { name });
   fireEvent.click(card);
 }
 
@@ -150,25 +148,36 @@ describe("GameSession Attack Helper interactions", () => {
     // Panel opens with placeholders (no target yet)
     const panel = screen.getByRole("region", { name: /attack helper/i });
     expect(panel).toBeInTheDocument();
-    expect(within(panel).getAllByText(/missing/i).length).toBeGreaterThanOrEqual(1);
+    expect(
+      within(panel).getAllByText(/missing/i).length,
+    ).toBeGreaterThanOrEqual(1);
 
     // Click enemy target 1 -> panel remains open and shows defender save details
     clickCardByText(/B Target 1/i);
-    expect(screen.getByRole("region", { name: /attack helper/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: /attack helper/i }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Defender Save/i)).toBeInTheDocument();
-    expect(screen.getByText(/Invuln:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Best save:\s*\d\+/i)).toBeInTheDocument();
+    expect(screen.getByText(/Using Invulnerable/i)).toBeInTheDocument();
 
     // Click enemy target 2 (different save) -> recompute stays open
     clickCardByText(/B Target 2/i);
-    expect(screen.getByRole("region", { name: /attack helper/i })).toBeInTheDocument();
-    // New best armour should show 2+
-    expect(screen.getByText(/Armour.*2\+/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: /attack helper/i }),
+    ).toBeInTheDocument();
+    // New best armour should reflect armour after AP breakdown
+    expect(screen.getByText(/Armour after AP/i)).toBeInTheDocument();
 
     // Click friendly unit -> helper collapses and datasheet switches
     clickCardByText(/A Grunts 2/i);
-    expect(screen.queryByRole("region", { name: /attack helper/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: /attack helper/i }),
+    ).not.toBeInTheDocument();
     // New datasheet header shows A Grunts 2
-    expect(screen.getByRole("heading", { name: /A Grunts 2/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /A Grunts 2/i }),
+    ).toBeInTheDocument();
 
     // Re-open panel and target, then click empty space to collapse
     const row2 = screen.getByRole("button", { name: /bolt rifle/i });
@@ -177,7 +186,9 @@ describe("GameSession Attack Helper interactions", () => {
     // Click-away on the grid container
     const grid = screen.getByTestId("game-content");
     fireEvent.pointerDown(grid);
-    expect(screen.queryByRole("region", { name: /attack helper/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: /attack helper/i }),
+    ).not.toBeInTheDocument();
     expect(spyErr).not.toHaveBeenCalled();
     spyErr.mockRestore();
   });

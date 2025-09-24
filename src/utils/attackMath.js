@@ -39,25 +39,44 @@ export function bestSaveTargetAfterAp(armourSave, ap, invulnSave) {
   return arm || inv || null;
 }
 
+// Detailed breakdown of defender saves after AP. Returns which save is used.
+// Prefers invulnerable when equal to modified armour.
+export function computeDefenderSave(armourSave, ap, invulnSave) {
+  const armourAfterAp = applyApToSave(armourSave, ap);
+  const inv = invulnSave
+    ? Number(String(invulnSave).replace(/[^0-9]/g, ""))
+    : null;
+  let best = null;
+  let used = null; // 'armour' | 'invuln'
+  if (inv != null && (armourAfterAp == null || inv <= armourAfterAp)) {
+    best = inv;
+    used = "invuln";
+  } else if (armourAfterAp != null) {
+    best = armourAfterAp;
+    used = "armour";
+  }
+  return { armourAfterAp, invuln: inv, best, used };
+}
+
 // Parse common dice notations like D3, D6, 2D6, D6+1, 2D3+3
 // Returns { kind: 'fixed'|'dice', value: number|string, avg?: number, min?: number, max?: number }
 export function parseDiceNotation(value) {
-  if (value === undefined || value === null) return { kind: 'fixed', value: 0 };
-  if (typeof value === 'number') return { kind: 'fixed', value };
+  if (value === undefined || value === null) return { kind: "fixed", value: 0 };
+  if (typeof value === "number") return { kind: "fixed", value };
   const str = String(value).trim().toUpperCase();
   // Fixed integer inside string
-  if (/^\d+$/.test(str)) return { kind: 'fixed', value: Number(str) };
+  if (/^\d+$/.test(str)) return { kind: "fixed", value: Number(str) };
 
   // Pattern: XdY(+Z)? e.g., 2D6, D3, 2D3+1
   const m = str.match(/^(\d*)D(\d+)(?:\+(\d+))?$/);
-  if (!m) return { kind: 'dice', value: str };
+  if (!m) return { kind: "dice", value: str };
   const diceCount = m[1] ? Number(m[1]) : 1;
   const dieSides = Number(m[2]);
   const bonus = m[3] ? Number(m[3]) : 0;
-  if (!diceCount || !dieSides) return { kind: 'dice', value: str };
+  if (!diceCount || !dieSides) return { kind: "dice", value: str };
   const avgSingle = (dieSides + 1) / 2;
   const avg = diceCount * avgSingle + bonus;
   const min = diceCount * 1 + bonus;
   const max = diceCount * dieSides + bonus;
-  return { kind: 'dice', value: str, avg, min, max };
+  return { kind: "dice", value: str, avg, min, max };
 }

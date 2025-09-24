@@ -4,6 +4,7 @@ import {
   probabilityFromTarget,
   parseDiceNotation,
   bestSaveTargetAfterAp,
+  computeDefenderSave,
 } from "../utils/attackMath";
 import "./UnitDatasheet.css";
 
@@ -101,7 +102,8 @@ const UnitDatasheet = ({
     const armour = selectedTargetUnit?.armor_save;
     const invuln = selectedTargetUnit?.invulnerable_save;
     const ap = Number(weapon?.ap || 0);
-    const bestSv = bestSaveTargetAfterAp(armour, ap, invuln);
+    const breakdown = computeDefenderSave(armour, ap, invuln);
+    const bestSv = breakdown.best;
     const damage = weapon?.damage;
 
     const formatPct = (p) => (p == null ? "" : `(p≈${(p * 100).toFixed(1)}%)`);
@@ -115,9 +117,15 @@ const UnitDatasheet = ({
     const apMod = Math.abs(Number(ap || 0));
 
     return (
-      <div className="attack-helper-panel" role="region" aria-label="Attack Helper">
+      <div
+        className="attack-helper-panel"
+        role="region"
+        aria-label="Attack Helper"
+      >
         <div className="attack-helper-header">
-          <div className="attack-helper-title">Attack Helper — {weapon?.name}</div>
+          <div className="attack-helper-title">
+            Attack Helper — {weapon?.name}
+          </div>
           <button
             type="button"
             className="overlay-close"
@@ -136,8 +144,9 @@ const UnitDatasheet = ({
               <div className="helper-value">
                 Roll {AParsed.value} to determine attacks
                 <div className="helper-sub">
-                  Avg: {((AParsed.avg || 0) * modelsInRange).toFixed(1)}; Range: {(AParsed.min || 0) * modelsInRange}
-                  –{(AParsed.max || 0) * modelsInRange}
+                  Avg: {((AParsed.avg || 0) * modelsInRange).toFixed(1)}; Range:{" "}
+                  {(AParsed.min || 0) * modelsInRange}–
+                  {(AParsed.max || 0) * modelsInRange}
                 </div>
               </div>
             )}
@@ -190,15 +199,17 @@ const UnitDatasheet = ({
             <div className="helper-value">
               {bestSv ? (
                 <>
-                  <div className="save-row">
-                    <span className={`save-pill ${bestSv === bestSaveTargetAfterAp(armour, ap, null) ? "best" : ""}`}>
-                      Armour{apMod ? ` (mod +${apMod})` : ""}: {bestSaveTargetAfterAp(armour, ap, null) || "—"}+
+                  <div>
+                    Best save: {bestSv}+
+                    <span className="helper-sub">
+                      {" "}
+                      {formatPct(probabilityFromTarget(bestSv))}
                     </span>
-                    {invuln ? (
-                      <span className={`save-pill ${bestSv === Number(String(invuln).replace(/[^0-9]/g, "")) ? "best" : ""}`}>
-                        Invuln: {Number(String(invuln).replace(/[^0-9]/g, ""))}+
-                      </span>
-                    ) : null}
+                  </div>
+                  <div className="helper-sub">
+                    {breakdown.used === "invuln"
+                      ? `Using Invulnerable; Armour after AP: ${breakdown.armourAfterAp ? `${breakdown.armourAfterAp}+` : "—"}`
+                      : `Armour after AP${apMod ? ` (mod +${apMod})` : ""}; Invulnerable: ${breakdown.invuln ? `${breakdown.invuln}+` : "—"}`}
                   </div>
                 </>
               ) : (
@@ -208,14 +219,22 @@ const UnitDatasheet = ({
               )}
             </div>
             {damage ? (
-              <div className="helper-sub">Each failed save: {String(damage)}</div>
+              <div className="helper-sub">
+                Each failed save: {String(damage)}
+              </div>
             ) : null}
           </div>
         </div>
 
         {/* Expected results toggle and summary */}
-        <div className="helper-section" style={{ marginTop: '0.5rem' }}>
-          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+        <div className="helper-section" style={{ marginTop: "0.5rem" }}>
+          <label
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.35rem",
+            }}
+          >
             <input
               type="checkbox"
               aria-label="Show expected results"
@@ -224,29 +243,35 @@ const UnitDatasheet = ({
             />
             Show expected results
           </label>
-          {attackHelper?.showExpected ? (
-            (() => {
-              const attacksAvg =
-                AParsed.kind === 'fixed'
-                  ? Number(AParsed.value || 0) * modelsInRange
-                  : (Number(AParsed.avg || 0) * modelsInRange);
-              const pHit = toHitP ?? 0;
-              const pWound = woundP ?? 0;
-              const pSave = bestSv ? (probabilityFromTarget(bestSv) || 0) : 0;
-              const pFail = 1 - pSave;
-              const dmgParsed = parseDiceNotation(damage);
-              const dmgAvg = dmgParsed.kind === 'fixed' ? Number(dmgParsed.value || 0) : Number(dmgParsed.avg || 0);
-              const expHits = attacksAvg * pHit;
-              const expWounds = expHits * pWound;
-              const expUnsaved = expWounds * pFail;
-              const expDamage = expUnsaved * dmgAvg;
-              return (
-                <div className="helper-sub" aria-label="Expected results">
-                  Expected hits: {expHits.toFixed(1)} • Expected wounds: {expWounds.toFixed(1)} • Expected unsaved: {expUnsaved.toFixed(1)} • Expected damage: {expDamage.toFixed(1)}
-                </div>
-              );
-            })()
-          ) : null}
+          {attackHelper?.showExpected
+            ? (() => {
+                const attacksAvg =
+                  AParsed.kind === "fixed"
+                    ? Number(AParsed.value || 0) * modelsInRange
+                    : Number(AParsed.avg || 0) * modelsInRange;
+                const pHit = toHitP ?? 0;
+                const pWound = woundP ?? 0;
+                const pSave = bestSv ? probabilityFromTarget(bestSv) || 0 : 0;
+                const pFail = 1 - pSave;
+                const dmgParsed = parseDiceNotation(damage);
+                const dmgAvg =
+                  dmgParsed.kind === "fixed"
+                    ? Number(dmgParsed.value || 0)
+                    : Number(dmgParsed.avg || 0);
+                const expHits = attacksAvg * pHit;
+                const expWounds = expHits * pWound;
+                const expUnsaved = expWounds * pFail;
+                const expDamage = expUnsaved * dmgAvg;
+                return (
+                  <div className="helper-sub" aria-label="Expected results">
+                    Expected hits: {expHits.toFixed(1)} • Expected wounds:{" "}
+                    {expWounds.toFixed(1)} • Expected unsaved:{" "}
+                    {expUnsaved.toFixed(1)} • Expected damage:{" "}
+                    {expDamage.toFixed(1)}
+                  </div>
+                );
+              })()
+            : null}
         </div>
       </div>
     );
@@ -322,25 +347,26 @@ const UnitDatasheet = ({
                     role="button"
                     tabIndex={0}
                     aria-expanded={isOpen("ranged", index)}
-                    onClick={() => onToggleWeapon?.("ranged", index)}
+                    onClick={() => onToggleWeapon?.("ranged", index, weapon)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") onToggleWeapon?.("ranged", index);
+                      if (e.key === "Enter" || e.key === " ")
+                        onToggleWeapon?.("ranged", index, weapon);
                     }}
                   >
-                  <div className="weapon-name-col">
-                    <div className="weapon-name">{weapon.name}</div>
-                    {weapon.count > 1 && (
-                      <div className="weapon-count">(x{weapon.count})</div>
-                    )}
-                  </div>
-                  <div className="weapon-stat-col">{weapon.range}</div>
-                  <div className="weapon-stat-col">{weapon.attacks}</div>
-                  <div className="weapon-stat-col">
-                    {getStatValue(weapon.skill, "3+")}
-                  </div>
-                  <div className="weapon-stat-col">{weapon.strength}</div>
-                  <div className="weapon-stat-col">{weapon.ap}</div>
-                  <div className="weapon-stat-col">{weapon.damage}</div>
+                    <div className="weapon-name-col">
+                      <div className="weapon-name">{weapon.name}</div>
+                      {weapon.count > 1 && (
+                        <div className="weapon-count">(x{weapon.count})</div>
+                      )}
+                    </div>
+                    <div className="weapon-stat-col">{weapon.range}</div>
+                    <div className="weapon-stat-col">{weapon.attacks}</div>
+                    <div className="weapon-stat-col">
+                      {getStatValue(weapon.skill, "3+")}
+                    </div>
+                    <div className="weapon-stat-col">{weapon.strength}</div>
+                    <div className="weapon-stat-col">{weapon.ap}</div>
+                    <div className="weapon-stat-col">{weapon.damage}</div>
                   </div>
                   {renderAttackHelper(weapon, "ranged", index)}
                 </React.Fragment>
@@ -373,25 +399,26 @@ const UnitDatasheet = ({
                     role="button"
                     tabIndex={0}
                     aria-expanded={isOpen("melee", index)}
-                    onClick={() => onToggleWeapon?.("melee", index)}
+                    onClick={() => onToggleWeapon?.("melee", index, weapon)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") onToggleWeapon?.("melee", index);
+                      if (e.key === "Enter" || e.key === " ")
+                        onToggleWeapon?.("melee", index, weapon);
                     }}
                   >
-                  <div className="weapon-name-col">
-                    <div className="weapon-name">{weapon.name}</div>
-                    {weapon.count > 1 && (
-                      <div className="weapon-count">(x{weapon.count})</div>
-                    )}
-                  </div>
-                  <div className="weapon-stat-col">Melee</div>
-                  <div className="weapon-stat-col">{weapon.attacks}</div>
-                  <div className="weapon-stat-col">
-                    {getStatValue(weapon.skill, "3+")}
-                  </div>
-                  <div className="weapon-stat-col">{weapon.strength}</div>
-                  <div className="weapon-stat-col">{weapon.ap}</div>
-                  <div className="weapon-stat-col">{weapon.damage}</div>
+                    <div className="weapon-name-col">
+                      <div className="weapon-name">{weapon.name}</div>
+                      {weapon.count > 1 && (
+                        <div className="weapon-count">(x{weapon.count})</div>
+                      )}
+                    </div>
+                    <div className="weapon-stat-col">Melee</div>
+                    <div className="weapon-stat-col">{weapon.attacks}</div>
+                    <div className="weapon-stat-col">
+                      {getStatValue(weapon.skill, "3+")}
+                    </div>
+                    <div className="weapon-stat-col">{weapon.strength}</div>
+                    <div className="weapon-stat-col">{weapon.ap}</div>
+                    <div className="weapon-stat-col">{weapon.damage}</div>
                   </div>
                   {renderAttackHelper(weapon, "melee", index)}
                 </React.Fragment>

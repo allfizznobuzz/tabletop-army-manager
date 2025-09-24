@@ -37,7 +37,13 @@ function Harness({ withTarget = false }) {
     targetUnitId: null,
   });
   const target = withTarget
-    ? { id: "enemy1", name: "Enemy", toughness: 5, armor_save: "3+", invulnerable_save: "5+" }
+    ? {
+        id: "enemy1",
+        name: "Enemy",
+        toughness: 5,
+        armor_save: "3+",
+        invulnerable_save: "5+",
+      }
     : null;
 
   return (
@@ -48,9 +54,26 @@ function Harness({ withTarget = false }) {
       allUnits={[baseUnit]}
       onUpdateOverrides={() => {}}
       attackHelper={attackHelper}
-      onToggleWeapon={(section, index) => setAttackHelper((p) => ({ ...p, open: !(p.open && p.section === section && p.index === index), section, index }))}
-      onCloseAttackHelper={() => setAttackHelper({ open: false, section: null, index: null, modelsInRange: null, targetUnitId: null })}
-      onChangeModelsInRange={(val) => setAttackHelper((p) => ({ ...p, modelsInRange: Number(val) || 1 }))}
+      onToggleWeapon={(section, index) =>
+        setAttackHelper((p) => ({
+          ...p,
+          open: !(p.open && p.section === section && p.index === index),
+          section,
+          index,
+        }))
+      }
+      onCloseAttackHelper={() =>
+        setAttackHelper({
+          open: false,
+          section: null,
+          index: null,
+          modelsInRange: null,
+          targetUnitId: null,
+        })
+      }
+      onChangeModelsInRange={(val) =>
+        setAttackHelper((p) => ({ ...p, modelsInRange: Number(val) || 1 }))
+      }
       selectedTargetUnit={target}
     />
   );
@@ -66,10 +89,14 @@ describe("Attack Helper panel", () => {
     fireEvent.click(row); // open again
 
     // Attack Helper visible
-    expect(screen.getByRole("region", { name: /attack helper/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: /attack helper/i }),
+    ).toBeInTheDocument();
 
     // Shows dice notation instruction and models-based averages
-    expect(screen.getByText(/roll d6\+1 to determine attacks/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/roll d6\+1 to determine attacks/i),
+    ).toBeInTheDocument();
     expect(screen.getByText(/Avg: 13.5/i)).toBeInTheDocument(); // (D6+1 avg 4.5) * 3 models
 
     // To Wound and Defender Save show missing chips without a target
@@ -85,9 +112,9 @@ describe("Attack Helper panel", () => {
     // To Wound: S 4 vs T 5 => 5+
     expect(screen.getByText(/5\+\s*\(p≈33\.3%\)/i)).toBeInTheDocument();
 
-    // Defender Save: Armour mod +1 => 4+, Invuln 5+
-    expect(screen.getByText(/Armour.*4\+/i)).toBeInTheDocument();
-    expect(screen.getByText(/Invuln: 5\+/i)).toBeInTheDocument();
+    // Defender Save: Best save value plus breakdown line
+    expect(screen.getByText(/Best save:\s*\d\+/i)).toBeInTheDocument();
+    expect(screen.getByText(/Armour after AP/i)).toBeInTheDocument();
 
     // Damage footer
     expect(screen.getByText(/Each failed save: 2/i)).toBeInTheDocument();

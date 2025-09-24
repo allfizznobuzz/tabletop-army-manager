@@ -31,6 +31,7 @@ import {
   canAttach,
 } from "../utils/eligibility";
 import { parseArmyFile } from "../utils/armyParser";
+import { resolveWeaponCarrierCount } from "../utils/weaponCarrier";
 
 // Sortable unit card powered by dnd-kit
 const SortableUnitBase = ({
@@ -162,6 +163,7 @@ const ArmyColumn = ({
   attackHelper,
   setAttackHelper,
   pulseTargetId,
+  setPulseTargetId,
 }) => {
   const [overlayInBounds, setOverlayInBounds] = useState(true);
   const [dndIntent, setDndIntent] = useState({ type: "none" });
@@ -690,7 +692,8 @@ const ArmyColumn = ({
                               isSelected={selectedUnit?.id === attachedId}
                               onClick={(u) => {
                                 if (attackHelper?.open && selectedUnit) {
-                                  const enemyCol = selectedUnit.column === "A" ? "B" : "A";
+                                  const enemyCol =
+                                    selectedUnit.column === "A" ? "B" : "A";
                                   if (u.column === enemyCol) {
                                     setAttackHelper((prev) => ({
                                       ...prev,
@@ -700,7 +703,10 @@ const ArmyColumn = ({
                                       showExpected: prev.showExpected,
                                     }));
                                     setPulseTargetId(u.id);
-                                    setTimeout(() => setPulseTargetId(null), 1000);
+                                    setTimeout(
+                                      () => setPulseTargetId(null),
+                                      1000,
+                                    );
                                     return;
                                   }
                                 }
@@ -758,6 +764,7 @@ const ArmyColumn = ({
     </DndContext>
   );
 };
+
 SortableUnitBase.displayName = "SortableUnit";
 const SortableUnit = React.memo(SortableUnitBase);
 
@@ -971,7 +978,8 @@ const GameSession = ({ gameId, user }) => {
       }));
     };
     document.addEventListener("pointerdown", onDocPointer, true);
-    return () => document.removeEventListener("pointerdown", onDocPointer, true);
+    return () =>
+      document.removeEventListener("pointerdown", onDocPointer, true);
   }, [attackHelper.open]);
 
   // Build full units list (snapshot from gameData)
@@ -1084,7 +1092,6 @@ const GameSession = ({ gameId, user }) => {
     const orderB = gameData?.gameState?.columns?.B?.unitOrder;
     if (Array.isArray(orderB)) setUnitOrderB(orderB);
   }, [gameData?.gameState?.columns?.B?.unitOrder]);
-
 
   // dnd-kit sensors and handlers
   const sensors = useSensors(
@@ -1381,6 +1388,7 @@ const GameSession = ({ gameId, user }) => {
               attackHelper={attackHelper}
               setAttackHelper={setAttackHelper}
               pulseTargetId={pulseTargetId}
+              setPulseTargetId={setPulseTargetId}
             />
           ) : (
             <div className="empty-army">
@@ -1408,9 +1416,10 @@ const GameSession = ({ gameId, user }) => {
             }
             // Attack Helper props
             attackHelper={attackHelper}
-            onToggleWeapon={(section, index) => {
+            onToggleWeapon={(section, index, weapon) => {
               setAttackHelper((prev) => {
-                const same = prev.open && prev.section === section && prev.index === index;
+                const same =
+                  prev.open && prev.section === section && prev.index === index;
                 if (same)
                   return {
                     open: false,
@@ -1420,7 +1429,10 @@ const GameSession = ({ gameId, user }) => {
                     targetUnitId: null,
                     intent: "idle",
                   };
-                const defaultModels = selectedUnit?.models || 1;
+                const defaultModels = resolveWeaponCarrierCount(
+                  selectedUnit,
+                  weapon,
+                );
                 const hasTarget = !!prev.targetUnitId;
                 return {
                   open: true,
@@ -1433,15 +1445,32 @@ const GameSession = ({ gameId, user }) => {
               });
             }}
             onCloseAttackHelper={() =>
-              setAttackHelper({ open: false, section: null, index: null, modelsInRange: null, targetUnitId: null, intent: "idle" })
+              setAttackHelper({
+                open: false,
+                section: null,
+                index: null,
+                modelsInRange: null,
+                targetUnitId: null,
+                intent: "idle",
+              })
             }
             onChangeModelsInRange={(val) =>
-              setAttackHelper((prev) => ({ ...prev, modelsInRange: Math.max(1, Number(val) || 1) }))
+              setAttackHelper((prev) => ({
+                ...prev,
+                modelsInRange: Math.max(1, Number(val) || 1),
+              }))
             }
             onToggleExpected={() =>
-              setAttackHelper((prev) => ({ ...prev, showExpected: !prev.showExpected }))
+              setAttackHelper((prev) => ({
+                ...prev,
+                showExpected: !prev.showExpected,
+              }))
             }
-            selectedTargetUnit={attackHelper.targetUnitId ? allUnitsById[attackHelper.targetUnitId] : null}
+            selectedTargetUnit={
+              attackHelper.targetUnitId
+                ? allUnitsById[attackHelper.targetUnitId]
+                : null
+            }
           />
         ) : (
           <div className="no-unit-selected">
@@ -1533,6 +1562,7 @@ const GameSession = ({ gameId, user }) => {
               attackHelper={attackHelper}
               setAttackHelper={setAttackHelper}
               pulseTargetId={pulseTargetId}
+              setPulseTargetId={setPulseTargetId}
             />
           ) : (
             <div className="empty-army">
