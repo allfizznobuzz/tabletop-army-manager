@@ -1,10 +1,4 @@
 import React, { useMemo, useState } from "react";
-import {
-  woundTarget,
-  probabilityFromTarget,
-  parseDiceNotation,
-  computeDefenderSave,
-} from "../utils/attackMath";
 import "./UnitDatasheet.css";
 
 const UnitDatasheet = ({
@@ -67,214 +61,7 @@ const UnitDatasheet = ({
   // Guard after hooks to satisfy rules-of-hooks
   if (!unit) return null;
 
-  const isOpen = (section, index) =>
-    !!(
-      attackHelper?.open &&
-      attackHelper.section === section &&
-      attackHelper.index === index
-    );
-
-  const toHitTarget = (weapon, section) => {
-    // Use weapon.skill if provided, else fallback to unit BS/WS
-    const skill = weapon?.skill;
-    if (typeof skill === "number" && skill >= 2 && skill <= 6) return skill;
-    if (section === "ranged") {
-      const bs = Number(unit.ballistic_skill || 0);
-      return bs >= 2 && bs <= 6 ? bs : null;
-    }
-    const ws = Number(unit.weapon_skill || 0);
-    return ws >= 2 && ws <= 6 ? ws : null;
-  };
-
-  const renderAttackHelper = (weapon, section, index) => {
-    if (!isOpen(section, index)) return null;
-
-    const modelsInRange = attackHelper?.modelsInRange || unit.models || 1;
-    const A = weapon?.attacks;
-    const AParsed = parseDiceNotation(A);
-    const sVal = Number(weapon?.strength || unit.strength || 0);
-    const tVal = Number(selectedTargetUnit?.toughness || 0);
-    const woundT = tVal ? woundTarget(sVal, tVal) : null;
-    const toHitT = toHitTarget(weapon, section);
-    const toHitP = toHitT ? probabilityFromTarget(toHitT) : null;
-    const woundP = woundT ? probabilityFromTarget(woundT) : null;
-    const armour = selectedTargetUnit?.armor_save;
-    const invuln = selectedTargetUnit?.invulnerable_save;
-    const ap = Number(weapon?.ap || 0);
-    const breakdown = computeDefenderSave(armour, ap, invuln);
-    const bestSv = breakdown.best;
-    const damage = weapon?.damage;
-
-    const formatPct = (p) => (p == null ? "" : `(p≈${(p * 100).toFixed(1)}%)`);
-
-    // total attacks for fixed values include modelsInRange
-    let totalAttacks = null;
-    if (AParsed.kind === "fixed") {
-      totalAttacks = Number(AParsed.value || 0) * modelsInRange;
-    }
-
-    const apMod = Math.abs(Number(ap || 0));
-
-    return (
-      <div
-        className="attack-helper-panel"
-        role="region"
-        aria-label="Attack Helper"
-      >
-        <div className="attack-helper-header">
-          <div className="attack-helper-title">
-            Attack Helper — {weapon?.name}
-          </div>
-          <button
-            type="button"
-            className="overlay-close"
-            aria-label="Close Attack Helper"
-            onClick={() => onCloseAttackHelper?.()}
-          >
-            ×
-          </button>
-        </div>
-        <div className="attack-helper-grid">
-          <div className="helper-section">
-            <div className="helper-label">Attacks</div>
-            {AParsed.kind === "fixed" ? (
-              <div className="helper-value">{totalAttacks ?? "—"}</div>
-            ) : (
-              <div className="helper-value">
-                Roll {AParsed.value} to determine attacks
-                <div className="helper-sub">
-                  Avg: {((AParsed.avg || 0) * modelsInRange).toFixed(1)}; Range:{" "}
-                  {(AParsed.min || 0) * modelsInRange}–
-                  {(AParsed.max || 0) * modelsInRange}
-                </div>
-              </div>
-            )}
-            <label className="models-input-row">
-              <span>Models in range/engaged</span>
-              <input
-                type="number"
-                min={1}
-                aria-label="Models in range"
-                value={modelsInRange}
-                onChange={(e) => onChangeModelsInRange?.(e.target.value)}
-              />
-            </label>
-          </div>
-
-          <div className="helper-section">
-            <div className="helper-label">To Hit</div>
-            <div className="helper-value">
-              {toHitT ? (
-                <>
-                  {toHitT}+
-                  <span className="helper-sub"> {formatPct(toHitP)}</span>
-                </>
-              ) : (
-                <>
-                  — <span className="missing-chip">missing</span>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="helper-section">
-            <div className="helper-label">To Wound</div>
-            <div className="helper-value">
-              {woundT ? (
-                <>
-                  {woundT}+
-                  <span className="helper-sub"> {formatPct(woundP)}</span>
-                </>
-              ) : (
-                <>
-                  — <span className="missing-chip">missing</span>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="helper-section">
-            <div className="helper-label">Defender Save</div>
-            <div className="helper-value">
-              {bestSv ? (
-                <>
-                  <div>
-                    Best save: {bestSv}+
-                    <span className="helper-sub">
-                      {" "}
-                      {formatPct(probabilityFromTarget(bestSv))}
-                    </span>
-                  </div>
-                  <div className="helper-sub">
-                    {breakdown.used === "invuln"
-                      ? `Using Invulnerable; Armour after AP: ${breakdown.armourAfterAp ? `${breakdown.armourAfterAp}+` : "—"}`
-                      : `Armour after AP${apMod ? ` (mod +${apMod})` : ""}; Invulnerable: ${breakdown.invuln ? `${breakdown.invuln}+` : "—"}`}
-                  </div>
-                </>
-              ) : (
-                <>
-                  — <span className="missing-chip">missing</span>
-                </>
-              )}
-            </div>
-            {damage ? (
-              <div className="helper-sub">
-                Each failed save: {String(damage)}
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        {/* Expected results toggle and summary */}
-        <div className="helper-section" style={{ marginTop: "0.5rem" }}>
-          <label
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "0.35rem",
-            }}
-          >
-            <input
-              type="checkbox"
-              aria-label="Show expected results"
-              checked={!!attackHelper?.showExpected}
-              onChange={() => onToggleExpected?.()}
-            />
-            Show expected results
-          </label>
-          {attackHelper?.showExpected
-            ? (() => {
-                const attacksAvg =
-                  AParsed.kind === "fixed"
-                    ? Number(AParsed.value || 0) * modelsInRange
-                    : Number(AParsed.avg || 0) * modelsInRange;
-                const pHit = toHitP ?? 0;
-                const pWound = woundP ?? 0;
-                const pSave = bestSv ? probabilityFromTarget(bestSv) || 0 : 0;
-                const pFail = 1 - pSave;
-                const dmgParsed = parseDiceNotation(damage);
-                const dmgAvg =
-                  dmgParsed.kind === "fixed"
-                    ? Number(dmgParsed.value || 0)
-                    : Number(dmgParsed.avg || 0);
-                const expHits = attacksAvg * pHit;
-                const expWounds = expHits * pWound;
-                const expUnsaved = expWounds * pFail;
-                const expDamage = expUnsaved * dmgAvg;
-                return (
-                  <div className="helper-sub" aria-label="Expected results">
-                    Expected hits: {expHits.toFixed(1)} • Expected wounds:{" "}
-                    {expWounds.toFixed(1)} • Expected unsaved:{" "}
-                    {expUnsaved.toFixed(1)} • Expected damage:{" "}
-                    {expDamage.toFixed(1)}
-                  </div>
-                );
-              })()
-            : null}
-        </div>
-      </div>
-    );
-  };
+  // Attack Helper now renders above the datasheet in GameSession
 
   return (
     <div
@@ -322,6 +109,7 @@ const UnitDatasheet = ({
       </div>
 
       <div className="datasheet-content">
+        {/* Attack Helper moved above this panel (see GameSession) */}
         {/* Ranged Weapons */}
         {rangedWeapons.length > 0 && (
           <div className="weapons-section">
@@ -342,10 +130,24 @@ const UnitDatasheet = ({
               {rangedWeapons.map((weapon, index) => (
                 <React.Fragment key={`ranged-${index}`}>
                   <div
-                    className="weapon-row"
+                    className={`weapon-row ${
+                      attackHelper?.section === "ranged" &&
+                      attackHelper?.index === index
+                        ? "row--selected"
+                        : ""
+                    }`}
                     role="button"
                     tabIndex={0}
-                    aria-expanded={isOpen("ranged", index)}
+                    aria-expanded={
+                      attackHelper?.section === "ranged" &&
+                      attackHelper?.index === index
+                    }
+                    aria-current={
+                      attackHelper?.section === "ranged" &&
+                      attackHelper?.index === index
+                        ? "true"
+                        : undefined
+                    }
                     onClick={() => onToggleWeapon?.("ranged", index, weapon)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ")
@@ -367,7 +169,7 @@ const UnitDatasheet = ({
                     <div className="weapon-stat-col">{weapon.ap}</div>
                     <div className="weapon-stat-col">{weapon.damage}</div>
                   </div>
-                  {renderAttackHelper(weapon, "ranged", index)}
+                  {/* weapon row click just selects; panel stays pinned at top */}
                 </React.Fragment>
               ))}
             </div>
@@ -394,10 +196,24 @@ const UnitDatasheet = ({
               {meleeWeapons.map((weapon, index) => (
                 <React.Fragment key={`melee-${index}`}>
                   <div
-                    className="weapon-row"
+                    className={`weapon-row ${
+                      attackHelper?.section === "melee" &&
+                      attackHelper?.index === index
+                        ? "row--selected"
+                        : ""
+                    }`}
                     role="button"
                     tabIndex={0}
-                    aria-expanded={isOpen("melee", index)}
+                    aria-expanded={
+                      attackHelper?.section === "melee" &&
+                      attackHelper?.index === index
+                    }
+                    aria-current={
+                      attackHelper?.section === "melee" &&
+                      attackHelper?.index === index
+                        ? "true"
+                        : undefined
+                    }
                     onClick={() => onToggleWeapon?.("melee", index, weapon)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ")
@@ -419,7 +235,7 @@ const UnitDatasheet = ({
                     <div className="weapon-stat-col">{weapon.ap}</div>
                     <div className="weapon-stat-col">{weapon.damage}</div>
                   </div>
-                  {renderAttackHelper(weapon, "melee", index)}
+                  {/* weapon row click just selects; panel stays pinned at top */}
                 </React.Fragment>
               ))}
             </div>
@@ -427,30 +243,26 @@ const UnitDatasheet = ({
         )}
 
         <div className="datasheet-bottom">
-          {/* Abilities */}
-          {unit.abilities && unit.abilities.length > 0 && (
-            <div className="abilities-section">
-              <div className="section-header abilities-header">ABILITIES</div>
-              <div className="abilities-content">
-                {unit.abilities.map((ability, index) => (
-                  <div key={index} className="ability-item">
-                    <div className="ability-name">{ability.name}:</div>
-                    <div className="ability-description">
-                      {ability.description}
-                    </div>
+          {/* Abilities (collapsible matching Override styling) */}
+          <Collapsible title="Abilities" defaultOpen={false}>
+            {unit.abilities && unit.abilities.length > 0 ? (
+              unit.abilities.map((ability, index) => (
+                <div key={index} className="ability-item">
+                  <div className="ability-name">{ability.name}:</div>
+                  <div className="ability-description">
+                    {ability.description}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              ))
+            ) : (
+              <div className="empty">No abilities.</div>
+            )}
+          </Collapsible>
 
-          {/* Unit Composition */}
-          {unit.modelGroups && unit.modelGroups.length > 0 && (
-            <div className="composition-section">
-              <div className="section-header composition-header">
-                UNIT COMPOSITION
-              </div>
-              <div className="composition-content">
+          {/* Unit Composition (collapsible matching Override styling) */}
+          <Collapsible title="Unit Composition" defaultOpen={false}>
+            {unit.modelGroups && unit.modelGroups.length > 0 ? (
+              <>
                 {unit.modelGroups.map((group, index) => (
                   <div key={index} className="composition-item">
                     • {group.count}x {group.name}
@@ -459,9 +271,11 @@ const UnitDatasheet = ({
                 <div className="points-cost">
                   {unit.models} models - {unit.points} pts
                 </div>
-              </div>
-            </div>
-          )}
+              </>
+            ) : (
+              <div className="empty">No composition data.</div>
+            )}
+          </Collapsible>
 
           {/* Keywords */}
           {unit.keywords && unit.keywords.length > 0 && (
@@ -633,3 +447,21 @@ const PairwiseControls = ({ unit, allUnits, overrides, onUpdateOverrides }) => {
 };
 
 export default UnitDatasheet;
+
+// Generic collapsible used for Abilities and Unit Composition
+const Collapsible = ({ title, defaultOpen = false, children }) => {
+  const [open, setOpen] = useState(!!defaultOpen);
+  return (
+    <div className="overrides-collapsible">
+      <button
+        type="button"
+        className="overrides-header"
+        onClick={() => setOpen(!open)}
+      >
+        <span className={`chevron ${open ? "open" : ""}`}>▸</span>
+        <span>{title}</span>
+      </button>
+      {open && <div className="overrides-panel">{children}</div>}
+    </div>
+  );
+};

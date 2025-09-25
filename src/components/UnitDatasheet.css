@@ -1,30 +1,39 @@
 /* Warhammer 40K Datasheet Styling */
 .unit-datasheet {
-  background: var(--gradient-primary);
-  border: 2px solid var(--border-primary);
-  border-radius: 8px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   margin: 1rem 0;
-  color: var(--text-primary);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   font-weight: 500;
-  box-shadow: 0 4px 8px var(--shadow-primary);
-  transition: all 0.3s ease;
-  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+  cursor: default; /* container is not clickable */
+  /* Fill the available space; clip to rounded edges; child content will scroll */
+  height: 100%;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  box-sizing: border-box;
 }
 
 /* No hover effect when displayed in main area */
 
 .unit-datasheet.selected {
-  border-color: var(--border-primary);
-  box-shadow: 0 4px 8px var(--shadow-primary);
+  border-color: var(--border);
+  box-shadow: var(--shadow);
 }
 
 /* Unit Header */
 .datasheet-header {
-  background: var(--action-primary);
-  padding: 0.75rem;
-  border-bottom: 2px solid var(--border-primary);
-  border-radius: 8px 8px 0 0;
+  background: var(--surface-2);
+  padding: 12px; /* align with Attack Helper padding */
+  border-bottom: 1px solid var(--border);
+  border-radius: var(--radius) var(--radius) 0 0;
 }
 
 .unit-title {
@@ -36,11 +45,10 @@
 
 .unit-title h2 {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: bold;
-  text-transform: uppercase;
-  color: var(--text-inverse);
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-size: 1.35rem;
+  font-weight: 600;
+  text-transform: none;
+  color: var(--text);
 }
 
 .unit-size {
@@ -60,10 +68,10 @@
 }
 
 .stat-box {
-  background: #ecf0f1;
-  color: #2c3e50;
-  border: 1px solid #bdc3c7;
-  border-radius: 4px;
+  background: var(--row);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
   padding: 0.5rem;
   text-align: center;
   min-width: 50px;
@@ -81,38 +89,62 @@
   font-weight: bold;
 }
 
+/* Theme-correct stat pill overrides (light/dark via app semantic tokens) */
+.unit-datasheet .unit-stats-row .stat-box {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border: 1px solid var(--line);
+}
+.unit-datasheet .stat-label {
+  color: var(--text-secondary);
+}
+.unit-datasheet .stat-value {
+  color: var(--text-primary);
+}
+
+/* Size pill uses same theme tokens as other pills */
+.unit-datasheet .unit-size {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border: 1px solid var(--line);
+}
+
 /* Content Section */
 .datasheet-content {
-  padding: 0.75rem;
+  padding: 12px; /* align with Attack Helper padding */
+  min-height: 0; /* allow internal scroll */
+  overflow-y: auto; /* scrollbar lives inside the card */
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
 }
 
 /* Weapons Section */
 .weapons-section {
   margin-bottom: 1rem;
-  border: 1px solid var(--border-primary);
-  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-top: 0; /* avoid double line: header draws its own bottom border */
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
 .section-header {
-  background: var(--info-header-bg);
-  color: var(--info-header-text);
-  padding: 0.3rem 0.6rem;
-  font-weight: bold;
-  font-size: 0.8rem;
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  padding: 8px 12px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  border-radius: 4px 4px 0 0;
+  gap: 0.4rem;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  border-bottom: 1px solid var(--line);
 }
 
-.ranged-header {
-  background: var(--weapon-ranged-bg);
-}
-
+.ranged-header,
 .melee-header {
-  background: var(--weapon-melee-bg);
+  background: var(--bg-subtle);
 }
 
 .weapon-icon {
@@ -121,25 +153,26 @@
 
 /* Weapons Table */
 .weapons-table {
-  background: var(--weapon-table-bg);
+  background: transparent;
   border: none;
+  border-top: 0; /* avoid double line under section header */
 }
 
 .weapons-table-header {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
-  background: var(--weapon-header-bg);
-  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--line);
   font-weight: bold;
   font-size: 0.75rem;
   text-transform: uppercase;
-  color: var(--text-primary);
+  color: var(--text-secondary);
 }
 
 .weapons-table-header > div {
-  padding: 0.3rem 0.2rem;
+  padding: 10px 8px;
   text-align: center;
-  border-right: 1px solid var(--border-primary);
+  border-right: 1px solid var(--border);
 }
 
 .weapons-table-header > div:last-child {
@@ -149,7 +182,14 @@
 .weapon-row {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr;
-  border-bottom: 1px solid var(--border-primary);
+  border-bottom: 1px solid var(--line-subtle);
+  background: var(--bg-surface);
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    box-shadow 0.12s ease,
+    outline-color 0.12s ease,
+    transform 0.08s ease;
 }
 
 .weapon-row:last-child {
@@ -157,26 +197,54 @@
 }
 
 .weapon-row > div {
-  padding: 0.25rem 0.2rem;
+  padding: 10px 8px;
   text-align: center;
-  border-right: 1px solid var(--border-primary);
+  border-right: 1px solid var(--divider);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.85rem;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .weapon-row > div:last-child {
   border-right: none;
 }
 
+/* Interaction states for weapon rows */
+.weapon-row:hover {
+  background: color-mix(in oklab, var(--accent) 6%, transparent);
+  box-shadow: inset 0 0 0 1px var(--accent-600);
+}
+.weapon-row:active {
+  transform: scale(0.99);
+}
+.weapon-row:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: -2px;
+}
+.weapon-row.row--selected {
+  background: color-mix(in oklab, var(--accent) 12%, var(--bg-surface));
+  border-color: var(--accent-700);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 35%, transparent);
+}
+
+/* Support alternate class naming */
+.weapon-row.is-selected {
+  background: color-mix(in oklab, var(--accent) 10%, transparent);
+  outline: 2px solid var(--accent-700);
+  outline-offset: -2px;
+}
+
 /* Attack Helper Panel */
 .attack-helper-panel {
-  background: var(--color-tertiary);
-  border-top: 1px solid var(--border-primary);
-  border-bottom: 1px solid var(--border-primary);
-  padding: 0.5rem;
+  background: var(--bg-surface);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 8px 12px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .attack-helper-header {
@@ -188,7 +256,7 @@
 
 .attack-helper-title {
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .attack-helper-grid {
@@ -198,29 +266,29 @@
 }
 
 .helper-section {
-  background: var(--color-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: 4px;
-  padding: 0.5rem;
+  background: var(--row);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  padding: 10px;
 }
 
 .helper-label {
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   margin-bottom: 0.25rem;
 }
 
 .helper-value {
   font-size: 1rem;
-  color: var(--text-primary);
+  color: var(--text);
 }
 
 .helper-sub {
   display: block;
   margin-top: 0.25rem;
   font-size: 0.8rem;
-  color: var(--text-secondary);
+  color: var(--text-muted);
 }
 
 .models-input-row {
@@ -234,10 +302,10 @@
 .models-input-row input[type="number"] {
   width: 80px;
   padding: 0.25rem 0.35rem;
-  border: 1px solid var(--border-primary);
-  border-radius: 4px;
-  background: var(--color-tertiary);
-  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
 }
 
 .save-row {
@@ -257,8 +325,8 @@
 }
 
 .save-pill.best {
-  border-color: var(--action-success);
-  background: rgba(39, 174, 96, 0.15);
+  border-color: var(--success);
+  background: rgba(16, 185, 129, 0.15);
 }
 
 .missing-chip {
@@ -267,9 +335,9 @@
   font-size: 0.7rem;
   padding: 0.05rem 0.4rem;
   border-radius: 999px;
-  color: var(--text-secondary);
-  background: var(--color-secondary);
-  border: 1px solid var(--border-primary);
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 
 @media (max-width: 768px) {
@@ -287,14 +355,14 @@
 
 .weapon-name {
   font-weight: bold;
-  color: var(--text-primary);
-  font-size: 0.8rem;
+  color: var(--text);
+  font-size: 0.9rem;
   line-height: 1.2;
 }
 
 .weapon-count {
-  font-size: 0.7rem;
-  color: var(--text-secondary);
+  font-size: 0.75rem;
+  color: var(--text-muted);
   font-style: italic;
 }
 
@@ -379,8 +447,54 @@
   padding-top: 0.75rem;
   border-top: 1px solid var(--border-primary);
   font-weight: bold;
-  color: var(--accent-danger);
+  color: var(--danger);
   text-align: right;
+}
+
+/* Collapsible details blocks (Abilities, etc.) */
+.details-block {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  overflow: hidden;
+}
+.details-block > summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 10px 12px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  background: var(--bg-subtle);
+  border-bottom: 1px solid var(--line);
+}
+.details-block[open] > summary {
+  color: var(--text-primary);
+}
+.details-block .content {
+  padding: 12px;
+  color: var(--text-primary);
+}
+summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Standardized block chrome (Abilities / Unit Composition) */
+.block {
+  background: var(--bg-surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.block > .block__header {
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--line);
+  padding: 10px 12px;
+  font-weight: 600;
+}
+.block > .block__body {
+  padding: 12px;
+  color: var(--text-primary);
 }
 
 /* Keywords Section */
@@ -390,9 +504,9 @@
 }
 
 .keywords-header {
-  background: #2c3e50;
-  border: 1px solid #4a6741;
-  border-radius: 4px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xs);
   padding: 0.6rem;
   display: flex;
   align-items: center;
@@ -401,12 +515,12 @@
 
 .keywords-label {
   font-weight: bold;
-  color: #ecf0f1;
+  color: var(--text);
   white-space: nowrap;
 }
 
 .keywords-list {
-  color: #bdc3c7;
+  color: var(--text-muted);
   font-weight: 500;
   font-size: 0.9rem;
 }
@@ -563,6 +677,59 @@
   justify-content: flex-end;
 }
 
+/* Buttons within datasheet (use app tokens) */
+.btn-primary {
+  background: var(--action-primary);
+  color: var(--text-inverse);
+  border: 1px solid var(--action-primary);
+  border-radius: var(--radius-xs);
+  padding: 0.4rem 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.08s ease;
+}
+.btn-primary:hover {
+  background: transparent;
+  color: var(--action-primary);
+}
+.btn-primary:active {
+  transform: scale(0.98);
+}
+.btn-primary:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--action-secondary);
+  border: 1px solid var(--action-secondary);
+  border-radius: var(--radius-xs);
+  padding: 0.4rem 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.08s ease;
+}
+.btn-secondary:hover {
+  background: var(--action-secondary);
+  color: var(--text-inverse);
+}
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
 @media (max-width: 768px) {
   .pairwise-overrides {
     grid-template-columns: 1fr;
@@ -574,22 +741,22 @@
   .unit-stats-row {
     flex-wrap: wrap;
   }
-  
+
   .stat-box {
     flex: 1;
     min-width: 60px;
   }
-  
+
   .weapons-table-header,
   .weapon-row {
     grid-template-columns: 2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr;
     font-size: 0.8rem;
   }
-  
+
   .datasheet-bottom {
     grid-template-columns: 1fr;
   }
-  
+
   .unit-title {
     flex-direction: column;
     align-items: flex-start;

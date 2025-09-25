@@ -32,6 +32,14 @@ import {
 } from "../utils/eligibility";
 import { parseArmyFile } from "../utils/armyParser";
 import { resolveWeaponCarrierCount } from "../utils/weaponCarrier";
+import {
+  woundTarget,
+  probabilityFromTarget,
+  parseDiceNotation,
+  computeDefenderSave,
+  parseAp,
+} from "../utils/attackMath";
+import { resolveDefenderStats } from "../utils/defenderResolver";
 
 // Sortable unit card powered by dnd-kit
 const SortableUnitBase = ({
@@ -47,6 +55,7 @@ const SortableUnitBase = ({
   pulse,
   overrideActive,
   overrideSummary,
+  isTarget,
 }) => {
   const {
     attributes,
@@ -75,12 +84,13 @@ const SortableUnitBase = ({
         ...style,
         zIndex: isDragging ? 20 : "auto",
       }}
-      className={`unit-card ${isSelected ? "selected" : ""} ${statusClass} ${shouldGlowAsLeader ? "can-attach" : ""} ${dropIntent ? "drop-intent" : ""} ${insertEdge === "top" ? "drag-over-before" : ""} ${insertEdge === "bottom" ? "drag-over-after" : ""} ${pulse ? "pulse" : ""}`}
+      className={`unit-card ${isSelected ? "selected" : ""} ${statusClass} ${shouldGlowAsLeader ? "can-attach" : ""} ${dropIntent ? "drop-intent" : ""} ${insertEdge === "top" ? "drag-over-before" : ""} ${insertEdge === "bottom" ? "drag-over-after" : ""} ${pulse ? "pulse" : ""} ${isTarget ? "is-target" : ""}`}
       data-column={unit.column}
       data-unit-id={unit.id}
       title={titleText}
       role="button"
       tabIndex={0}
+      aria-selected={isTarget ? true : undefined}
       onClick={() => onClick(unit)}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") onClick(unit);
@@ -101,6 +111,12 @@ const SortableUnitBase = ({
         data-edge="bottom"
         data-scope="top"
       ></div>
+      {/* Target badge (non-interactive) */}
+      {isTarget ? (
+        <span className="target-badge" aria-hidden="true">
+          Target
+        </span>
+      ) : null}
       {/* Optional meta row: only when overrides exist, to avoid dead gap */}
       {overrideActive ? (
         <div className="card-meta">
@@ -230,8 +246,11 @@ const ArmyColumn = ({
     const autoScrollTick = () => {
       if (!draggingRef.current) return;
       const listEl = listRef.current;
-      if (listEl && pointerRef.current.has) {
-        const rect = listEl.getBoundingClientRect();
+      const scrollerEl = listEl
+        ? listEl.closest(".units-scroll") || listEl
+        : null;
+      if (scrollerEl && pointerRef.current.has) {
+        const rect = scrollerEl.getBoundingClientRect();
         const y = pointerRef.current.y;
         const zone = 48;
         let dy = 0;
@@ -242,7 +261,7 @@ const ArmyColumn = ({
           const intensity = (zone - (rect.bottom - y)) / zone;
           dy = Math.ceil(12 * intensity);
         }
-        if (dy !== 0) listEl.scrollTop += dy;
+        if (dy !== 0) scrollerEl.scrollTop += dy;
       }
       scrollRafRef.current = requestAnimationFrame(autoScrollTick);
     };
@@ -663,6 +682,7 @@ const ArmyColumn = ({
                   pulse={pulseTargetId === unit.id}
                   overrideActive={overrideActive}
                   overrideSummary={overrideSummary}
+                  isTarget={attackHelper?.targetUnitId === unit.id}
                 />
                 {attachments[unit.id] && attachments[unit.id].length > 0 && (
                   <div className="attached-units">
@@ -731,6 +751,10 @@ const ArmyColumn = ({
                               onDetach={() => detachUnit(unit.id, attachedId)}
                               overrideActive={childOverrideActive}
                               overrideSummary={childOverrideSummary}
+                              pulse={pulseTargetId === attachedId}
+                              isTarget={
+                                attackHelper?.targetUnitId === attachedId
+                              }
                             />
                           </React.Fragment>
                         );
@@ -780,6 +804,8 @@ const AttachedUnitSortable = ({
   leaderId,
   overrideActive,
   overrideSummary,
+  pulse,
+  isTarget,
 }) => {
   const {
     attributes,
@@ -804,9 +830,10 @@ const AttachedUnitSortable = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`attached-unit unit-card ${isSelected ? "selected" : ""} ${statusClass} ${insertEdge === "top" ? "drag-over-before" : ""} ${insertEdge === "bottom" ? "drag-over-after" : ""}`}
+      className={`attached-unit unit-card ${isSelected ? "selected" : ""} ${statusClass} ${insertEdge === "top" ? "drag-over-before" : ""} ${insertEdge === "bottom" ? "drag-over-after" : ""} ${pulse ? "pulse" : ""} ${isTarget ? "is-target" : ""}`}
       data-column={unit.column}
       data-unit-id={unit.id}
+      aria-selected={isTarget ? true : undefined}
       onClick={() => onClick(unit)}
     >
       {/* Between-slot overlays for child insert targeting */}
@@ -826,6 +853,11 @@ const AttachedUnitSortable = ({
         data-scope="children"
         data-leader-id={leaderId}
       ></div>
+      {isTarget ? (
+        <span className="target-badge" aria-hidden="true">
+          Target
+        </span>
+      ) : null}
       {/* Optional meta row: only when overrides exist */}
       {overrideActive ? (
         <div className="card-meta">
@@ -887,6 +919,42 @@ const GameSession = ({ gameId, user }) => {
     intent: "idle", // idle | open_no_target | open_with_target
     showExpected: false,
   });
+
+  // Sync CSS variable for sticky army header height to keep columns perfectly level at any width
+  // Batch reads/writes to avoid ResizeObserver loop warnings.
+  useEffect(() => {
+    const root = document.documentElement;
+    let rafId = 0;
+    let lastH = 0;
+    const measureAndSet = () => {
+      if (rafId) return; // coalesce
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        let h = 0;
+        document
+          .querySelectorAll(".army-column .column-header")
+          .forEach((el) => {
+            const rect = el.getBoundingClientRect();
+            h = Math.max(h, Math.ceil(rect.height));
+          });
+        if (h && h !== lastH) {
+          lastH = h;
+          root.style.setProperty("--army-header-offset", `${h}px`);
+        }
+      });
+    };
+    const ro = new ResizeObserver(() => measureAndSet());
+    document
+      .querySelectorAll(".army-column .column-header")
+      .forEach((el) => ro.observe(el));
+    window.addEventListener("resize", measureAndSet);
+    measureAndSet();
+    return () => {
+      window.removeEventListener("resize", measureAndSet);
+      ro.disconnect();
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, []);
   const [pulseTargetId, setPulseTargetId] = useState(null);
   const [attachmentsA, setAttachmentsA] = useState({});
   const [attachmentsB, setAttachmentsB] = useState({});
@@ -960,7 +1028,7 @@ const GameSession = ({ gameId, user }) => {
   useEffect(() => {
     if (!attackHelper.open) return;
     const onDocPointer = (e) => {
-      const panel = e.target?.closest?.(".attack-helper-panel");
+      const panel = e.target?.closest?.(".attack-helper, .attack-helper-panel");
       if (panel) return; // keep open when interacting with panel
       const unitCard = e.target?.closest?.(".unit-card");
       if (unitCard) {
@@ -1274,6 +1342,12 @@ const GameSession = ({ gameId, user }) => {
     }
   };
 
+  const onDragOverZone = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+  };
+
   const onDropZone = async (columnKey, e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -1283,17 +1357,262 @@ const GameSession = ({ gameId, user }) => {
     }
   };
 
-  const onDragOverZone = (e) => {
-    // Only indicate copy for file drops
-    e.preventDefault();
-    if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
-  };
-
   // Determine whose turn it is
   const isMyTurn = gameData?.currentTurn === user?.uid;
 
   const hasArmyA = !!gameData?.playerA?.armyData;
   const hasArmyB = !!gameData?.playerB?.armyData;
+
+  // --- Attack Helper utils and renderer ---
+  const toHitTarget = (weapon, section) => {
+    const skill = weapon?.skill;
+    if (typeof skill === "number" && skill >= 2 && skill <= 6) return skill;
+    if (section === "ranged") {
+      const bs = Number(selectedUnit?.ballistic_skill || 0);
+      return bs >= 2 && bs <= 6 ? bs : null;
+    }
+    const ws = Number(selectedUnit?.weapon_skill || 0);
+    return ws >= 2 && ws <= 6 ? ws : null;
+  };
+
+  const groupWeapons = (unit) => {
+    const list = Array.isArray(unit?.weapons) ? unit.weapons : [];
+    const map = new Map();
+    const keyOf = (w) => {
+      const name = w.name || "";
+      const range =
+        w.range === "Melee" || w.type === "Melee" ? "Melee" : w.range || '12"';
+      const type = w.type || (range === "Melee" ? "Melee" : "Assault 1");
+      const attacks = w.attacks ?? 1;
+      const skill = w.skill ?? 3;
+      const strength = w.strength ?? 4;
+      const ap = w.ap ?? 0;
+      const damage = w.damage ?? 1;
+      return `${name}|${range}|${type}|${attacks}|${skill}|${strength}|${ap}|${damage}`;
+    };
+    list.forEach((w) => {
+      const k = keyOf(w);
+      const existing = map.get(k);
+      if (existing) existing.count = (existing.count || 1) + 1;
+      else map.set(k, { ...w, count: w.count || 1 });
+    });
+    const grouped = Array.from(map.values());
+    const ranged = grouped.filter(
+      (w) => w.type !== "Melee" && w.range !== "Melee",
+    );
+    const melee = grouped.filter(
+      (w) => w.type === "Melee" || w.range === "Melee",
+    );
+    return { ranged, melee };
+  };
+
+  const defenderSaveView = (target) => {
+    if (!target) return { label: "—", hint: "select a target" };
+    const { armourSave, invulnSave } = resolveDefenderStats(target || {});
+    if (invulnSave)
+      return { label: `${invulnSave}+ (Inv)`, hint: "invulnerable" };
+    if (armourSave) return { label: `${armourSave}+`, hint: "armor save" };
+    return { label: "—", hint: "missing" };
+  };
+
+  const renderAttackHelper = () => {
+    if (!selectedUnit) return null;
+    const { ranged, melee } = groupWeapons(selectedUnit);
+    const section = attackHelper?.section;
+    const index = attackHelper?.index;
+    const weapon =
+      section === "ranged"
+        ? ranged[index]
+        : section === "melee"
+          ? melee[index]
+          : null;
+    const modelsInRange =
+      attackHelper?.modelsInRange || selectedUnit.models || 1;
+    const AParsed = parseDiceNotation(weapon?.attacks);
+    const sVal = Number(weapon?.strength || selectedUnit.strength || 0);
+    const selectedTarget = attackHelper?.targetUnitId
+      ? allUnitsById[attackHelper.targetUnitId]
+      : null;
+    const {
+      toughness: tResolved,
+      armourSave: svResolved,
+      invulnSave,
+    } = resolveDefenderStats(selectedTarget || {});
+    const tVal = Number(tResolved || 0);
+    const toHitT = weapon ? toHitTarget(weapon, section) : null;
+    const toHitP = toHitT ? probabilityFromTarget(toHitT) : null;
+    const woundT = tVal ? woundTarget(sVal, tVal) : null;
+    const woundP = woundT ? probabilityFromTarget(woundT) : null;
+    const apInt = parseAp(weapon?.ap || 0);
+    const saveInfo = defenderSaveView(selectedTarget);
+    const breakdown = computeDefenderSave(svResolved, apInt, invulnSave);
+    const bestSv = breakdown.best;
+    const bestLabel = selectedTarget
+      ? bestSv != null
+        ? `${bestSv}+${breakdown.used === "invuln" ? " (Inv)" : ""}`
+        : "—"
+      : "—";
+    const bestHint = selectedTarget
+      ? bestSv != null
+        ? breakdown.used === "invuln"
+          ? "invulnerable"
+          : "armor after AP"
+        : "missing"
+      : "select a target";
+
+    let totalAttacks = null;
+    if (AParsed.kind === "fixed")
+      totalAttacks = Number(AParsed.value || 0) * modelsInRange;
+
+    return (
+      <section className="attack-helper is-sticky" aria-label="Attack Helper">
+        <div className="helper-grid">
+          <div className="helper-cell">
+            <div className="section-title">Attacks</div>
+            <div className="value">
+              {weapon ? (
+                AParsed.kind === "fixed" ? (
+                  (totalAttacks ?? "—")
+                ) : (
+                  `Roll ${AParsed.value}`
+                )
+              ) : (
+                <>
+                  — <span className="meta">select a weapon</span>
+                </>
+              )}
+            </div>
+            <label className="models-input-row">
+              <span>Models in range/engaged</span>
+              <input
+                type="number"
+                min={1}
+                aria-label="Models in range"
+                value={modelsInRange}
+                onChange={(e) =>
+                  setAttackHelper((prev) => ({
+                    ...prev,
+                    modelsInRange: Math.max(1, Number(e.target.value) || 1),
+                  }))
+                }
+              />
+            </label>
+          </div>
+
+          <div className="helper-cell">
+            <div className="section-title">To Hit</div>
+            <div className="value">
+              {weapon && toHitT ? (
+                <>
+                  {toHitT}+
+                  <span className="meta">
+                    {" "}
+                    {toHitP != null ? `(p≈${(toHitP * 100).toFixed(1)}%)` : ""}
+                  </span>
+                </>
+              ) : (
+                <>
+                  —{" "}
+                  <span className="meta">
+                    {weapon ? "missing" : "select a weapon"}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="helper-cell">
+            <div className="section-title">To Wound</div>
+            <div className="value">
+              {weapon && woundT ? (
+                <>
+                  {woundT}+
+                  <span className="meta">
+                    {" "}
+                    {woundP != null ? `(p≈${(woundP * 100).toFixed(1)}%)` : ""}
+                  </span>
+                </>
+              ) : (
+                <>
+                  —{" "}
+                  <span className="meta">
+                    {weapon ? "select a target" : "select a weapon & target"}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="helper-cell">
+            <div className="section-title">Defender Save</div>
+            <div className="value">
+              {bestLabel}
+              <span className="meta"> {bestHint}</span>
+            </div>
+            {weapon ? (
+              <div className="meta">
+                Armour after AP:{" "}
+                {breakdown.armourAfterAp ? `${breakdown.armourAfterAp}+` : "—"}
+                {svResolved ? ` (SV ${svResolved}+)` : ""} AP {apInt || 0}
+              </div>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="helper-cell" style={{ marginTop: 8 }}>
+          <label
+            style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+          >
+            <input
+              type="checkbox"
+              aria-label="Show expected results"
+              checked={!!attackHelper?.showExpected}
+              onChange={() =>
+                setAttackHelper((prev) => ({
+                  ...prev,
+                  showExpected: !prev.showExpected,
+                }))
+              }
+            />
+            Show expected results
+          </label>
+          {weapon && attackHelper?.showExpected
+            ? (() => {
+                const attacksAvg =
+                  AParsed.kind === "fixed"
+                    ? Number(AParsed.value || 0) * modelsInRange
+                    : Number(AParsed.avg || 0) * modelsInRange;
+                const pHit = toHitP ?? 0;
+                const pWound = woundP ?? 0;
+                const pSave = bestSv ? probabilityFromTarget(bestSv) || 0 : 0;
+                const pFail = 1 - pSave;
+                const dmgParsed = parseDiceNotation(weapon?.damage);
+                const dmgAvg =
+                  dmgParsed.kind === "fixed"
+                    ? Number(dmgParsed.value || 0)
+                    : Number(dmgParsed.avg || 0);
+                const expHits = attacksAvg * pHit;
+                const expWounds = expHits * pWound;
+                const expUnsaved = expWounds * pFail;
+                const expDamage = expUnsaved * dmgAvg;
+                return (
+                  <div
+                    className="meta"
+                    aria-label="Expected results"
+                    style={{ marginTop: 6 }}
+                  >
+                    Expected hits: {expHits.toFixed(1)} • Expected wounds:{" "}
+                    {expWounds.toFixed(1)} • Expected unsaved:{" "}
+                    {expUnsaved.toFixed(1)} • Expected damage:{" "}
+                    {expDamage.toFixed(1)}
+                  </div>
+                );
+              })()
+            : null}
+        </div>
+      </section>
+    );
+  };
 
   return (
     <div className="game-session">
@@ -1320,7 +1639,11 @@ const GameSession = ({ gameId, user }) => {
 
       <div className="game-content" data-testid="game-content">
         {/* Column 1: Player A */}
-        <div className="units-sidebar">
+        <aside
+          className="units-sidebar army-column"
+          id="armyA"
+          aria-label="Army A"
+        >
           <div className="column-header">
             <h3>Player A — {gameData?.playerA?.displayName || "Player A"}</h3>
             <input
@@ -1340,65 +1663,273 @@ const GameSession = ({ gameId, user }) => {
               </button>
             ) : null}
           </div>
-          {!hasArmyA && (
-            <div
-              className="upload-dropzone"
-              role="button"
-              aria-label="Upload army file dropzone for Player A"
-              onDragOver={onDragOverZone}
-              onDrop={(e) => onDropZone("A", e)}
-              onClick={() => inputARef.current?.click()}
-            >
-              <p>
-                <strong>Upload army file</strong>
-              </p>
-              <p>Click to select or drag & drop a .json file</p>
-              {uploadErrorA && (
-                <div className="error-message">{uploadErrorA}</div>
-              )}
-            </div>
-          )}
-          {hasArmyA ? (
-            <ArmyColumn
-              columnKey="A"
-              title="Player A"
-              units={allUnitsA}
-              attachments={attachmentsA}
-              setAttachments={setAttachmentsA}
-              unitOrder={unitOrderA}
-              setUnitOrder={setUnitOrderA}
-              leadershipOverrides={leadershipOverrides}
-              allUnitsById={allUnitsById}
-              selectedUnit={selectedUnit}
-              setSelectedUnit={setSelectedUnit}
-              updateUnitOverrides={updateUnitOverrides}
-              getUnitStatusClass={getUnitStatusClass}
-              isLeaderUnit={isLeaderUnit}
-              canLeaderAttachToUnit={canLeaderAttachToUnit}
-              ovHasActive={ovHasActive}
-              ovSummary={ovSummary}
-              gameId={gameId}
-              sensors={sensors}
-              draggedUnit={draggedUnit}
-              setDraggedUnit={setDraggedUnit}
-              pointerRef={pointerRef}
-              scrollRafRef={scrollRafRef}
-              draggingRef={draggingRef}
-              // Attack Helper wiring
-              attackHelper={attackHelper}
-              setAttackHelper={setAttackHelper}
-              pulseTargetId={pulseTargetId}
-              setPulseTargetId={setPulseTargetId}
-            />
-          ) : (
-            <div className="empty-army">
-              <p>No army yet. Add one to begin.</p>
-            </div>
-          )}
-        </div>
+          <div className="units-scroll">
+            {!hasArmyA && (
+              <div
+                className="upload-dropzone"
+                role="button"
+                aria-label="Upload army file dropzone for Player A"
+                onDragOver={onDragOverZone}
+                onDrop={(e) => onDropZone("A", e)}
+                onClick={() => inputARef.current?.click()}
+              >
+                <p>
+                  <strong>Upload army file</strong>
+                </p>
+                <p>Click to select or drag & drop a .json file</p>
+                {uploadErrorA && (
+                  <div className="error-message">{uploadErrorA}</div>
+                )}
+              </div>
+            )}
+            {hasArmyA ? (
+              <ArmyColumn
+                columnKey="A"
+                title="Player A"
+                units={allUnitsA}
+                attachments={attachmentsA}
+                setAttachments={setAttachmentsA}
+                unitOrder={unitOrderA}
+                setUnitOrder={setUnitOrderA}
+                leadershipOverrides={leadershipOverrides}
+                allUnitsById={allUnitsById}
+                selectedUnit={selectedUnit}
+                setSelectedUnit={setSelectedUnit}
+                updateUnitOverrides={updateUnitOverrides}
+                getUnitStatusClass={getUnitStatusClass}
+                isLeaderUnit={isLeaderUnit}
+                canLeaderAttachToUnit={canLeaderAttachToUnit}
+                ovHasActive={ovHasActive}
+                ovSummary={ovSummary}
+                gameId={gameId}
+                sensors={sensors}
+                draggedUnit={draggedUnit}
+                setDraggedUnit={setDraggedUnit}
+                pointerRef={pointerRef}
+                scrollRafRef={scrollRafRef}
+                draggingRef={draggingRef}
+                // Attack Helper wiring
+                attackHelper={attackHelper}
+                setAttackHelper={setAttackHelper}
+                pulseTargetId={pulseTargetId}
+                setPulseTargetId={setPulseTargetId}
+              />
+            ) : (
+              <div className="empty-army">
+                <p>No army yet. Add one to begin.</p>
+              </div>
+            )}
+          </div>
+        </aside>
 
-        {/* Column 2: Center datasheet (render only the datasheet or placeholder) */}
-        {selectedUnit ? (
+        {/* Column 2: Center area with sticky rail + independent scroll pane */}
+        <main className="datasheet-area">
+          <div className="datasheet-sticky-rail">
+            {selectedUnit ? renderAttackHelper() : null}
+          </div>
+          <div className="datasheet-scroll">
+            {selectedUnit ? (
+              <UnitDatasheet
+                unit={selectedUnit}
+                isSelected={true}
+                onClick={() => {}}
+                overrides={
+                  leadershipOverrides[selectedUnit.id] || {
+                    canLead: "auto",
+                    canBeLed: "auto",
+                    allowList: [],
+                  }
+                }
+                allUnits={allUnits}
+                onUpdateOverrides={(partial) =>
+                  updateUnitOverrides(selectedUnit.id, partial)
+                }
+                // Attack Helper wiring still used for weapon selection
+                attackHelper={attackHelper}
+                onToggleWeapon={(section, index, weapon) => {
+                  setAttackHelper((prev) => {
+                    const same =
+                      prev.open &&
+                      prev.section === section &&
+                      prev.index === index;
+                    if (same)
+                      return {
+                        open: false,
+                        section: null,
+                        index: null,
+                        modelsInRange: null,
+                        targetUnitId: null,
+                        intent: "idle",
+                        showExpected: prev.showExpected,
+                      };
+                    const defaultModels = resolveWeaponCarrierCount(
+                      selectedUnit,
+                      weapon,
+                    );
+                    const hasTarget = !!prev.targetUnitId;
+                    return {
+                      open: true,
+                      section,
+                      index,
+                      modelsInRange: defaultModels,
+                      targetUnitId: prev.targetUnitId || null,
+                      intent: hasTarget ? "open_with_target" : "open_no_target",
+                      showExpected: prev.showExpected,
+                    };
+                  });
+                }}
+                onCloseAttackHelper={() =>
+                  setAttackHelper({
+                    open: false,
+                    section: null,
+                    index: null,
+                    modelsInRange: null,
+                    targetUnitId: null,
+                    intent: "idle",
+                    showExpected: attackHelper?.showExpected,
+                  })
+                }
+                onChangeModelsInRange={(val) =>
+                  setAttackHelper((prev) => ({
+                    ...prev,
+                    modelsInRange: Math.max(1, Number(val) || 1),
+                  }))
+                }
+                onToggleExpected={() =>
+                  setAttackHelper((prev) => ({
+                    ...prev,
+                    showExpected: !prev.showExpected,
+                  }))
+                }
+                selectedTargetUnit={
+                  attackHelper.targetUnitId
+                    ? allUnitsById[attackHelper.targetUnitId]
+                    : null
+                }
+              />
+            ) : (
+              <div className="no-unit-selected">
+                {!hasArmyA && !hasArmyB ? (
+                  <>
+                    <h3>Start by adding armies to both columns</h3>
+                    <p>
+                      Use the Upload army controls in each column to import an
+                      army JSON.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h3>Select a unit from either column to view details</h3>
+                    <p>
+                      Click on any unit to see its datasheet and available
+                      actions.
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </main>
+
+        {/* Column 3: Player B */}
+        <aside
+          className="units-sidebar army-column"
+          id="armyB"
+          aria-label="Army B"
+        >
+          <div className="column-header">
+            <h3>Player B — {gameData?.playerB?.displayName || "Player B"}</h3>
+            <input
+              ref={inputBRef}
+              type="file"
+              accept=".json,application/json"
+              style={{ display: "none" }}
+              aria-label="Upload army file for Player B"
+              onChange={(e) => onFileInputChange("B", e)}
+            />
+            {hasArmyB ? (
+              <button
+                className="action-btn"
+                onClick={() => inputBRef.current?.click()}
+              >
+                Replace army
+              </button>
+            ) : null}
+          </div>
+          <div className="units-scroll">
+            {!hasArmyB && (
+              <div
+                className="upload-dropzone"
+                role="button"
+                aria-label="Upload army file dropzone for Player B"
+                onDragOver={onDragOverZone}
+                onDrop={(e) => onDropZone("B", e)}
+                onClick={() => inputBRef.current?.click()}
+              >
+                <p>
+                  <strong>Upload army file</strong>
+                </p>
+                <p>Click to select or drag & drop a .json file</p>
+                {uploadErrorB && (
+                  <div className="error-message">{uploadErrorB}</div>
+                )}
+              </div>
+            )}
+            {hasArmyB ? (
+              <ArmyColumn
+                columnKey="B"
+                title="Player B"
+                units={allUnitsB}
+                attachments={attachmentsB}
+                setAttachments={setAttachmentsB}
+                unitOrder={unitOrderB}
+                setUnitOrder={setUnitOrderB}
+                leadershipOverrides={leadershipOverrides}
+                allUnitsById={allUnitsById}
+                selectedUnit={selectedUnit}
+                setSelectedUnit={setSelectedUnit}
+                updateUnitOverrides={updateUnitOverrides}
+                getUnitStatusClass={getUnitStatusClass}
+                isLeaderUnit={isLeaderUnit}
+                canLeaderAttachToUnit={canLeaderAttachToUnit}
+                ovHasActive={ovHasActive}
+                ovSummary={ovSummary}
+                gameId={gameId}
+                sensors={sensors}
+                draggedUnit={draggedUnit}
+                setDraggedUnit={setDraggedUnit}
+                pointerRef={pointerRef}
+                scrollRafRef={scrollRafRef}
+                draggingRef={draggingRef}
+                // Attack Helper wiring
+                attackHelper={attackHelper}
+                setAttackHelper={setAttackHelper}
+                pulseTargetId={pulseTargetId}
+                setPulseTargetId={setPulseTargetId}
+              />
+            ) : (
+              <div className="empty-army">
+                <p>No army yet. Add one to begin.</p>
+              </div>
+            )}
+          </div>
+        </aside>
+      </div>
+      {isNarrow && overlayOpen && selectedUnit ? (
+        <div
+          className="datasheet-overlay"
+          role="dialog"
+          aria-label="Datasheet Overlay"
+        >
+          <button
+            type="button"
+            className="overlay-close"
+            aria-label="Close Datasheet"
+            onClick={() => setOverlayOpen(false)}
+          >
+            ×
+          </button>
+          {selectedUnit ? renderAttackHelper() : null}
           <UnitDatasheet
             unit={selectedUnit}
             isSelected={true}
@@ -1470,135 +2001,6 @@ const GameSession = ({ gameId, user }) => {
               attackHelper.targetUnitId
                 ? allUnitsById[attackHelper.targetUnitId]
                 : null
-            }
-          />
-        ) : (
-          <div className="no-unit-selected">
-            {!hasArmyA && !hasArmyB ? (
-              <>
-                <h3>Start by adding armies to both columns</h3>
-                <p>
-                  Use the Upload army controls in each column to import an army
-                  JSON.
-                </p>
-              </>
-            ) : (
-              <>
-                <h3>Select a unit from either column to view details</h3>
-                <p>
-                  Click on any unit to see its datasheet and available actions.
-                </p>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Column 3: Player B */}
-        <div className="units-sidebar">
-          <div className="column-header">
-            <h3>Player B — {gameData?.playerB?.displayName || "Player B"}</h3>
-            <input
-              ref={inputBRef}
-              type="file"
-              accept=".json,application/json"
-              style={{ display: "none" }}
-              aria-label="Upload army file for Player B"
-              onChange={(e) => onFileInputChange("B", e)}
-            />
-            {hasArmyB ? (
-              <button
-                className="action-btn"
-                onClick={() => inputBRef.current?.click()}
-              >
-                Replace army
-              </button>
-            ) : null}
-          </div>
-          {!hasArmyB && (
-            <div
-              className="upload-dropzone"
-              role="button"
-              aria-label="Upload army file dropzone for Player B"
-              onDragOver={onDragOverZone}
-              onDrop={(e) => onDropZone("B", e)}
-              onClick={() => inputBRef.current?.click()}
-            >
-              <p>
-                <strong>Upload army file</strong>
-              </p>
-              <p>Click to select or drag & drop a .json file</p>
-              {uploadErrorB && (
-                <div className="error-message">{uploadErrorB}</div>
-              )}
-            </div>
-          )}
-          {hasArmyB ? (
-            <ArmyColumn
-              columnKey="B"
-              title="Player B"
-              units={allUnitsB}
-              attachments={attachmentsB}
-              setAttachments={setAttachmentsB}
-              unitOrder={unitOrderB}
-              setUnitOrder={setUnitOrderB}
-              leadershipOverrides={leadershipOverrides}
-              allUnitsById={allUnitsById}
-              selectedUnit={selectedUnit}
-              setSelectedUnit={setSelectedUnit}
-              updateUnitOverrides={updateUnitOverrides}
-              getUnitStatusClass={getUnitStatusClass}
-              isLeaderUnit={isLeaderUnit}
-              canLeaderAttachToUnit={canLeaderAttachToUnit}
-              ovHasActive={ovHasActive}
-              ovSummary={ovSummary}
-              gameId={gameId}
-              sensors={sensors}
-              draggedUnit={draggedUnit}
-              setDraggedUnit={setDraggedUnit}
-              pointerRef={pointerRef}
-              scrollRafRef={scrollRafRef}
-              draggingRef={draggingRef}
-              // Attack Helper wiring
-              attackHelper={attackHelper}
-              setAttackHelper={setAttackHelper}
-              pulseTargetId={pulseTargetId}
-              setPulseTargetId={setPulseTargetId}
-            />
-          ) : (
-            <div className="empty-army">
-              <p>No army yet. Add one to begin.</p>
-            </div>
-          )}
-        </div>
-      </div>
-      {isNarrow && overlayOpen && selectedUnit ? (
-        <div
-          className="datasheet-overlay"
-          role="dialog"
-          aria-label="Datasheet Overlay"
-        >
-          <button
-            type="button"
-            className="overlay-close"
-            aria-label="Close Datasheet"
-            onClick={() => setOverlayOpen(false)}
-          >
-            ×
-          </button>
-          <UnitDatasheet
-            unit={selectedUnit}
-            isSelected={true}
-            onClick={() => {}}
-            overrides={
-              leadershipOverrides[selectedUnit.id] || {
-                canLead: "auto",
-                canBeLed: "auto",
-                allowList: [],
-              }
-            }
-            allUnits={allUnits}
-            onUpdateOverrides={(partial) =>
-              updateUnitOverrides(selectedUnit.id, partial)
             }
           />
         </div>
