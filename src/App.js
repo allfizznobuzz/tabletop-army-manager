@@ -4,6 +4,7 @@ import {
   signInWithGoogle,
   signOutUser,
 } from "./firebase/auth";
+import { createUser } from "./firebase/database";
 import GameDashboard from "./components/GameDashboard";
 import GameSession from "./components/GameSession";
 import ThemeToggle from "./components/ThemeToggle";
@@ -25,6 +26,18 @@ function App() {
 
     return () => unsubscribe();
   }, []);
+
+  // Ensure user document exists after any successful sign-in (popup or redirect)
+  useEffect(() => {
+    if (!user) return;
+    const { uid, email, displayName, photoURL } = user;
+    createUser(uid, {
+      email,
+      displayName,
+      photoURL,
+      provider: "google",
+    }).catch((err) => console.error("Failed to upsert user doc:", err));
+  }, [user?.uid]);
 
   const handleSignIn = async () => {
     try {

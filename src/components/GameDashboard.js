@@ -22,15 +22,22 @@ const GameDashboard = ({ user, onJoinGame }) => {
   });
 
   useEffect(() => {
+    if (!user?.uid) return;
     loadUserGames();
-  }, [user]);
+  }, [user?.uid]);
 
   const loadUserGames = async () => {
     try {
       const userGames = await getUserGames(user.uid);
       // Sort by most recent first
+      const toMillis = (v) =>
+        v && typeof v.toMillis === "function"
+          ? v.toMillis()
+          : v && typeof v.seconds === "number"
+            ? v.seconds * 1000
+            : Number(new Date(v)) || 0;
       const sortedGames = userGames.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+        (a, b) => toMillis(b.createdAt) - toMillis(a.createdAt),
       );
       setRecentGames(sortedGames);
     } catch (error) {
@@ -79,7 +86,9 @@ const GameDashboard = ({ user, onJoinGame }) => {
       onJoinGame(id);
     } catch (error) {
       console.error("Failed to create game:", error);
-      setUploadError("Failed to create game.");
+      setUploadError(
+        `Failed to create game: ${error?.message || String(error)}`,
+      );
     }
   };
 
@@ -127,8 +136,12 @@ const GameDashboard = ({ user, onJoinGame }) => {
     setDeleteConfirm({ isOpen: false, gameId: null, gameName: "" });
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (value) => {
+    const d =
+      value && typeof value.toDate === "function"
+        ? value.toDate()
+        : new Date(value);
+    return d.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",

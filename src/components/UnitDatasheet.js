@@ -1,6 +1,22 @@
 import React, { useMemo, useState } from "react";
 import "./UnitDatasheet.css";
 
+// Remove simple markdown-like markers and HTML tags from imported text
+const sanitizeRichText = (value) => {
+  if (value == null) return "";
+  let s = String(value);
+  // Strip HTML tags
+  s = s.replace(/<\/?[^>]+(>|$)/g, "");
+  // Handle paired markers first
+  s = s.replace(/\*\*(.*?)\*\*/g, "$1"); // **bold**
+  s = s.replace(/__(.*?)__/g, "$1"); // __underline__
+  s = s.replace(/\^\^(.*?)\^\^/g, "$1"); // ^^superscript^^
+  // Remove any leftover repeated markers
+  s = s.replace(/\*\*/g, "");
+  s = s.replace(/\^\^/g, "");
+  return s;
+};
+
 const UnitDatasheet = ({
   unit,
   isSelected,
@@ -131,6 +147,7 @@ const UnitDatasheet = ({
                 <React.Fragment key={`ranged-${index}`}>
                   <div
                     className={`weapon-row ${
+                      isSelected &&
                       attackHelper?.section === "ranged" &&
                       attackHelper?.index === index
                         ? "row--selected"
@@ -139,10 +156,12 @@ const UnitDatasheet = ({
                     role="button"
                     tabIndex={0}
                     aria-expanded={
+                      isSelected &&
                       attackHelper?.section === "ranged" &&
                       attackHelper?.index === index
                     }
                     aria-current={
+                      isSelected &&
                       attackHelper?.section === "ranged" &&
                       attackHelper?.index === index
                         ? "true"
@@ -197,6 +216,7 @@ const UnitDatasheet = ({
                 <React.Fragment key={`melee-${index}`}>
                   <div
                     className={`weapon-row ${
+                      isSelected &&
                       attackHelper?.section === "melee" &&
                       attackHelper?.index === index
                         ? "row--selected"
@@ -205,10 +225,12 @@ const UnitDatasheet = ({
                     role="button"
                     tabIndex={0}
                     aria-expanded={
+                      isSelected &&
                       attackHelper?.section === "melee" &&
                       attackHelper?.index === index
                     }
                     aria-current={
+                      isSelected &&
                       attackHelper?.section === "melee" &&
                       attackHelper?.index === index
                         ? "true"
@@ -243,14 +265,16 @@ const UnitDatasheet = ({
         )}
 
         <div className="datasheet-bottom">
-          {/* Abilities (collapsible matching Override styling) */}
-          <Collapsible title="Abilities" defaultOpen={false}>
+          {/* Abilities */}
+          <Collapsible title="Abilities" defaultOpen={false} centerTitle>
             {unit.abilities && unit.abilities.length > 0 ? (
               unit.abilities.map((ability, index) => (
                 <div key={index} className="ability-item">
-                  <div className="ability-name">{ability.name}:</div>
+                  <div className="ability-name">
+                    {sanitizeRichText(ability.name)}:
+                  </div>
                   <div className="ability-description">
-                    {ability.description}
+                    {sanitizeRichText(ability.description)}
                   </div>
                 </div>
               ))
@@ -259,8 +283,8 @@ const UnitDatasheet = ({
             )}
           </Collapsible>
 
-          {/* Unit Composition (collapsible matching Override styling) */}
-          <Collapsible title="Unit Composition" defaultOpen={false}>
+          {/* Unit Composition */}
+          <Collapsible title="Unit Composition" defaultOpen={false} centerTitle>
             {unit.modelGroups && unit.modelGroups.length > 0 ? (
               <>
                 {unit.modelGroups.map((group, index) => (
@@ -336,7 +360,7 @@ const OverridesCollapsible = ({
     <div className="overrides-collapsible">
       <button
         type="button"
-        className="overrides-header"
+        className="overrides-header center"
         onClick={() => setOpen(!open)}
       >
         <span className={`chevron ${open ? "open" : ""}`}>▸</span>
@@ -449,13 +473,18 @@ const PairwiseControls = ({ unit, allUnits, overrides, onUpdateOverrides }) => {
 export default UnitDatasheet;
 
 // Generic collapsible used for Abilities and Unit Composition
-const Collapsible = ({ title, defaultOpen = false, children }) => {
+const Collapsible = ({
+  title,
+  defaultOpen = false,
+  centerTitle = false,
+  children,
+}) => {
   const [open, setOpen] = useState(!!defaultOpen);
   return (
     <div className="overrides-collapsible">
       <button
         type="button"
-        className="overrides-header"
+        className={`overrides-header ${centerTitle ? "center" : ""}`}
         onClick={() => setOpen(!open)}
       >
         <span className={`chevron ${open ? "open" : ""}`}>▸</span>

@@ -1,63 +1,146 @@
 /* CSS Variables for Theme System */
 
+/* New Dark Palette Tokens (app-wide defaults) */
+:root {
+  /* Neutrals */
+  --bg: #0e1218; /* page background */
+  --surface: #121826; /* panels */
+  --surface-2: #182034; /* elevated panels / datasheet */
+  --card: #1d273b; /* list cards */
+  --card-hover: #223149;
+  --card-selected: #264264;
+  --border: #2b3a55;
+  --divider: #1a2436;
+
+  /* Text */
+  --text: #e6edf7;
+  --text-muted: #a9b6cc;
+  --text-subtle: #8b97ad;
+
+  /* Brand / States */
+  --primary: #2dd4bf; /* teal/cyan */
+  --primary-600: #14b8a6;
+  --primary-700: #0f766e;
+  --accent: #7c9cff; /* indigo accent */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --danger-700: #b91c1c;
+
+  /* Focus/Selection */
+  --focus: #38bdf8;
+  --selected: #334155;
+
+  /* Tables (weapons) */
+  --row: #1a2538;
+  --row-hover: #21304a;
+  --row-active: #2a3f62;
+
+  /* Misc */
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-xs: 8px;
+
+  /* Legacy shadow color used by older styles */
+  --shadow-primary: rgba(0, 0, 0, 0.35);
+}
+
 /* Dark Theme - Blue-Focused Harmony */
 .dark-theme {
   /* Base colors - Blue-toned palette */
-  --color-primary: #0f1419;        /* Deep blue-black */
-  --color-secondary: #1e2a3a;      /* Dark blue-gray */
-  --color-tertiary: #2a3441;       /* Medium blue-gray */
-  
+  --color-primary: #0f1419; /* Deep blue-black */
+  --color-secondary: #1e2a3a; /* Dark blue-gray */
+  --color-tertiary: #2a3441; /* Medium blue-gray */
+
   /* Text hierarchy */
-  --text-primary: #e6f1ff;         /* Light blue-white */
-  --text-secondary: #b8d4f0;       /* Medium blue-white */
-  --text-muted: #8bb3d9;           /* Muted blue */
+  --text-primary: #e6f1ff; /* Light blue-white */
+  --text-secondary: #b8d4f0; /* Medium blue-white */
+  --text-muted: #8bb3d9; /* Muted blue */
   --text-inverse: #ffffff;
-  
+
   /* Semantic action colors - Rich tones */
-  --action-primary: #5ba3f5;       /* Rich blue */
-  --action-secondary: #6b7785;     /* Blue-gray */
-  --action-success: #2dd4bf;       /* Rich teal */
-  --action-warning: #f59e0b;       /* Rich amber */
-  --action-danger: #ef4444;        /* Rich red */
-  
+  --action-primary: #5ba3f5; /* Rich blue */
+  --action-secondary: #6b7785; /* Blue-gray */
+  --action-success: #2dd4bf; /* Rich teal */
+  --action-warning: #f59e0b; /* Rich amber */
+  --action-danger: #ef4444; /* Rich red */
+
   /* Interactive states */
   --interactive-hover: #2a3441;
   --interactive-active: #3d4a5c;
   --interactive-focus: rgba(91, 163, 245, 0.3);
-  
+
   /* Borders and dividers - Blue tones */
-  --border-primary: #3d4a5c;       /* Blue-gray border */
-  --border-secondary: #2a3441;     /* Darker blue-gray */
-  --border-focus: #5ba3f5;         /* Rich blue focus */
-  
+  --border-primary: #3d4a5c; /* Blue-gray border */
+  --border-secondary: #2a3441; /* Darker blue-gray */
+  --border-focus: #5ba3f5; /* Rich blue focus */
+
   /* Shadows - Deeper blues */
   --shadow-sm: 0 0.125rem 0.25rem rgba(15, 20, 25, 0.4);
   --shadow-md: 0 0.5rem 1rem rgba(15, 20, 25, 0.5);
   --shadow-lg: 0 1rem 3rem rgba(15, 20, 25, 0.6);
-  
+
   /* Component-specific semantic colors */
   --nav-active-bg: var(--action-success);
   --nav-active-text: #000000;
   --nav-inactive-bg: transparent;
   --nav-inactive-text: var(--text-primary);
-  
+
   /* Weapon categories (logical color coding) */
-  --weapon-ranged-bg: var(--action-primary);    /* Blue for ranged */
-  --weapon-melee-bg: var(--action-danger);      /* Red for melee */
+  --weapon-ranged-bg: var(--action-primary); /* Blue for ranged */
+  --weapon-melee-bg: var(--action-danger); /* Red for melee */
   --weapon-table-bg: var(--color-tertiary);
   --weapon-header-bg: var(--color-secondary);
-  
+
   /* Unit status colors */
-  --status-ready: var(--action-success);        /* Green for ready */
-  --status-done: #fbbf24;                       /* Yellow for done */
-  --status-dead: var(--action-danger);          /* Red for dead */
-  
+  --status-ready: var(--action-success); /* Green for ready */
+  --status-done: #fbbf24; /* Yellow for done */
+  --status-dead: var(--action-danger); /* Red for dead */
+
   /* Ability and info sections */
   --info-header-bg: var(--action-primary);
   --info-header-text: var(--text-inverse);
   --info-content-bg: var(--color-secondary);
   --info-item-bg: rgba(91, 163, 245, 0.1);
   --info-border: var(--action-primary);
+
+  /* New tokens mapped into existing theme when dark is active */
+  /* Page and surfaces */
+  --color-primary: var(--bg);
+  --color-secondary: var(--surface);
+  --color-tertiary: var(--surface-2);
+  --gradient-primary: var(--surface);
+  --gradient-header: var(--surface-2);
+
+  /* Text */
+  --text-primary: var(--text);
+  --text-secondary: var(--text-muted);
+  --text-muted: var(--text-subtle);
+  --text-inverse: #ffffff;
+
+  /* Actions and states */
+  --action-primary: var(--primary);
+  --action-success: var(--success);
+  --action-warning: var(--warning);
+  --action-danger: var(--danger);
+  --interactive-hover: var(--card-hover);
+  --interactive-active: var(--row-active);
+  --interactive-focus: rgba(56, 189, 248, 0.3);
+
+  /* Borders and focus */
+  --border-primary: var(--border);
+  --border-secondary: var(--divider);
+  --border-focus: var(--focus);
+
+  /* Weapon tables */
+  --weapon-table-bg: var(--surface-2);
+  --weapon-header-bg: var(--surface);
+
+  /* Status colors */
+  --status-ready: var(--success);
+  --status-done: var(--warning);
+  --status-dead: var(--danger);
 }
 
 /* Light Theme - Semantic Color System */
@@ -66,52 +149,52 @@
   --color-primary: #ffffff;
   --color-secondary: #f8f9fa;
   --color-tertiary: #e9ecef;
-  
+
   /* Text hierarchy */
   --text-primary: #212529;
   --text-secondary: #495057;
   --text-muted: #6c757d;
   --text-inverse: #ffffff;
-  
+
   /* Semantic action colors - Professional tones */
-  --action-primary: #0d6efd;      /* Primary blue */
-  --action-secondary: #6c757d;    /* Secondary actions (cancel) */
-  --action-success: #198754;      /* Success green */
-  --action-warning: #fd7e14;      /* Warning orange */
-  --action-danger: #dc3545;       /* Danger red */
-  
+  --action-primary: #0d6efd; /* Primary blue */
+  --action-secondary: #6c757d; /* Secondary actions (cancel) */
+  --action-success: #198754; /* Success green */
+  --action-warning: #fd7e14; /* Warning orange */
+  --action-danger: #dc3545; /* Danger red */
+
   /* Interactive states */
   --interactive-hover: #e9ecef;
   --interactive-active: #dee2e6;
   --interactive-focus: rgba(13, 110, 253, 0.25);
-  
+
   /* Borders and dividers */
   --border-primary: #dee2e6;
   --border-secondary: #e9ecef;
   --border-focus: #86b7fe;
-  
+
   /* Shadows */
   --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
   --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
   --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
-  
+
   /* Component-specific semantic colors */
   --nav-active-bg: var(--action-success);
   --nav-active-text: #000000;
   --nav-inactive-bg: transparent;
   --nav-inactive-text: var(--text-primary);
-  
+
   /* Weapon categories (logical color coding) */
-  --weapon-ranged-bg: var(--action-primary);    /* Blue for ranged */
-  --weapon-melee-bg: var(--action-danger);      /* Red for melee */
+  --weapon-ranged-bg: var(--action-primary); /* Blue for ranged */
+  --weapon-melee-bg: var(--action-danger); /* Red for melee */
   --weapon-table-bg: var(--color-primary);
   --weapon-header-bg: var(--color-tertiary);
-  
+
   /* Unit status colors */
-  --status-ready: var(--action-success);        /* Green for ready */
-  --status-done: #d97706;                       /* Yellow-orange for done */
-  --status-dead: var(--action-danger);          /* Red for dead */
-  
+  --status-ready: var(--action-success); /* Green for ready */
+  --status-done: #d97706; /* Yellow-orange for done */
+  --status-dead: var(--action-danger); /* Red for dead */
+
   /* Ability and info sections */
   --info-header-bg: var(--action-primary);
   --info-header-text: var(--text-inverse);
@@ -124,7 +207,9 @@
 body {
   background-color: var(--color-primary);
   color: var(--text-primary);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* Theme toggle button */
@@ -160,4 +245,117 @@ body {
     height: 35px;
     font-size: 0.9rem;
   }
+}
+
+/* --- Semantic Tokens (Light default) ------------------------------------ */
+:root {
+  /* Backgrounds */
+  --bg-page: hsl(210 20% 98%);
+  --bg-surface: #ffffff;
+  --bg-subtle: hsl(210 20% 96%);
+  --bg-elev: hsl(210 20% 99%);
+
+  /* Text */
+  --text-primary: hsl(215 25% 15%);
+  --text-secondary: hsl(215 15% 35%);
+  --text-muted: hsl(215 12% 50%);
+  --text-inverse: #ffffff;
+
+  /* Borders */
+  --line: hsl(215 16% 85% / 0.9);
+  --line-subtle: hsl(215 16% 85% / 0.6);
+
+  /* Accent */
+  --accent: hsl(217 90% 56%);
+  --accent-600: hsl(217 90% 50%);
+  --accent-700: hsl(217 85% 46%);
+  --accent-200: hsl(217 92% 80%);
+
+  /* Status (reserved for status only) */
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+/* Dark overrides (supports both class and data-attribute toggles) */
+:root.dark-theme,
+:root[data-theme="dark"] {
+  --bg-page: hsl(222 47% 10%);
+  --bg-surface: hsl(217 33% 17%);
+  --bg-subtle: hsl(217 33% 14%);
+  --bg-elev: hsl(217 33% 20%);
+
+  --text-primary: hsl(210 40% 98%);
+  --text-secondary: hsl(215 20% 80%);
+  --text-muted: hsl(215 15% 65%);
+  --text-inverse: #0b0e14;
+
+  --line: hsl(215 25% 62% / 0.22);
+  --line-subtle: hsl(215 25% 62% / 0.12);
+
+  --accent: hsl(217 90% 66%);
+  --accent-600: hsl(217 90% 62%);
+  --accent-700: hsl(217 90% 58%);
+  --accent-200: hsl(217 92% 80%);
+}
+
+/* Base application mappings to semantic tokens */
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+}
+
+/* Bridge aliases – keep legacy token names working with new system */
+:root,
+:root.dark-theme,
+:root.light-theme,
+:root[data-theme="dark"] {
+  /* Legacy neutrals -> semantic */
+  --color-primary: var(--bg-page);
+  --color-secondary: var(--bg-surface);
+  --color-tertiary: var(--bg-subtle);
+  --gradient-primary: var(--bg-surface);
+  --gradient-header: var(--bg-elev);
+
+  /* Old surface/card tokens */
+  --bg: var(--bg-page);
+  --surface: var(--bg-surface);
+  --surface-2: var(--bg-elev);
+  --card: var(--bg-surface);
+  --card-hover: color-mix(in srgb, var(--accent) 6%, var(--bg-surface));
+
+  /* Text */
+  --text: var(--text-primary);
+  --text-subtle: var(--text-muted);
+
+  /* Lines */
+  --border: var(--line);
+  --divider: var(--line-subtle);
+
+  /* Accent as primary action */
+  --primary: var(--accent);
+  --primary-600: var(--accent-600);
+  --primary-700: var(--accent-700);
+  --focus: var(--accent-200);
+  --border-focus: var(--accent-600);
+  --action-primary: var(--accent);
+  --action-secondary: var(--text-muted);
+
+  /* Interactive */
+  --interactive-hover: var(--bg-subtle);
+  --interactive-active: color-mix(in srgb, var(--accent) 8%, var(--bg-surface));
+
+  /* Status mapping (status only) */
+  --status-ready: var(--success);
+  --status-done: var(--warning);
+  --status-dead: var(--danger);
+
+  /* Weapons & info headers now use subtle bg + secondary text */
+  --weapon-ranged-bg: var(--bg-subtle);
+  --weapon-melee-bg: var(--bg-subtle);
+  --info-header-bg: var(--bg-subtle);
+  --info-header-text: var(--text-secondary);
+  --info-content-bg: var(--bg-surface);
+  --info-item-bg: color-mix(in srgb, var(--accent) 8%, transparent);
+  --info-border: var(--line);
 }

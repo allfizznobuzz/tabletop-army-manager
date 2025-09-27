@@ -27,7 +27,7 @@ const convertBattleScribeToSimple = (battleScribeData) => {
   const selections = force.selections || [];
 
   const armyData = {
-    name: force.name || "Imported Army",
+    name: (roster && roster.name) || force.name || "Imported Army",
     faction: extractFaction(force),
     units: [],
   };

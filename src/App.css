@@ -66,7 +66,7 @@
 
 .helper-cell {
   background: var(--bg-elev);
-  border: 1px dashed var(--line-subtle);
+  border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   padding: 8px;
 }
@@ -655,9 +655,10 @@
 
 .game-content {
   display: grid;
-  grid-template-columns: 280px minmax(720px, 1fr) 280px;
+  /* Allow the center column to shrink to avoid horizontal clipping on smaller widths */
+  grid-template-columns: 230px minmax(0, 1fr) 230px; /* slimmer sidebars by default */
   align-items: stretch; /* allow columns to fill height so inner scrollers can scroll */
-  column-gap: 16px;
+  column-gap: 10px; /* match datasheet compare gap */
   row-gap: 0;
   /* Fill remaining height beneath game header */
   flex: 1;
@@ -679,7 +680,7 @@
 .units-sidebar {
   background: var(--gradient-primary);
   /* Remove top padding so the sticky header can pin flush to the top */
-  padding: 0 1.5rem 1.5rem;
+  padding: 0 0 1.5rem; /* no horizontal padding so visual gap equals grid gap */
   border-radius: 8px;
   box-shadow: 0 4px 8px var(--shadow-primary);
   border: 2px solid var(--border-primary);
@@ -700,18 +701,18 @@
   overscroll-behavior: contain; /* smoother scroll containment */
 }
 
-/* small spacer belongs inside the scrolling area now */
+/* Remove extra spacer; rely on padding-bottom for subtle breathing room */
 .units-sidebar .units-scroll::after {
-  content: "";
-  display: block;
-  height: var(--column-bottom-spacer);
+  content: none;
+  display: none;
+  height: 0;
 }
 
 /* The list content starts BELOW the header’s height, so nothing hides beneath it */
 .army-column .army-list,
 .army-column .units-list {
-  /* Tiny visual buffer under the header row; header no longer overlaps */
-  padding-top: 6px;
+  /* Give the first unit breathing room under header */
+  padding-top: 12px;
   margin-top: 0;
   /* Ensure the column itself clips any accidental overflow from children */
   position: relative;
@@ -721,9 +722,10 @@
 /* Extra guarantee of bottom breathing room inside the list */
 .army-column .army-list::after,
 .army-column .units-list::after {
-  content: "";
-  display: block;
-  height: var(--column-bottom-spacer);
+  /* Avoid double-spacing: bottom gap handled by .units-scroll padding/::after */
+  content: none;
+  display: none;
+  height: 0;
 }
 
 /* Inner scroll area under the header */
@@ -733,9 +735,9 @@
   scrollbar-gutter: stable both-edges;
   min-height: 0; /* allow scroll container to shrink */
   /* breathing room so scrollbar doesn't crowd cards */
-  padding-right: 12px;
+  padding-right: 10px;
   /* visible bottom padding within the scroll container */
-  padding-bottom: var(--column-bottom-gap);
+  padding-bottom: 8px; /* subtle, avoids big excess at end */
 }
 
 /* Discord-like pinned header (static in the top grid row; list below scrolls) */
@@ -747,8 +749,11 @@
   border-bottom: 1px solid var(--line);
   /* Lock a predictable height so we can size the grid row */
   min-height: var(--army-header-offset);
-  display: flex;
-  align-items: center; /* vertically centers the title/button */
+  display: grid;
+  grid-template-columns: 1fr; /* single column */
+  grid-template-rows: auto auto; /* titles row + button row */
+  align-items: center;
+  row-gap: 6px;
   padding: 8px 12px;
   /* Subtle drop line so it visually sits above the list */
   box-shadow: 0 1px 0 var(--line);
@@ -756,18 +761,58 @@
   margin-bottom: 0;
 }
 
+/* Header titles: stack army name and player line */
+.army-column .column-header .header-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0; /* allow text to ellipsize */
+  grid-row: 1;
+}
+.army-column .column-header .army-name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.army-column .column-header .player-name {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Replace button on the right; compact pill style */
+.army-column .column-header .replace-btn {
+  position: static;
+  grid-row: 2; /* second row */
+  grid-column: 1;
+  justify-self: end; /* align right on its own row */
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
 /* central column wrapper */
 .datasheet-area {
   align-self: stretch;
   height: 100%;
   min-height: 0;
+  min-width: 0; /* allow center column to shrink within grid */
   /* Use a two-row grid: sticky rail (auto) + scroll area (1fr) */
   display: grid;
   grid-template-rows: auto 1fr;
   overflow: hidden; /* scrolling happens in the inner .datasheet-scroll */
   /* Match side columns' inner padding for perfect vertical alignment */
-  padding-left: 1.5rem;
-  padding-right: 1.5rem;
+  padding-left: 0; /* remove horizontal padding so visual gap equals grid gap */
+  padding-right: 0;
 }
 
 /* Match bottom breathing space of side columns */
@@ -839,12 +884,30 @@
 .upload-dropzone {
   border: 2px dashed var(--border-primary);
   border-radius: 8px;
-  padding: 1rem;
+  padding: 1.25rem;
   text-align: center;
   color: var(--text-secondary);
   background: var(--color-tertiary);
   cursor: pointer;
   margin-bottom: 1rem;
+}
+
+/* Center the dropzone when the column has no army */
+.units-sidebar .units-scroll:has(.empty-army) {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  padding-top: 0; /* remove top bias */
+}
+.units-sidebar .units-scroll:has(.empty-army) .upload-dropzone {
+  margin: 0 auto 1rem auto; /* center horizontally */
+  max-width: 100%;
+}
+/* Also center when dropzone is present (before army is loaded) */
+.units-sidebar .units-scroll:has(.upload-dropzone) {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
 }
 .upload-dropzone:hover {
   background: var(--interactive-hover);
@@ -961,10 +1024,15 @@
 
 /* Target enemy highlight when Attack Helper is open */
 .unit-card.is-target,
+.unit-card.is-attacker,
+.unit-card.selected,
 .unit-card[aria-selected="true"] {
+  position: relative;
+  /* Stronger, more legible glow */
   box-shadow:
-    0 0 0 2px var(--border-focus),
-    0 0 0 6px rgba(56, 189, 248, 0.18);
+    0 0 0 2px var(--accent),
+    0 0 0 8px color-mix(in oklab, var(--accent) 25%, transparent),
+    0 6px 18px color-mix(in oklab, var(--accent) 35%, transparent);
 }
 
 .target-badge {
@@ -973,15 +1041,16 @@
   right: 6px;
   background: var(--accent);
   color: var(--text-inverse);
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in oklab, var(--accent) 70%, #000);
   border-radius: 999px;
-  padding: 2px 6px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
   pointer-events: none;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
   z-index: 2;
+  animation: target-pulse 1.2s ease-in-out infinite alternate;
 }
 
 /* Leader attach affordance (visual glow) */
@@ -1006,13 +1075,102 @@
 
 /* Selected state uses accent (not status colors) */
 .unit-card.selected {
-  background: color-mix(in oklab, var(--accent) 8%, var(--card));
+  background: var(--card);
   border-color: var(--accent-700);
-  box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 35%, transparent);
 }
 
 .unit-card.selected h4 {
   color: var(--text);
+}
+
+/* Do not animate/scale when highlighted as attacker/target/selected */
+.unit-card.selected:hover,
+.unit-card.is-target:hover,
+.unit-card.is-attacker:hover {
+  transform: none !important;
+}
+
+/* Side-by-side datasheet compare grid below the helper */
+.datasheet-compare-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px; /* a touch slimmer between the two datasheets */
+  /* Fill available height so children can scroll internally */
+  height: 100%;
+  min-height: 0;
+}
+.datasheet-compare-grid > div {
+  height: 100%;
+  min-height: 0;
+  /* Ensure inner columns can shrink within the grid without forcing overflow */
+  min-width: 0;
+}
+
+/* Responsive tightening for slimmer pages */
+@media (max-width: 1200px) {
+  .game-content {
+    column-gap: 10px;
+    /* keep sidebars slim or slimmer than default */
+    grid-template-columns: 220px minmax(0, 1fr) 220px;
+  }
+  /* Stack datasheets vertically so each has full width */
+  .datasheet-compare-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .game-content {
+    column-gap: 8px;
+    grid-template-columns: 200px minmax(0, 1fr) 200px;
+  }
+}
+
+/* Helper header with attacker/defender/weapon and swap button */
+.attack-helper .helper-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.attack-helper .helper-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center; /* center the A/D/W group */
+  text-align: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.attack-helper .helper-title .sep {
+  opacity: 0.5;
+}
+/* Dice Calculator title in the helper header */
+.attack-helper .helper-name {
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-right: 6px;
+}
+/* Remove dotted focus outlines inside helper; provide a clean focus ring */
+.attack-helper *:focus {
+  outline: none;
+}
+.attack-helper input:focus-visible,
+.attack-helper button:focus-visible,
+.attack-helper select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--border-focus);
+}
+
+/* Subtle attacker/defender color cues when a weapon is selected */
+.attack-helper .attacker-name.active {
+  color: var(--action-success);
+}
+.attack-helper .defender-name.active {
+  color: var(--action-danger);
 }
 
 .unit-card h4 {
@@ -1326,4 +1484,17 @@
   .game-content {
     column-gap: 12px;
   }
+}
+
+/* --- Animation consistency overrides (must be at end of file to win cascade) --- */
+/* Ensure both left and right army lists animate selections equally smoothly */
+.unit-card {
+  will-change: transform, box-shadow;
+}
+.unit-card:not(.dragging) {
+  transition:
+    transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }

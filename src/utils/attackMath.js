@@ -58,6 +58,28 @@ export function computeDefenderSave(armourSave, ap, invulnSave) {
   return { armourAfterAp, invuln: inv, best, used };
 }
 
+// Parse AP as integer, tolerant to unicode minus and strings like "-2" or "−2"
+export function parseAp(ap) {
+  if (ap === undefined || ap === null) return 0;
+  const str = String(ap).replace(/−/g, "-").trim();
+  const m = str.match(/-?\d+/);
+  if (!m) return 0;
+  return Number(m[0]) || 0;
+}
+
+// Explain the S vs T wound rule threshold
+// Returns a phrase like "S ≥ 2T → 2+" or "S = T → 4+"
+export function explainWoundRule(S, T) {
+  const s = Number(S || 0);
+  const t = Number(T || 0);
+  if (!s || !t) return null;
+  if (s >= 2 * t) return "S ≥ 2T → 2+";
+  if (s > t) return "S > T → 3+";
+  if (s === t) return "S = T → 4+";
+  if (s * 2 <= t) return "S ≤ T/2 → 6+";
+  return "S < T → 5+";
+}
+
 // Parse common dice notations like D3, D6, 2D6, D6+1, 2D3+3
 // Returns { kind: 'fixed'|'dice', value: number|string, avg?: number, min?: number, max?: number }
 export function parseDiceNotation(value) {
