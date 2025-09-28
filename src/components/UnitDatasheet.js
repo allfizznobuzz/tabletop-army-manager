@@ -52,9 +52,11 @@ const UnitDatasheet = ({
       const k = keyOf(w);
       const existing = map.get(k);
       if (existing) {
-        existing.count = (existing.count || 1) + 1;
+        existing.count = existing.count ? existing.count + 1 : 2;
       } else {
-        map.set(k, { ...w, count: w.count || 1 });
+        const initial = { ...w };
+        if (Number.isFinite(w.count) && w.count > 0) initial.count = w.count;
+        map.set(k, initial);
       }
     });
     return Array.from(map.values());
@@ -145,49 +147,47 @@ const UnitDatasheet = ({
               </div>
               {rangedWeapons.map((weapon, index) => (
                 <React.Fragment key={`ranged-${index}`}>
-                  <div
-                    className={`weapon-row ${
-                      isSelected &&
+                  {(() => {
+                    const isRowSelected =
+                      attackHelper?.attackerUnitId === unit.id &&
                       attackHelper?.section === "ranged" &&
-                      attackHelper?.index === index
-                        ? "row--selected"
-                        : ""
-                    }`}
-                    role="button"
-                    tabIndex={0}
-                    aria-expanded={
-                      isSelected &&
-                      attackHelper?.section === "ranged" &&
-                      attackHelper?.index === index
-                    }
-                    aria-current={
-                      isSelected &&
-                      attackHelper?.section === "ranged" &&
-                      attackHelper?.index === index
-                        ? "true"
-                        : undefined
-                    }
-                    onClick={() => onToggleWeapon?.("ranged", index, weapon)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ")
-                        onToggleWeapon?.("ranged", index, weapon);
-                    }}
-                  >
-                    <div className="weapon-name-col">
-                      <div className="weapon-name">{weapon.name}</div>
-                      {weapon.count > 1 && (
-                        <div className="weapon-count">(x{weapon.count})</div>
-                      )}
-                    </div>
-                    <div className="weapon-stat-col">{weapon.range}</div>
-                    <div className="weapon-stat-col">{weapon.attacks}</div>
-                    <div className="weapon-stat-col">
-                      {getStatValue(weapon.skill, "3+")}
-                    </div>
-                    <div className="weapon-stat-col">{weapon.strength}</div>
-                    <div className="weapon-stat-col">{weapon.ap}</div>
-                    <div className="weapon-stat-col">{weapon.damage}</div>
-                  </div>
+                      attackHelper?.index === index;
+                    return (
+                      <div
+                        className={`weapon-row ${isRowSelected ? "row--selected" : ""}`}
+                        role="button"
+                        tabIndex={0}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        aria-expanded={isRowSelected || undefined}
+                        aria-current={isRowSelected ? "true" : undefined}
+                        onClick={() =>
+                          onToggleWeapon?.("ranged", index, weapon)
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ")
+                            onToggleWeapon?.("ranged", index, weapon);
+                        }}
+                      >
+                        <div className="weapon-name-col">
+                          <div className="weapon-name">{weapon.name}</div>
+                          {weapon.count > 1 && (
+                            <div className="weapon-count">
+                              (x{weapon.count})
+                            </div>
+                          )}
+                        </div>
+                        <div className="weapon-stat-col">{weapon.range}</div>
+                        <div className="weapon-stat-col">{weapon.attacks}</div>
+                        <div className="weapon-stat-col">
+                          {getStatValue(weapon.skill, "3+")}
+                        </div>
+                        <div className="weapon-stat-col">{weapon.strength}</div>
+                        <div className="weapon-stat-col">{weapon.ap}</div>
+                        <div className="weapon-stat-col">{weapon.damage}</div>
+                      </div>
+                    );
+                  })()}
                   {/* weapon row click just selects; panel stays pinned at top */}
                 </React.Fragment>
               ))}
@@ -214,49 +214,44 @@ const UnitDatasheet = ({
               </div>
               {meleeWeapons.map((weapon, index) => (
                 <React.Fragment key={`melee-${index}`}>
-                  <div
-                    className={`weapon-row ${
-                      isSelected &&
+                  {(() => {
+                    const isRowSelected =
+                      attackHelper?.attackerUnitId === unit.id &&
                       attackHelper?.section === "melee" &&
-                      attackHelper?.index === index
-                        ? "row--selected"
-                        : ""
-                    }`}
-                    role="button"
-                    tabIndex={0}
-                    aria-expanded={
-                      isSelected &&
-                      attackHelper?.section === "melee" &&
-                      attackHelper?.index === index
-                    }
-                    aria-current={
-                      isSelected &&
-                      attackHelper?.section === "melee" &&
-                      attackHelper?.index === index
-                        ? "true"
-                        : undefined
-                    }
-                    onClick={() => onToggleWeapon?.("melee", index, weapon)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ")
-                        onToggleWeapon?.("melee", index, weapon);
-                    }}
-                  >
-                    <div className="weapon-name-col">
-                      <div className="weapon-name">{weapon.name}</div>
-                      {weapon.count > 1 && (
-                        <div className="weapon-count">(x{weapon.count})</div>
-                      )}
-                    </div>
-                    <div className="weapon-stat-col">Melee</div>
-                    <div className="weapon-stat-col">{weapon.attacks}</div>
-                    <div className="weapon-stat-col">
-                      {getStatValue(weapon.skill, "3+")}
-                    </div>
-                    <div className="weapon-stat-col">{weapon.strength}</div>
-                    <div className="weapon-stat-col">{weapon.ap}</div>
-                    <div className="weapon-stat-col">{weapon.damage}</div>
-                  </div>
+                      attackHelper?.index === index;
+                    return (
+                      <div
+                        className={`weapon-row ${isRowSelected ? "row--selected" : ""}`}
+                        role="button"
+                        tabIndex={0}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        aria-expanded={isRowSelected || undefined}
+                        aria-current={isRowSelected ? "true" : undefined}
+                        onClick={() => onToggleWeapon?.("melee", index, weapon)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ")
+                            onToggleWeapon?.("melee", index, weapon);
+                        }}
+                      >
+                        <div className="weapon-name-col">
+                          <div className="weapon-name">{weapon.name}</div>
+                          {weapon.count > 1 && (
+                            <div className="weapon-count">
+                              (x{weapon.count})
+                            </div>
+                          )}
+                        </div>
+                        <div className="weapon-stat-col">Melee</div>
+                        <div className="weapon-stat-col">{weapon.attacks}</div>
+                        <div className="weapon-stat-col">
+                          {getStatValue(weapon.skill, "3+")}
+                        </div>
+                        <div className="weapon-stat-col">{weapon.strength}</div>
+                        <div className="weapon-stat-col">{weapon.ap}</div>
+                        <div className="weapon-stat-col">{weapon.damage}</div>
+                      </div>
+                    );
+                  })()}
                   {/* weapon row click just selects; panel stays pinned at top */}
                 </React.Fragment>
               ))}

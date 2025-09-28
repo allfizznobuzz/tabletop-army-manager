@@ -6,7 +6,7 @@ import {
 } from "./firebase/auth";
 import { createUser } from "./firebase/database";
 import GameDashboard from "./components/GameDashboard";
-import GameSession from "./components/GameSession";
+import GameSession from "./components/GameSession2";
 import ThemeToggle from "./components/ThemeToggle";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import "./App.css";

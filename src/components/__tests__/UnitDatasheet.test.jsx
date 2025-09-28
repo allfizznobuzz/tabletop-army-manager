@@ -137,7 +137,9 @@ describe("UnitDatasheet", () => {
       />,
     );
 
-    // Abilities
+    // Abilities (open collapsible first)
+    const abilitiesHeader = screen.getByRole("button", { name: /Abilities/i });
+    fireEvent.click(abilitiesHeader);
     expect(screen.getByText(/ABILITIES/i)).toBeInTheDocument();
     expect(
       screen.getByText(/And They Shall Know No Fear/i),
@@ -146,7 +148,11 @@ describe("UnitDatasheet", () => {
       screen.getByText(/Re-roll Battle-shock tests\./i),
     ).toBeInTheDocument();
 
-    // Composition and points
+    // Composition and points (open collapsible first)
+    const compHeader = screen.getByRole("button", {
+      name: /Unit Composition/i,
+    });
+    fireEvent.click(compHeader);
     expect(screen.getByText(/UNIT COMPOSITION/i)).toBeInTheDocument();
     expect(screen.getByText(/• 1x Sergeant/i)).toBeInTheDocument();
     expect(screen.getByText(/• 9x Intercessor/i)).toBeInTheDocument();

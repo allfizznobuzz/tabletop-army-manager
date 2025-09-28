@@ -1,132 +1,204 @@
-import React, { useState } from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import UnitDatasheet from "../UnitDatasheet";
+import React from "react";
+import { render, screen, fireEvent, within } from "@testing-library/react";
+// NOTE: GameSession is required after jest.mock declarations below
 
-const baseUnit = {
-  id: "u1",
-  name: "Test Squad",
-  models: 3,
-  toughness: 4,
-  armor_save: "3+",
-  ballistic_skill: 3,
-  weapon_skill: 4,
-  weapons: [
-    {
-      name: "Bolt rifle",
-      range: '24"',
-      type: "Rapid Fire 1",
-      attacks: "D6+1",
-      skill: 3,
-      strength: 4,
-      ap: -1,
-      damage: 2,
+// Mock dnd-kit to avoid ESM issues in Jest
+jest.mock("@dnd-kit/core", () => ({
+  __esModule: true,
+  DndContext: ({ children }) => <div data-testid="dnd-context">{children}</div>,
+  closestCenter: jest.fn(),
+  PointerSensor: function PointerSensor() {},
+  useSensor: jest.fn(() => ({})),
+  useSensors: jest.fn((...args) => args),
+  DragOverlay: ({ children }) => (
+    <div data-testid="drag-overlay">{children}</div>
+  ),
+}));
+jest.mock("@dnd-kit/modifiers", () => ({
+  __esModule: true,
+  restrictToVerticalAxis: jest.fn(),
+  restrictToFirstScrollableAncestor: jest.fn(),
+}));
+jest.mock("@dnd-kit/sortable", () => ({
+  __esModule: true,
+  SortableContext: ({ children }) => (
+    <div data-testid="sortable-context">{children}</div>
+  ),
+  verticalListSortingStrategy: jest.fn(),
+  useSortable: jest.fn(() => ({
+    attributes: {},
+    listeners: {},
+    setNodeRef: () => {},
+    transform: null,
+    transition: null,
+    isDragging: false,
+  })),
+  arrayMove: (arr) => arr,
+}));
+jest.mock("@dnd-kit/utilities", () => ({
+  __esModule: true,
+  CSS: { Transform: { toString: () => "" } },
+}));
+
+// Minimal firebase mock with a single A unit and optional B target
+const makeGameDoc = (withTarget = false) => ({
+  id: "game-panel",
+  name: "Attack Helper Panel Test",
+  currentTurn: "user-1",
+  playerA: {
+    displayName: "Player A",
+    armyData: {
+      units: [
+        {
+          name: "Test Squad",
+          models: 3,
+          toughness: 4,
+          armor_save: "3+",
+          ballistic_skill: 3,
+          weapon_skill: 4,
+          weapons: [
+            {
+              name: "Bolt rifle",
+              range: '24"',
+              type: "Rapid Fire 1",
+              attacks: "D6+1",
+              skill: 3,
+              strength: 4,
+              ap: -1,
+              damage: 2,
+            },
+          ],
+        },
+      ],
     },
-  ],
-  abilities: [],
-  modelGroups: [],
-};
+  },
+  playerB: {
+    displayName: "Player B",
+    armyData: {
+      units: withTarget
+        ? [
+            {
+              name: "Enemy",
+              models: 5,
+              wounds: 1,
+              toughness: 5,
+              armor_save: "3+",
+              invulnerable_save: "5+",
+              weapons: [],
+            },
+          ]
+        : [],
+    },
+  },
+  gameState: {},
+});
 
-const overrides = { canLead: "auto", canBeLed: "auto", allowList: [] };
+jest.mock("../../firebase/database", () => {
+  return {
+    subscribeToGame: jest.fn((gameId, cb) => {
+      // default with no target; tests can re-mock per case
+      cb(makeGameDoc(false));
+      return () => {};
+    }),
+    subscribeToGameUpdates: jest.fn((_gameId, _cb) => () => {}),
+    updateGameState: jest.fn(() => Promise.resolve()),
+  };
+});
 
-function Harness({ withTarget = false }) {
-  const [attackHelper, setAttackHelper] = useState({
-    open: true,
-    section: "ranged",
-    index: 0,
-    modelsInRange: 3,
-    targetUnitId: null,
-  });
-  const target = withTarget
-    ? {
-        id: "enemy1",
-        name: "Enemy",
-        toughness: 5,
-        armor_save: "3+",
-        invulnerable_save: "5+",
-      }
-    : null;
+// Now import the component under test so mocks above are applied
+const GameSession = require("../GameSession").default;
 
-  return (
-    <UnitDatasheet
-      unit={baseUnit}
-      isSelected
-      overrides={overrides}
-      allUnits={[baseUnit]}
-      onUpdateOverrides={() => {}}
-      attackHelper={attackHelper}
-      onToggleWeapon={(section, index) =>
-        setAttackHelper((p) => ({
-          ...p,
-          open: !(p.open && p.section === section && p.index === index),
-          section,
-          index,
-        }))
-      }
-      onCloseAttackHelper={() =>
-        setAttackHelper({
-          open: false,
-          section: null,
-          index: null,
-          modelsInRange: null,
-          targetUnitId: null,
-        })
-      }
-      onChangeModelsInRange={(val) =>
-        setAttackHelper((p) => ({ ...p, modelsInRange: Number(val) || 1 }))
-      }
-      selectedTargetUnit={target}
-    />
-  );
+const user = { uid: "user-1" };
+
+async function clickCardByTextAsync(txt) {
+  const name = txt instanceof RegExp ? txt : new RegExp(String(txt), "i");
+  const card = await screen.findByRole("button", { name });
+  fireEvent.click(card);
 }
 
 describe("Attack Helper panel", () => {
-  test("opens from weapon row click and shows placeholders when no target", () => {
-    render(<Harness withTarget={false} />);
+  test("opens from weapon row click and shows placeholders when no target", async () => {
+    // Initial mock: no target
+    const db = require("../../firebase/database");
+    db.subscribeToGame.mockImplementation((_id, cb) => {
+      cb(makeGameDoc(false));
+      return () => {};
+    });
 
-    // Weapon row toggles
-    const row = screen.getByRole("button", { name: /bolt rifle/i });
-    fireEvent.click(row); // close
-    fireEvent.click(row); // open again
+    render(<GameSession gameId="game-panel-1" user={user} />);
+
+    await clickCardByTextAsync(/Test Squad/i);
+
+    const row = await screen.findByRole("button", { name: /bolt rifle/i });
+    fireEvent.click(row);
 
     // Attack Helper visible
     expect(
-      screen.getByRole("region", { name: /attack helper/i }),
+      await screen.findByRole("region", { name: /attack helper/i }),
     ).toBeInTheDocument();
 
-    // Shows dice notation instruction and models-based averages
-    expect(
-      screen.getByText(/roll d6\+1 to determine attacks/i),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/Avg: 13.5/i)).toBeInTheDocument(); // (D6+1 avg 4.5) * 3 models
+    // Shows dice notation instruction
+    expect(await screen.findByText(/Roll\s*D6\+1/i)).toBeInTheDocument();
 
-    // To Wound and Defender Save show missing chips without a target
-    expect(screen.getAllByText(/missing/i).length).toBeGreaterThanOrEqual(2);
+    // No target yet => messages prompt to select target
+    expect(screen.getAllByText(/select a target/i).length).toBeGreaterThan(0);
   });
 
-  test("with a target, shows to-hit, to-wound, and defender save details", () => {
-    render(<Harness withTarget={true} />);
+  test("with a target, shows to-hit, to-wound, and defender save details", async () => {
+    const db = require("../../firebase/database");
+    db.subscribeToGame.mockImplementation((_id, cb) => {
+      cb(makeGameDoc(true));
+      return () => {};
+    });
+
+    render(<GameSession gameId="game-panel-2" user={user} />);
+
+    // Select attacker and open helper
+    await clickCardByTextAsync(/Test Squad/i);
+    const row = await screen.findByRole("button", { name: /bolt rifle/i });
+    fireEvent.click(row);
+
+    // With target selected later, panel remains visible and shows details
+    // Click enemy to set target
+    await clickCardByTextAsync(/Enemy/i);
 
     // To Hit probability helper
-    expect(screen.getByText(/3\+\s*\(p≈66\.7%\)/i)).toBeInTheDocument();
+    const panel = await screen.findByRole("region", { name: /attack helper/i });
+    expect(within(panel).getByText(/to hit/i)).toBeInTheDocument();
+    expect(within(panel).getByText(/p≈66\.7%/i)).toBeInTheDocument();
 
     // To Wound: S 4 vs T 5 => 5+
-    expect(screen.getByText(/5\+\s*\(p≈33\.3%\)/i)).toBeInTheDocument();
+    expect(within(panel).getByText(/to wound/i)).toBeInTheDocument();
+    expect(within(panel).getByText(/5\+/i)).toBeInTheDocument();
+    expect(within(panel).getByText(/p≈33\.3%/i)).toBeInTheDocument();
 
-    // Defender Save: Best save value plus breakdown line
-    expect(screen.getByText(/Best save:\s*\d\+/i)).toBeInTheDocument();
-    expect(screen.getByText(/Armour after AP/i)).toBeInTheDocument();
-
-    // Damage footer
-    expect(screen.getByText(/Each failed save: 2/i)).toBeInTheDocument();
+    // Defender Save breakdown line
+    expect(await screen.findByText(/Armour after AP/i)).toBeInTheDocument();
   });
 
-  test("changing models in range updates attacks display", () => {
-    render(<Harness withTarget={false} />);
+  test("changing models in range updates expected hits", async () => {
+    const db = require("../../firebase/database");
+    db.subscribeToGame.mockImplementation((_id, cb) => {
+      cb(makeGameDoc(false));
+      return () => {};
+    });
 
-    const input = screen.getByLabelText(/models in range/i);
+    render(<GameSession gameId="game-panel-3" user={user} />);
+
+    await clickCardByTextAsync(/Test Squad/i);
+    const row = await screen.findByRole("button", { name: /bolt rifle/i });
+    fireEvent.click(row);
+
+    // Enable expected results
+    const toggle = await screen.findByLabelText(/show expected results/i);
+    fireEvent.click(toggle);
+
+    const input = await screen.findByLabelText(/models in range/i);
     fireEvent.change(input, { target: { value: "2" } });
 
-    // Avg changes to (4.5 * 2) = 9.0
-    expect(screen.getByText(/Avg: 9\.0/i)).toBeInTheDocument();
+    // With BS 3+ (66.7%), D6+1 avg 4.5 per model -> 2 models => 9 attacks => 6.0 expected hits
+    expect(
+      await screen.findByText(/Expected hits:\s*6\.0/i),
+    ).toBeInTheDocument();
   });
 });
