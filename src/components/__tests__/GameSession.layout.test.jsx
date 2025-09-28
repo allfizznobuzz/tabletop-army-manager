@@ -93,6 +93,9 @@ describe("GameSession three-column layout and upload", () => {
     expect(
       screen.getByText(/start by adding armies to both columns/i),
     ).toBeInTheDocument();
+
+    // Three-column grid container exists
+    expect(screen.getByTestId("game-content")).toBeInTheDocument();
   });
 
   test("importing a JSON file updates game state for Player A", async () => {

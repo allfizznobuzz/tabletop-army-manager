@@ -1,7 +1,114 @@
 .app {
-  min-height: 100vh;
+  height: 100vh; /* lock to viewport */
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* no page-level scrollbars */
+}
+
+/* Normalized header offset used to align center column content with side columns */
+:root {
+  /* The exact visible height of the sticky army header row.
+     If you change the header’s padding/line-height, just update this one value. */
+  --army-header-offset: 56px; /* was 48px; bump slightly for safe clearance */
+  --column-bottom-gap: 28px; /* increased breathing space at bottom of each column */
+  --column-bottom-spacer: 24px; /* extra spacer block to guarantee visual gap */
+  --page-bottom-gap: 28px; /* gap from bottom of viewport to columns */
+}
+
+/* Attack Helper (moved above datasheet) */
+.attack-helper {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+/* Keep top of helper flush with side columns' post-header spacing */
+.datasheet-area .attack-helper {
+  margin-top: 0;
+}
+
+.attack-helper.is-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+.attack-helper .section-title {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.attack-helper .chip,
+.attack-helper input,
+.attack-helper .btn {
+  color: var(--text-primary);
+  background: var(--bg-subtle);
+  border: 1px solid var(--line);
+}
+
+.attack-helper .stripe {
+  background: var(--bg-subtle);
+  color: var(--text-primary);
+  border: 1px solid var(--line);
+}
+
+.helper-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.helper-cell {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+}
+
+/* Ensure helper cells use semantic tokens for readability in both themes */
+.attack-helper .helper-cell {
+  background: var(--bg-subtle);
+  border-color: var(--line);
+}
+
+.helper-cell .value {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.helper-cell .meta {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+.models-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* Brief pulse when user selects an enemy as Attack Helper target */
+.unit-card.pulse {
+  animation: target-pulse 1s ease-out 1;
+  box-shadow:
+    0 0 0 2px var(--border-focus),
+    0 0 12px rgba(0, 0, 0, 0.25);
+}
+@keyframes target-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
+  }
+  30% {
+    box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
+  }
 }
 
 .app-loading {
@@ -130,8 +237,12 @@
 
 .app-main {
   flex: 1;
-  padding: 2rem;
+  /* Safe gutters: full-width content with horizontal padding */
+  padding: 16px clamp(16px, 2vw, 24px);
+  /* Add extra breathing room at the bottom of the viewport */
+  padding-bottom: calc(16px + var(--page-bottom-gap));
   background: var(--color-primary);
+  overflow: hidden; /* columns will scroll internally */
 }
 
 /* Drag and Drop Styles */
@@ -166,7 +277,7 @@
 
 .drag-handle:hover {
   color: var(--text-primary);
-  background: rgba(189, 195, 199, 0.1);
+  background: var(--interactive-hover);
 }
 
 .drag-handle:active {
@@ -175,8 +286,8 @@
 
 /* Dark mode: make drag handle more visible */
 .dark-theme .drag-handle {
-  color: #000000;
-  text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
+  text-shadow: none;
 }
 
 .unit-card.drag-over {
@@ -247,9 +358,9 @@
 .leader-drop-intent {
   /* Bright yellow glow to indicate a confirmed attach target */
   box-shadow:
-    0 0 0 2px #facc15,
-    0 0 28px 6px rgba(250, 204, 21, 0.55);
-  border-color: #facc15 !important;
+    0 0 0 2px var(--action-warning),
+    0 0 28px 6px color-mix(in srgb, var(--action-warning) 55%, transparent);
+  border-color: var(--action-warning) !important;
 }
 .leader-drop-intent .attach-zone {
   /* Hide the inner dashed guide to avoid visual clutter */
@@ -331,9 +442,13 @@
   }
 }
 
-.detach-btn:focus {
-  outline: 2px solid #fff;
-  box-shadow: 0 0 0 2px var(--action-danger);
+.detach-btn:hover {
+  filter: brightness(1.05);
+}
+
+.detach-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
 }
 
 .attached-unit.unit-card {
@@ -506,12 +621,15 @@
 
 /* Game Session Datasheet Styles */
 .game-session {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0; /* rely on app-main gutters */
   background: var(--color-primary);
-  min-height: 100vh;
   color: var(--text-primary);
+  overflow: hidden; /* no outer scrolling */
+  display: flex;
+  flex-direction: column;
 }
 
 .game-header {
@@ -537,23 +655,221 @@
 
 .game-content {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(440px, 520px) minmax(
-      260px,
-      1fr
-    );
-  align-items: start;
-  gap: 2rem;
+  /* Allow the center column to shrink to avoid horizontal clipping on smaller widths */
+  grid-template-columns: 230px minmax(0, 1fr) 230px; /* slimmer sidebars by default */
+  align-items: stretch; /* allow columns to fill height so inner scrollers can scroll */
+  column-gap: 10px; /* match datasheet compare gap */
+  row-gap: 0;
+  /* Fill remaining height beneath game header */
+  flex: 1;
+  min-height: 0; /* allow children to scroll */
+  overflow: hidden; /* children scroll */
+}
+
+/* Each column scrolls inside itself */
+.game-content > * {
+  min-height: 0; /* allow child overflow auto to work inside grid */
+  overflow: auto;
+}
+
+/* Override: sidebars should not scroll themselves; inner .units-scroll does */
+.game-content > aside {
+  overflow: hidden;
 }
 
 .units-sidebar {
   background: var(--gradient-primary);
-  padding: 1.5rem;
+  /* Remove top padding so the sticky header can pin flush to the top */
+  padding: 0 0 1.5rem; /* no horizontal padding so visual gap equals grid gap */
   border-radius: 8px;
   box-shadow: 0 4px 8px var(--shadow-primary);
   border: 2px solid var(--border-primary);
-  /* Make this the scrollable ancestor for drag containment */
-  max-height: 80vh;
+  align-self: stretch; /* fill grid cell height */
+  height: 100%;
+  min-height: 0;
+  /* Discord-like layout: header row + scroll row */
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden; /* inner content scrolls */
+}
+
+/* side columns scroll, but keep a bottom gap so content doesn't slam into the edge */
+.army-column {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden; /* scroller is .units-scroll */
+  overscroll-behavior: contain; /* smoother scroll containment */
+}
+
+/* Remove extra spacer; rely on padding-bottom for subtle breathing room */
+.units-sidebar .units-scroll::after {
+  content: none;
+  display: none;
+  height: 0;
+}
+
+/* The list content starts BELOW the header’s height, so nothing hides beneath it */
+.army-column .army-list,
+.army-column .units-list {
+  /* Give the first unit breathing room under header */
+  padding-top: 12px;
+  margin-top: 0;
+  /* Ensure the column itself clips any accidental overflow from children */
+  position: relative;
+  z-index: 0;
+}
+
+/* Extra guarantee of bottom breathing room inside the list */
+.army-column .army-list::after,
+.army-column .units-list::after {
+  /* Avoid double-spacing: bottom gap handled by .units-scroll padding/::after */
+  content: none;
+  display: none;
+  height: 0;
+}
+
+/* Inner scroll area under the header */
+.units-sidebar .units-scroll {
   overflow-y: auto;
+  overflow-x: hidden; /* no horizontal scrollbar */
+  scrollbar-gutter: stable both-edges;
+  min-height: 0; /* allow scroll container to shrink */
+  /* breathing room so scrollbar doesn't crowd cards */
+  padding-right: 10px;
+  /* visible bottom padding within the scroll container */
+  padding-bottom: 8px; /* subtle, avoids big excess at end */
+}
+
+/* Discord-like pinned header (static in the top grid row; list below scrolls) */
+.army-column .column-header {
+  position: relative;
+  z-index: 1; /* remain visually above scrolling content */
+  /* The header must be fully opaque so list items cannot show through */
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--line);
+  /* Lock a predictable height so we can size the grid row */
+  min-height: var(--army-header-offset);
+  display: grid;
+  grid-template-columns: 1fr; /* single column */
+  grid-template-rows: auto auto; /* titles row + button row */
+  align-items: center;
+  row-gap: 6px;
+  padding: 8px 12px;
+  /* Subtle drop line so it visually sits above the list */
+  box-shadow: 0 1px 0 var(--line);
+  /* Do not rely on margin-bottom for spacing */
+  margin-bottom: 0;
+}
+
+/* Header titles: stack army name and player line */
+.army-column .column-header .header-titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0; /* allow text to ellipsize */
+  grid-row: 1;
+}
+.army-column .column-header .army-name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.army-column .column-header .player-name {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Replace button on the right; compact pill style */
+.army-column .column-header .replace-btn {
+  position: static;
+  grid-row: 2; /* second row */
+  grid-column: 1;
+  justify-self: end; /* align right on its own row */
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+/* central column wrapper */
+.datasheet-area {
+  align-self: stretch;
+  height: 100%;
+  min-height: 0;
+  min-width: 0; /* allow center column to shrink within grid */
+  /* Use a two-row grid: sticky rail (auto) + scroll area (1fr) */
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden; /* scrolling happens in the inner .datasheet-scroll */
+  /* Match side columns' inner padding for perfect vertical alignment */
+  padding-left: 0; /* remove horizontal padding so visual gap equals grid gap */
+  padding-right: 0;
+}
+
+/* Match bottom breathing space of side columns */
+.datasheet-area {
+  /* No extra top padding – Attack Helper should sit flush to the top */
+  padding-top: 0;
+}
+/* bottom gap belongs inside the scroller, not on the container */
+.datasheet-area::after {
+  content: none;
+}
+
+/* Center column inner wrappers */
+.datasheet-area .datasheet-sticky-rail {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  margin: 0;
+  padding: 0;
+}
+.datasheet-area .datasheet-scroll {
+  /* let the card handle its own scrolling to keep scrollbar inside rounded edges */
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: 1fr;
+  min-height: 0; /* allow grid child to shrink */
+}
+
+/* Ensure the datasheet card expands to fill available height so its internal scroller works */
+.datasheet-area .datasheet-scroll > .unit-datasheet {
+  height: 100%;
+}
+
+/* Ensure unit list and cards never create horizontal scroll */
+.army-column .units-list,
+.unit-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Ensure the Attack Helper pins to the very top of the center column */
+/* In the center column, rely on the sticky rail; neutralize the helper's own stickiness */
+.datasheet-area .attack-helper.is-sticky {
+  position: static;
+  top: auto;
+  z-index: auto;
+}
+
+/* Safety: prevent any accidental top margin from creating a gap */
+.datasheet-area > *:first-child {
+  margin-top: 0 !important;
+}
+
+/* Ensure the datasheet card is flush beneath the Attack Helper (no extra top margin) */
+/* Remove any extra top margin on the datasheet card so it stays flush under the helper */
+.datasheet-area .unit-datasheet {
+  margin-top: 0;
 }
 
 .units-sidebar h3 {
@@ -568,12 +884,30 @@
 .upload-dropzone {
   border: 2px dashed var(--border-primary);
   border-radius: 8px;
-  padding: 1rem;
+  padding: 1.25rem;
   text-align: center;
   color: var(--text-secondary);
   background: var(--color-tertiary);
   cursor: pointer;
   margin-bottom: 1rem;
+}
+
+/* Center the dropzone when the column has no army */
+.units-sidebar .units-scroll:has(.empty-army) {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  padding-top: 0; /* remove top bias */
+}
+.units-sidebar .units-scroll:has(.empty-army) .upload-dropzone {
+  margin: 0 auto 1rem auto; /* center horizontally */
+  max-width: 100%;
+}
+/* Also center when dropzone is present (before army is loaded) */
+.units-sidebar .units-scroll:has(.upload-dropzone) {
+  display: grid;
+  place-items: center;
+  min-height: 100%;
 }
 .upload-dropzone:hover {
   background: var(--interactive-hover);
@@ -584,10 +918,37 @@
   color: var(--action-danger);
 }
 
+/* Generic action button used in GameSession */
+.action-btn {
+  background: var(--action-primary);
+  color: var(--text-inverse);
+  border: 1px solid var(--action-primary);
+  border-radius: var(--radius-xs);
+  padding: 0.45rem 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.08s ease;
+}
+.action-btn:hover {
+  background: transparent;
+  color: var(--action-primary);
+}
+.action-btn:active {
+  transform: scale(0.98);
+}
+.action-btn:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
 .units-list {
   display: flex;
   flex-direction: column;
-  gap: 12px; /* desktop standard spacing */
+  gap: 16px; /* a bit more breathing room */
 }
 
 /* Smooth transitions for cards moving to make space */
@@ -625,13 +986,14 @@
 }
 
 .unit-card {
-  background: var(--color-secondary);
-  border: 2px solid var(--border-primary);
-  border-radius: 6px;
-  padding: 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius); /* match curvature of other rounded elements */
+  padding: 1.1rem; /* slightly more breathing room */
+  padding-right: 44px; /* reserve for drag handle / badges */
   cursor: pointer; /* Dragging is initiated via the 3-dot handle only */
   position: relative;
-  color: var(--text-primary);
+  color: var(--text);
   transform-origin: center;
 }
 
@@ -649,33 +1011,166 @@
 
 .unit-card:hover:not(.dragging):not(.drag-over) {
   border-color: var(--border-focus);
-  background: var(--interactive-hover);
+  background: var(--card-hover);
   transform: translateY(-2px) scale(1.01);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Selected unit cards - darker/brighter versions of status colors */
-.unit-card.selected.ready {
-  background: #16a34a !important; /* Darker green */
-  border-color: #16a34a !important;
-  box-shadow: 0 0 15px rgba(22, 163, 74, 0.5);
+/* Keyboard focus visibility */
+.unit-card:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
 
-.unit-card.selected.done {
-  background: #d97706 !important; /* Darker yellow/orange */
-  border-color: #d97706 !important;
-  box-shadow: 0 0 15px rgba(217, 119, 6, 0.5);
+/* Target enemy highlight when Attack Helper is open */
+.unit-card.is-target,
+.unit-card.is-attacker,
+.unit-card.selected,
+.unit-card[aria-selected="true"] {
+  position: relative;
+  /* Stronger, more legible glow */
+  box-shadow:
+    0 0 0 2px var(--accent),
+    0 0 0 8px color-mix(in oklab, var(--accent) 25%, transparent),
+    0 6px 18px color-mix(in oklab, var(--accent) 35%, transparent);
 }
 
-.unit-card.selected.dead {
-  background: #dc2626 !important; /* Darker red */
-  border-color: #dc2626 !important;
-  box-shadow: 0 0 15px rgba(220, 38, 38, 0.5);
+.target-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--accent);
+  color: var(--text-inverse);
+  border: 1px solid color-mix(in oklab, var(--accent) 70%, #000);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  z-index: 2;
+  animation: target-pulse 1.2s ease-in-out infinite alternate;
+}
+
+/* Leader attach affordance (visual glow) */
+.unit-card.can-attach {
+  box-shadow:
+    0 0 15px var(--action-warning),
+    0 0 30px var(--action-warning);
+  border: 2px solid var(--action-warning) !important;
+  animation: leader-glow 2s ease-in-out infinite alternate;
+}
+
+/* Stronger glow when drop intent confirmed */
+.unit-card.drop-intent {
+  box-shadow:
+    0 0 0 2px var(--action-warning),
+    0 0 28px 6px color-mix(in srgb, var(--action-warning) 55%, transparent);
+  border-color: var(--action-warning) !important;
+}
+.unit-card.drop-intent .attach-zone {
+  opacity: 0;
+}
+
+/* Selected state uses accent (not status colors) */
+.unit-card.selected {
+  background: var(--card);
+  border-color: var(--accent-700);
 }
 
 .unit-card.selected h4 {
-  color: #ffffff !important;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+  color: var(--text);
+}
+
+/* Do not animate/scale when highlighted as attacker/target/selected */
+.unit-card.selected:hover,
+.unit-card.is-target:hover,
+.unit-card.is-attacker:hover {
+  transform: none !important;
+}
+
+/* Side-by-side datasheet compare grid below the helper */
+.datasheet-compare-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px; /* a touch slimmer between the two datasheets */
+  /* Fill available height so children can scroll internally */
+  height: 100%;
+  min-height: 0;
+}
+.datasheet-compare-grid > div {
+  height: 100%;
+  min-height: 0;
+  /* Ensure inner columns can shrink within the grid without forcing overflow */
+  min-width: 0;
+}
+
+/* Responsive tightening for slimmer pages */
+@media (max-width: 1200px) {
+  .game-content {
+    column-gap: 10px;
+    /* keep sidebars slim or slimmer than default */
+    grid-template-columns: 220px minmax(0, 1fr) 220px;
+  }
+  /* Stack datasheets vertically so each has full width */
+  .datasheet-compare-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .game-content {
+    column-gap: 8px;
+    grid-template-columns: 200px minmax(0, 1fr) 200px;
+  }
+}
+
+/* Helper header with attacker/defender/weapon and swap button */
+.attack-helper .helper-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+.attack-helper .helper-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center; /* center the A/D/W group */
+  text-align: center;
+  gap: 8px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+.attack-helper .helper-title .sep {
+  opacity: 0.5;
+}
+/* Dice Calculator title in the helper header */
+.attack-helper .helper-name {
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-right: 6px;
+}
+/* Remove dotted focus outlines inside helper; provide a clean focus ring */
+.attack-helper *:focus {
+  outline: none;
+}
+.attack-helper input:focus-visible,
+.attack-helper button:focus-visible,
+.attack-helper select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--border-focus);
+}
+
+/* Subtle attacker/defender color cues when a weapon is selected */
+.attack-helper .attacker-name.active {
+  color: var(--action-success);
+}
+.attack-helper .defender-name.active {
+  color: var(--action-danger);
 }
 
 .unit-card h4 {
@@ -747,32 +1242,17 @@
   background: var(--status-dead);
 }
 
-/* Unit Card Status Colors */
-.unit-card.ready {
-  background: var(--status-ready);
-  border-color: var(--status-ready);
-}
-
-.unit-card.ready h4 {
-  color: #000000;
-}
-
-.unit-card.done {
-  background: var(--status-done);
-  border-color: var(--status-done);
-}
-
-.unit-card.done h4 {
-  color: #000000;
-}
-
+/* Neutralize default status backgrounds; show status via chips instead */
+.unit-card.ready,
+.unit-card.done,
 .unit-card.dead {
-  background: var(--status-dead);
-  border-color: var(--status-dead);
+  background: var(--card);
+  border-color: var(--border);
 }
-
+.unit-card.ready h4,
+.unit-card.done h4,
 .unit-card.dead h4 {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 /* Leader glow effect when dragging any unit */
@@ -830,21 +1310,21 @@
 }
 
 .status-indicator.ready {
-  border-color: #27ae60;
-  background: rgba(39, 174, 96, 0.2);
-  color: #27ae60;
+  border-color: var(--status-ready);
+  background: color-mix(in srgb, var(--status-ready) 20%, transparent);
+  color: var(--status-ready);
 }
 
 .status-indicator.waiting {
-  border-color: #f39c12;
-  background: rgba(243, 156, 18, 0.2);
-  color: #f39c12;
+  border-color: var(--status-done);
+  background: color-mix(in srgb, var(--status-done) 20%, transparent);
+  color: var(--status-done);
 }
 
 .status-indicator.destroyed {
-  border-color: #e74c3c;
-  background: rgba(231, 76, 60, 0.2);
-  color: #e74c3c;
+  border-color: var(--status-dead);
+  background: color-mix(in srgb, var(--status-dead) 20%, transparent);
+  color: var(--status-dead);
 }
 
 .player-indicator {
@@ -853,21 +1333,32 @@
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
   font-size: 0.8rem;
-  border: 1px solid #4a6741;
+  border: 1px solid var(--border);
 }
 
-.game-main {
+/* Center column now renders only the UnitDatasheet or a placeholder directly */
+.no-unit-selected {
   background: var(--gradient-primary);
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px var(--shadow-primary);
   border: 2px solid var(--border-primary);
-  height: fit-content;
-  position: sticky;
-  top: 1rem;
-  align-self: start;
-  max-height: 80vh; /* keep panel readable and within viewport */
-  overflow: auto;
+  border-radius: 8px;
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+/* Keep placeholder block flush with side columns' post-header spacing */
+.datasheet-area > .no-unit-selected {
+  margin-top: 0;
+}
+
+/* Theme-specific safety: ensure header is opaque in both light and dark */
+:root[data-theme="light"] .army-column .column-header {
+  background: var(--bg-surface);
+  border-bottom-color: var(--line);
+}
+:root[data-theme="dark"] .army-column .column-header {
+  background: var(--bg-surface);
+  border-bottom-color: var(--line);
 }
 
 .actions-section h3 {
@@ -886,13 +1377,51 @@
   margin: 0;
 }
 
-.no-unit-selected {
-  background: var(--gradient-primary);
-  border: 2px solid var(--border-primary);
-  border-radius: 8px;
-  padding: 3rem;
-  text-align: center;
-  color: var(--text-primary);
+/* Sticky header inside datasheet for better UX while scrolling */
+.unit-datasheet .datasheet-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Override: do not make datasheet header sticky in the center column,
+   so Attack Helper remains the only sticky element and alignment stays level */
+.datasheet-area .unit-datasheet .datasheet-header {
+  position: static;
+  top: auto;
+}
+
+/* Overlay for very narrow screens */
+.datasheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 2vw, 24px);
+  z-index: 1000;
+}
+
+.datasheet-overlay .unit-datasheet {
+  width: min(880px, 95vw);
+  max-height: 90vh;
+  overflow: auto; /* scroll inside overlay */
+}
+
+.overlay-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--action-danger);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  z-index: 1001;
 }
 
 .no-unit-selected h3 {
@@ -909,6 +1438,17 @@
 
 /* Responsive design */
 @media (max-width: 768px) {
+  .game-content {
+    /* Drop center column visually, keep A|B side-by-side when possible */
+    grid-template-columns: minmax(300px, 1fr) minmax(300px, 1fr);
+    row-gap: 12px;
+    column-gap: 12px;
+  }
+  /* Hide center (Datasheet) column; overlay is used instead at this size */
+  .game-content > :nth-child(2) {
+    display: none !important;
+  }
+
   .app-header {
     flex-direction: column;
     gap: 1rem;
@@ -926,11 +1466,35 @@
     padding: 1rem;
   }
 
-  .game-content {
-    grid-template-columns: 1fr;
-  }
-
   .game-session {
     padding: 1rem;
   }
+}
+
+/* Extremely narrow: stack A and B vertically */
+@media (max-width: 560px) {
+  .game-content {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
+}
+
+/* Slightly tighter gaps on medium screens */
+@media (max-width: 1024px) {
+  .game-content {
+    column-gap: 12px;
+  }
+}
+
+/* --- Animation consistency overrides (must be at end of file to win cascade) --- */
+/* Ensure both left and right army lists animate selections equally smoothly */
+.unit-card {
+  will-change: transform, box-shadow;
+}
+.unit-card:not(.dragging) {
+  transition:
+    transform 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.22s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }

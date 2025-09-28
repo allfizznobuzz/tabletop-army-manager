@@ -1,6 +1,22 @@
 import React, { useMemo, useState } from "react";
 import "./UnitDatasheet.css";
 
+// Remove simple markdown-like markers and HTML tags from imported text
+const sanitizeRichText = (value) => {
+  if (value == null) return "";
+  let s = String(value);
+  // Strip HTML tags
+  s = s.replace(/<\/?[^>]+(>|$)/g, "");
+  // Handle paired markers first
+  s = s.replace(/\*\*(.*?)\*\*/g, "$1"); // **bold**
+  s = s.replace(/__(.*?)__/g, "$1"); // __underline__
+  s = s.replace(/\^\^(.*?)\^\^/g, "$1"); // ^^superscript^^
+  // Remove any leftover repeated markers
+  s = s.replace(/\*\*/g, "");
+  s = s.replace(/\^\^/g, "");
+  return s;
+};
+
 const UnitDatasheet = ({
   unit,
   isSelected,
@@ -8,6 +24,13 @@ const UnitDatasheet = ({
   overrides,
   allUnits = [],
   onUpdateOverrides,
+  // Attack Helper props
+  attackHelper,
+  onToggleWeapon,
+  onCloseAttackHelper,
+  onChangeModelsInRange,
+  onToggleExpected,
+  selectedTargetUnit,
 }) => {
   // Group identical weapons for display (parser now expands to 1 entry per weapon instance)
   const groupedWeapons = useMemo(() => {
@@ -29,9 +52,11 @@ const UnitDatasheet = ({
       const k = keyOf(w);
       const existing = map.get(k);
       if (existing) {
-        existing.count = (existing.count || 1) + 1;
+        existing.count = existing.count ? existing.count + 1 : 2;
       } else {
-        map.set(k, { ...w, count: w.count || 1 });
+        const initial = { ...w };
+        if (Number.isFinite(w.count) && w.count > 0) initial.count = w.count;
+        map.set(k, initial);
       }
     });
     return Array.from(map.values());
@@ -53,6 +78,8 @@ const UnitDatasheet = ({
 
   // Guard after hooks to satisfy rules-of-hooks
   if (!unit) return null;
+
+  // Attack Helper now renders above the datasheet in GameSession
 
   return (
     <div
@@ -100,6 +127,7 @@ const UnitDatasheet = ({
       </div>
 
       <div className="datasheet-content">
+        {/* Attack Helper moved above this panel (see GameSession) */}
         {/* Ranged Weapons */}
         {rangedWeapons.length > 0 && (
           <div className="weapons-section">
@@ -118,22 +146,50 @@ const UnitDatasheet = ({
                 <div className="weapon-stat-col">D</div>
               </div>
               {rangedWeapons.map((weapon, index) => (
-                <div key={index} className="weapon-row">
-                  <div className="weapon-name-col">
-                    <div className="weapon-name">{weapon.name}</div>
-                    {weapon.count > 1 && (
-                      <div className="weapon-count">(x{weapon.count})</div>
-                    )}
-                  </div>
-                  <div className="weapon-stat-col">{weapon.range}</div>
-                  <div className="weapon-stat-col">{weapon.attacks}</div>
-                  <div className="weapon-stat-col">
-                    {getStatValue(weapon.skill, "3+")}
-                  </div>
-                  <div className="weapon-stat-col">{weapon.strength}</div>
-                  <div className="weapon-stat-col">{weapon.ap}</div>
-                  <div className="weapon-stat-col">{weapon.damage}</div>
-                </div>
+                <React.Fragment key={`ranged-${index}`}>
+                  {(() => {
+                    const isRowSelected =
+                      attackHelper?.attackerUnitId === unit.id &&
+                      attackHelper?.section === "ranged" &&
+                      attackHelper?.index === index;
+                    return (
+                      <div
+                        className={`weapon-row ${isRowSelected ? "row--selected" : ""}`}
+                        role="button"
+                        tabIndex={0}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        aria-expanded={isRowSelected || undefined}
+                        aria-current={isRowSelected ? "true" : undefined}
+                        onClick={() =>
+                          onToggleWeapon?.("ranged", index, weapon)
+                        }
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ")
+                            onToggleWeapon?.("ranged", index, weapon);
+                        }}
+                      >
+                        <div className="weapon-name-col">
+                          <div className="weapon-name">{weapon.name}</div>
+                          {weapon.count > 1 && (
+                            <div className="weapon-count">
+                              (x{weapon.count})
+                            </div>
+                          )}
+                        </div>
+                        <div className="weapon-stat-col">{weapon.range}</div>
+                        <div className="weapon-stat-col">{weapon.attacks}</div>
+                        <div className="weapon-stat-col">
+                          {getStatValue(weapon.skill, "3+")}
+                        </div>
+                        <div className="weapon-stat-col">{weapon.strength}</div>
+                        <div className="weapon-stat-col">{weapon.ap}</div>
+                        <div className="weapon-stat-col">{weapon.damage}</div>
+                      </div>
+                    );
+                  })()}
+                  {/* weapon row click just selects; panel stays pinned at top */}
+                </React.Fragment>
               ))}
             </div>
           </div>
@@ -157,22 +213,47 @@ const UnitDatasheet = ({
                 <div className="weapon-stat-col">D</div>
               </div>
               {meleeWeapons.map((weapon, index) => (
-                <div key={index} className="weapon-row">
-                  <div className="weapon-name-col">
-                    <div className="weapon-name">{weapon.name}</div>
-                    {weapon.count > 1 && (
-                      <div className="weapon-count">(x{weapon.count})</div>
-                    )}
-                  </div>
-                  <div className="weapon-stat-col">Melee</div>
-                  <div className="weapon-stat-col">{weapon.attacks}</div>
-                  <div className="weapon-stat-col">
-                    {getStatValue(weapon.skill, "3+")}
-                  </div>
-                  <div className="weapon-stat-col">{weapon.strength}</div>
-                  <div className="weapon-stat-col">{weapon.ap}</div>
-                  <div className="weapon-stat-col">{weapon.damage}</div>
-                </div>
+                <React.Fragment key={`melee-${index}`}>
+                  {(() => {
+                    const isRowSelected =
+                      attackHelper?.attackerUnitId === unit.id &&
+                      attackHelper?.section === "melee" &&
+                      attackHelper?.index === index;
+                    return (
+                      <div
+                        className={`weapon-row ${isRowSelected ? "row--selected" : ""}`}
+                        role="button"
+                        tabIndex={0}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        aria-expanded={isRowSelected || undefined}
+                        aria-current={isRowSelected ? "true" : undefined}
+                        onClick={() => onToggleWeapon?.("melee", index, weapon)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ")
+                            onToggleWeapon?.("melee", index, weapon);
+                        }}
+                      >
+                        <div className="weapon-name-col">
+                          <div className="weapon-name">{weapon.name}</div>
+                          {weapon.count > 1 && (
+                            <div className="weapon-count">
+                              (x{weapon.count})
+                            </div>
+                          )}
+                        </div>
+                        <div className="weapon-stat-col">Melee</div>
+                        <div className="weapon-stat-col">{weapon.attacks}</div>
+                        <div className="weapon-stat-col">
+                          {getStatValue(weapon.skill, "3+")}
+                        </div>
+                        <div className="weapon-stat-col">{weapon.strength}</div>
+                        <div className="weapon-stat-col">{weapon.ap}</div>
+                        <div className="weapon-stat-col">{weapon.damage}</div>
+                      </div>
+                    );
+                  })()}
+                  {/* weapon row click just selects; panel stays pinned at top */}
+                </React.Fragment>
               ))}
             </div>
           </div>
@@ -180,29 +261,27 @@ const UnitDatasheet = ({
 
         <div className="datasheet-bottom">
           {/* Abilities */}
-          {unit.abilities && unit.abilities.length > 0 && (
-            <div className="abilities-section">
-              <div className="section-header abilities-header">ABILITIES</div>
-              <div className="abilities-content">
-                {unit.abilities.map((ability, index) => (
-                  <div key={index} className="ability-item">
-                    <div className="ability-name">{ability.name}:</div>
-                    <div className="ability-description">
-                      {ability.description}
-                    </div>
+          <Collapsible title="Abilities" defaultOpen={false} centerTitle>
+            {unit.abilities && unit.abilities.length > 0 ? (
+              unit.abilities.map((ability, index) => (
+                <div key={index} className="ability-item">
+                  <div className="ability-name">
+                    {sanitizeRichText(ability.name)}:
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                  <div className="ability-description">
+                    {sanitizeRichText(ability.description)}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="empty">No abilities.</div>
+            )}
+          </Collapsible>
 
           {/* Unit Composition */}
-          {unit.modelGroups && unit.modelGroups.length > 0 && (
-            <div className="composition-section">
-              <div className="section-header composition-header">
-                UNIT COMPOSITION
-              </div>
-              <div className="composition-content">
+          <Collapsible title="Unit Composition" defaultOpen={false} centerTitle>
+            {unit.modelGroups && unit.modelGroups.length > 0 ? (
+              <>
                 {unit.modelGroups.map((group, index) => (
                   <div key={index} className="composition-item">
                     • {group.count}x {group.name}
@@ -211,9 +290,11 @@ const UnitDatasheet = ({
                 <div className="points-cost">
                   {unit.models} models - {unit.points} pts
                 </div>
-              </div>
-            </div>
-          )}
+              </>
+            ) : (
+              <div className="empty">No composition data.</div>
+            )}
+          </Collapsible>
 
           {/* Keywords */}
           {unit.keywords && unit.keywords.length > 0 && (
@@ -274,7 +355,7 @@ const OverridesCollapsible = ({
     <div className="overrides-collapsible">
       <button
         type="button"
-        className="overrides-header"
+        className="overrides-header center"
         onClick={() => setOpen(!open)}
       >
         <span className={`chevron ${open ? "open" : ""}`}>▸</span>
@@ -385,3 +466,26 @@ const PairwiseControls = ({ unit, allUnits, overrides, onUpdateOverrides }) => {
 };
 
 export default UnitDatasheet;
+
+// Generic collapsible used for Abilities and Unit Composition
+const Collapsible = ({
+  title,
+  defaultOpen = false,
+  centerTitle = false,
+  children,
+}) => {
+  const [open, setOpen] = useState(!!defaultOpen);
+  return (
+    <div className="overrides-collapsible">
+      <button
+        type="button"
+        className={`overrides-header ${centerTitle ? "center" : ""}`}
+        onClick={() => setOpen(!open)}
+      >
+        <span className={`chevron ${open ? "open" : ""}`}>▸</span>
+        <span>{title}</span>
+      </button>
+      {open && <div className="overrides-panel">{children}</div>}
+    </div>
+  );
+};

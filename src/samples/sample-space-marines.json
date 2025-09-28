@@ -6,6 +6,10 @@
       "name": "Captain",
       "models": 1,
       "wounds": 6,
+      "weaponCarriers": {
+        "Master-crafted bolt rifle": 1,
+        "Power sword": 1
+      },
       "weapons": [
         {
           "name": "Master-crafted bolt rifle",
@@ -41,6 +45,9 @@
       "name": "Intercessor Squad",
       "models": 10,
       "wounds": 2,
+      "weaponCarriers": {
+        "Bolt rifle": 10
+      },
       "weapons": [
         {
           "name": "Bolt rifle",

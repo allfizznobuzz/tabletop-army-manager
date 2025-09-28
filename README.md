@@ -107,6 +107,12 @@ If a finding is reported, remove the secret, rotate it, and rerun the scan.
   3. Auto (source data)
 - **Override UI**: Compact, collapsed section named `Override` with two checkboxes (Can lead/Can be led), an Allow multi-select with chips, and a Reset. Status chip reads `Overridden (n)` or `Off`.
 
+## Layout
+
+- 3-column grid uses the full viewport width with safe gutters via `padding: 0 clamp(16px, 2vw, 24px)`.
+- The page is viewport-locked: the outer app never scrolls; each column scrolls internally.
+- Datasheet sits between Player A and Player B. On very small screens, a button opens the Datasheet in an overlay.
+
 ## Project Structure
 
 - `src/components/` – React components (`GameSession`, `UnitDatasheet`, etc.)

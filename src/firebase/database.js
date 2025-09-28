@@ -1,37 +1,42 @@
-import { 
-  collection, 
-  doc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  getDoc, 
-  getDocs, 
-  query, 
-  where, 
-  orderBy, 
+import {
+  collection,
+  doc,
+  addDoc,
+  updateDoc,
+  setDoc,
+  deleteDoc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
   onSnapshot,
   serverTimestamp,
   arrayUnion,
-  arrayRemove
-} from 'firebase/firestore';
-import { db } from './config';
+  arrayRemove,
+} from "firebase/firestore";
+import { db } from "./config";
 
 // Database structure based on your existing army manager requirements
 export const DATABASE_COLLECTIONS = {
-  USERS: 'users',
-  ARMIES: 'armies',
-  GAMES: 'games',
-  ARMY_TEMPLATES: 'armyTemplates'
+  USERS: "users",
+  ARMIES: "armies",
+  GAMES: "games",
+  ARMY_TEMPLATES: "armyTemplates",
 };
 
 // User Management
 export const createUser = async (userId, userData) => {
   const userRef = doc(db, DATABASE_COLLECTIONS.USERS, userId);
-  await updateDoc(userRef, {
-    ...userData,
-    createdAt: serverTimestamp(),
-    lastActive: serverTimestamp()
-  });
+  await setDoc(
+    userRef,
+    {
+      ...userData,
+      createdAt: serverTimestamp(),
+      lastActive: serverTimestamp(),
+    },
+    { merge: true },
+  );
 };
 
 export const getUser = async (userId) => {
@@ -46,7 +51,7 @@ export const createArmy = async (userId, armyData) => {
     ...armyData,
     ownerId: userId,
     createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp()
+    updatedAt: serverTimestamp(),
   });
   return armyRef.id;
 };
@@ -55,20 +60,20 @@ export const createArmy = async (userId, armyData) => {
 export const getUserGames = async (userId) => {
   try {
     const gamesRef = collection(db, DATABASE_COLLECTIONS.GAMES);
-    const q = query(gamesRef, where('players', 'array-contains', userId));
+    const q = query(gamesRef, where("players", "array-contains", userId));
     const querySnapshot = await getDocs(q);
-    
+
     const games = [];
     querySnapshot.forEach((doc) => {
       games.push({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       });
     });
-    
+
     return games;
   } catch (error) {
-    console.error('Error getting games:', error);
+    console.error("Error getting games:", error);
     throw error;
   }
 };
@@ -76,20 +81,20 @@ export const getUserGames = async (userId) => {
 export const getUserArmies = async (userId) => {
   try {
     const armiesRef = collection(db, DATABASE_COLLECTIONS.ARMIES);
-    const q = query(armiesRef, where('ownerId', '==', userId));
+    const q = query(armiesRef, where("ownerId", "==", userId));
     const querySnapshot = await getDocs(q);
-    
+
     const armies = [];
     querySnapshot.forEach((doc) => {
       armies.push({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       });
     });
-    
+
     return armies;
   } catch (error) {
-    console.error('Error getting armies:', error);
+    console.error("Error getting armies:", error);
     throw error;
   }
 };
@@ -98,7 +103,7 @@ export const updateArmy = async (armyId, updates) => {
   const armyRef = doc(db, DATABASE_COLLECTIONS.ARMIES, armyId);
   await updateDoc(armyRef, {
     ...updates,
-    updatedAt: serverTimestamp()
+    updatedAt: serverTimestamp(),
   });
 };
 
@@ -111,11 +116,11 @@ export const deleteArmy = async (armyId) => {
 export const createGame = async (gameData) => {
   const gameRef = await addDoc(collection(db, DATABASE_COLLECTIONS.GAMES), {
     ...gameData,
-    status: 'waiting', // waiting, active, completed
+    status: "waiting", // waiting, active, completed
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     currentTurn: 0,
-    round: 1
+    round: 1,
   });
   return gameRef.id;
 };
@@ -124,23 +129,23 @@ export const joinGame = async (gameId, userId, playerName, armyData = null) => {
   const gameRef = doc(db, DATABASE_COLLECTIONS.GAMES, gameId);
   const updateData = {
     players: arrayUnion(userId),
-    updatedAt: serverTimestamp()
+    updatedAt: serverTimestamp(),
   };
-  
+
   // If army data is provided, add it to playerArmies
   if (armyData) {
     updateData[`playerArmies.${userId}`] = {
       playerName: playerName,
-      armyData: armyData
+      armyData: armyData,
     };
   } else {
     // Just add the player name for now
     updateData[`playerArmies.${userId}`] = {
       playerName: playerName,
-      armyData: null
+      armyData: null,
     };
   }
-  
+
   await updateDoc(gameRef, updateData);
 };
 
@@ -148,7 +153,7 @@ export const updateGameState = async (gameId, updates) => {
   const gameRef = doc(db, DATABASE_COLLECTIONS.GAMES, gameId);
   await updateDoc(gameRef, {
     ...updates,
-    updatedAt: serverTimestamp()
+    updatedAt: serverTimestamp(),
   });
 };
 
@@ -168,12 +173,17 @@ export const subscribeToGame = (gameId, callback) => {
 };
 
 // Combat and Damage Tracking
-export const assignDamage = async (gameId, targetUnitId, damage, attackerId = null) => {
+export const assignDamage = async (
+  gameId,
+  targetUnitId,
+  damage,
+  attackerId = null,
+) => {
   const gameRef = doc(db, DATABASE_COLLECTIONS.GAMES, gameId);
   const updateData = {
     [`gameState.units.${targetUnitId}.currentWounds`]: damage.remainingWounds,
     [`gameState.units.${targetUnitId}.totalDamage`]: damage.totalDamage,
-    updatedAt: serverTimestamp()
+    updatedAt: serverTimestamp(),
   };
 
   // Add to damage history
@@ -183,20 +193,20 @@ export const assignDamage = async (gameId, targetUnitId, damage, attackerId = nu
     attackerId,
     damage: damage.damageDealt,
     timestamp: serverTimestamp(),
-    type: 'damage'
+    type: "damage",
   };
 
   updateData[`gameState.damageHistory.${damageRecord.id}`] = damageRecord;
 
   await updateDoc(gameRef, updateData);
-  
+
   // Add real-time update
   await addGameUpdate(gameId, {
-    type: 'damage',
+    type: "damage",
     targetUnitId,
     attackerId,
     damage: damage.damageDealt,
-    playerId: attackerId
+    playerId: attackerId,
   });
 };
 
@@ -209,20 +219,21 @@ export const assignVictoryPoints = async (gameId, playerId, points, reason) => {
     points,
     reason,
     timestamp: serverTimestamp(),
-    type: 'victory_points'
+    type: "victory_points",
   };
 
   await updateDoc(gameRef, {
     [`gameState.victoryPoints.${playerId}`]: arrayUnion(vpRecord),
-    [`gameState.totalVP.${playerId}`]: (await getGameVP(gameId, playerId)) + points,
-    updatedAt: serverTimestamp()
+    [`gameState.totalVP.${playerId}`]:
+      (await getGameVP(gameId, playerId)) + points,
+    updatedAt: serverTimestamp(),
   });
 
   await addGameUpdate(gameId, {
-    type: 'victory_points',
+    type: "victory_points",
     playerId,
     points,
-    reason
+    reason,
   });
 };
 
@@ -230,41 +241,51 @@ export const assignVictoryPoints = async (gameId, playerId, points, reason) => {
 export const nextTurn = async (gameId) => {
   const gameRef = doc(db, DATABASE_COLLECTIONS.GAMES, gameId);
   const gameSnap = await getDoc(gameRef);
-  
+
   if (gameSnap.exists()) {
     const gameData = gameSnap.data();
     const nextTurnIndex = (gameData.currentTurn + 1) % gameData.players.length;
     const nextRound = nextTurnIndex === 0 ? gameData.round + 1 : gameData.round;
-    
+
     await updateDoc(gameRef, {
       currentTurn: nextTurnIndex,
       round: nextRound,
-      updatedAt: serverTimestamp()
+      updatedAt: serverTimestamp(),
     });
 
     await addGameUpdate(gameId, {
-      type: 'turn_change',
+      type: "turn_change",
       currentPlayer: gameData.players[nextTurnIndex],
-      round: nextRound
+      round: nextRound,
     });
   }
 };
 
 // Real-time updates subcollection
 export const addGameUpdate = async (gameId, updateData) => {
-  const updatesRef = collection(db, DATABASE_COLLECTIONS.GAMES, gameId, 'updates');
+  const updatesRef = collection(
+    db,
+    DATABASE_COLLECTIONS.GAMES,
+    gameId,
+    "updates",
+  );
   await addDoc(updatesRef, {
     ...updateData,
-    timestamp: serverTimestamp()
+    timestamp: serverTimestamp(),
   });
 };
 
 export const subscribeToGameUpdates = (gameId, callback) => {
-  const updatesRef = collection(db, DATABASE_COLLECTIONS.GAMES, gameId, 'updates');
-  const q = query(updatesRef, orderBy('timestamp', 'desc'));
-  
+  const updatesRef = collection(
+    db,
+    DATABASE_COLLECTIONS.GAMES,
+    gameId,
+    "updates",
+  );
+  const q = query(updatesRef, orderBy("timestamp", "desc"));
+
   return onSnapshot(q, (snapshot) => {
-    const updates = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const updates = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
     callback(updates);
   });
 };
@@ -273,7 +294,7 @@ export const subscribeToGameUpdates = (gameId, callback) => {
 const getGameVP = async (gameId, playerId) => {
   const gameRef = doc(db, DATABASE_COLLECTIONS.GAMES, gameId);
   const gameSnap = await getDoc(gameRef);
-  
+
   if (gameSnap.exists()) {
     const gameData = gameSnap.data();
     return gameData.gameState?.totalVP?.[playerId] || 0;
@@ -282,23 +303,30 @@ const getGameVP = async (gameId, playerId) => {
 };
 
 // Army Templates (for sharing armies)
-export const createArmyTemplate = async (userId, armyData, isPublic = false) => {
-  const templateRef = await addDoc(collection(db, DATABASE_COLLECTIONS.ARMY_TEMPLATES), {
-    ...armyData,
-    createdBy: userId,
-    isPublic,
-    createdAt: serverTimestamp(),
-    downloads: 0
-  });
+export const createArmyTemplate = async (
+  userId,
+  armyData,
+  isPublic = false,
+) => {
+  const templateRef = await addDoc(
+    collection(db, DATABASE_COLLECTIONS.ARMY_TEMPLATES),
+    {
+      ...armyData,
+      createdBy: userId,
+      isPublic,
+      createdAt: serverTimestamp(),
+      downloads: 0,
+    },
+  );
   return templateRef.id;
 };
 
 export const getPublicArmyTemplates = async () => {
   const q = query(
     collection(db, DATABASE_COLLECTIONS.ARMY_TEMPLATES),
-    where('isPublic', '==', true),
-    orderBy('downloads', 'desc')
+    where("isPublic", "==", true),
+    orderBy("downloads", "desc"),
   );
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 };
