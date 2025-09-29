@@ -1,20 +1,20 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
-import { updateGameState, subscribeToGame } from "../firebase/database";
+import { updateGameState, subscribeToGame } from "../../firebase/database";
 // AuthContext will be implemented later
-import UnitDatasheet from "./UnitDatasheet";
-import ArmyColumn from "./game/ArmyColumn";
-import AttackHelperPanel from "./game/AttackHelperPanel";
-import { canAttach } from "../utils/eligibility";
-import { parseArmyFile } from "../utils/armyParser";
-import { resolveWeaponCarrierCount } from "../utils/weaponCarrier";
+import UnitDatasheet from "../UnitDatasheet";
+import ArmyColumn from "./ArmyColumn";
+import AttackHelperPanel from "./AttackHelperPanel";
+import { canAttach } from "../../utils/eligibility";
+import { parseArmyFile } from "../../utils/armyParser";
+import { resolveWeaponCarrierCount } from "../../utils/weaponCarrier";
 
 // ArmyColumn renders one player's army column with fully-contained DnD and attach logic.
 // It persists state to gameState.columns.<col>.{attachments,unitOrder} and never crosses columns.
 
-// Attached unit sortable is implemented inside ./game/ArmyColumn
+// Attached unit sortable is implemented inside ./ArmyColumn
 
-const GameSession = ({ gameId, user }) => {
+const GameSessionView = ({ gameId, user }) => {
   const [gameData, setGameData] = useState(null);
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
@@ -430,7 +430,7 @@ const GameSession = ({ gameId, user }) => {
     });
   };
 
-  // Centralized eligibility helpers are imported from ../utils/eligibility
+  // Centralized eligibility helpers are imported from ../../utils/eligibility
   const canLeaderAttachToUnit = (leader, draggedUnit) => {
     return canAttach(leader, draggedUnit, leadershipOverrides, sourceCanAttach);
   };
@@ -492,18 +492,6 @@ const GameSession = ({ gameId, user }) => {
 
   const hasArmyA = !!gameData?.playerA?.armyData;
   const hasArmyB = !!gameData?.playerB?.armyData;
-
-  // --- Attack Helper utils and renderer ---
-  const toHitTarget = (weapon, section) => {
-    const skill = weapon?.skill;
-    if (typeof skill === "number" && skill >= 2 && skill <= 6) return skill;
-    if (section === "ranged") {
-      const bs = Number(selectedUnit?.ballistic_skill || 0);
-      return bs >= 2 && bs <= 6 ? bs : null;
-    }
-    const ws = Number(selectedUnit?.weapon_skill || 0);
-    return ws >= 2 && ws <= 6 ? ws : null;
-  };
 
   return (
     <div className="game-session">
@@ -1065,4 +1053,4 @@ const GameSession = ({ gameId, user }) => {
   );
 };
 
-export default GameSession;
+export default GameSessionView;

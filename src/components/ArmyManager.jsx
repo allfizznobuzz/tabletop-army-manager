@@ -1,13 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { getUserArmies, createArmy, createGame, joinGame } from '../firebase/database';
-import { parseArmyFile } from '../utils/armyParser';
+import React, { useState, useEffect } from "react";
+import {
+  getUserArmies,
+  createArmy,
+  createGame,
+  joinGame,
+} from "../firebase/database";
+import { parseArmyFile } from "../utils/armyParser";
 
 const ArmyManager = ({ user, onJoinGame }) => {
   const [armies, setArmies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateGame, setShowCreateGame] = useState(false);
-  const [gameId, setGameId] = useState('');
-  const [uploadError, setUploadError] = useState('');
+  const [gameId, setGameId] = useState("");
+  const [uploadError, setUploadError] = useState("");
 
   useEffect(() => {
     loadUserArmies();
@@ -18,7 +23,7 @@ const ArmyManager = ({ user, onJoinGame }) => {
       const userArmies = await getUserArmies(user.uid);
       setArmies(userArmies);
     } catch (error) {
-      console.error('Failed to load armies:', error);
+      console.error("Failed to load armies:", error);
     } finally {
       setLoading(false);
     }
@@ -28,24 +33,27 @@ const ArmyManager = ({ user, onJoinGame }) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    setUploadError('');
+    setUploadError("");
 
     try {
       const text = await file.text();
       const jsonData = JSON.parse(text);
-      
+
       // Parse the army file (handles both BattleScribe and simple formats)
       const parsedArmy = parseArmyFile(jsonData);
-      
+
       // Create the army in Firebase
       await createArmy(user.uid, parsedArmy);
       loadUserArmies(); // Refresh the list
-      
+
       // Clear the file input
-      event.target.value = '';
+      event.target.value = "";
     } catch (error) {
-      console.error('Failed to upload army:', error);
-      setUploadError(error.message || 'Failed to parse army file. Please check the JSON format.');
+      console.error("Failed to upload army:", error);
+      setUploadError(
+        error.message ||
+          "Failed to parse army file. Please check the JSON format.",
+      );
     }
   };
 
@@ -65,24 +73,24 @@ const ArmyManager = ({ user, onJoinGame }) => {
           weapons: [
             {
               name: "Bolter",
-              range: "24\"",
+              range: '24"',
               type: "Rapid Fire 1",
               attacks: 1,
               skill: 3,
               strength: 4,
               ap: 0,
-              damage: 1
-            }
-          ]
-        }
-      ]
+              damage: 1,
+            },
+          ],
+        },
+      ],
     };
 
     try {
       await createArmy(user.uid, sampleArmy);
       loadUserArmies(); // Refresh the list
     } catch (error) {
-      console.error('Failed to create army:', error);
+      console.error("Failed to create army:", error);
     }
   };
 
@@ -92,26 +100,26 @@ const ArmyManager = ({ user, onJoinGame }) => {
         name: `${user.displayName}'s Game`,
         players: [user.uid],
         playerArmies: {
-          [user.uid]: selectedArmyId
+          [user.uid]: selectedArmyId,
         },
         gameState: {
           units: {},
           damageHistory: {},
           victoryPoints: {},
-          totalVP: { [user.uid]: 0 }
-        }
+          totalVP: { [user.uid]: 0 },
+        },
       };
 
       const newGameId = await createGame(gameData);
       onJoinGame(newGameId);
     } catch (error) {
-      console.error('Failed to create game:', error);
+      console.error("Failed to create game:", error);
     }
   };
 
   const handleJoinGame = async () => {
     if (!gameId.trim()) return;
-    
+
     try {
       // For now, just join with the first army
       const armyId = armies.length > 0 ? armies[0].id : null;
@@ -119,10 +127,10 @@ const ArmyManager = ({ user, onJoinGame }) => {
         await joinGame(gameId, user.uid, armyId);
         onJoinGame(gameId);
       } else {
-        alert('You need at least one army to join a game');
+        alert("You need at least one army to join a game");
       }
     } catch (error) {
-      console.error('Failed to join game:', error);
+      console.error("Failed to join game:", error);
     }
   };
 
@@ -166,10 +174,14 @@ const ArmyManager = ({ user, onJoinGame }) => {
           armies.map((army) => (
             <div key={army.id} className="army-card">
               <h3>{army.name}</h3>
-              <p><strong>Faction:</strong> {army.faction}</p>
-              <p><strong>Units:</strong> {army.units?.length || 0}</p>
+              <p>
+                <strong>Faction:</strong> {army.faction}
+              </p>
+              <p>
+                <strong>Units:</strong> {army.units?.length || 0}
+              </p>
               <div className="army-actions">
-                <button 
+                <button
                   onClick={() => handleCreateGame(army.id)}
                   className="start-game-btn"
                 >
@@ -283,7 +295,7 @@ const ArmyManager = ({ user, onJoinGame }) => {
           background: white;
           padding: 1.5rem;
           border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
           border: 1px solid #ddd;
         }
 
@@ -319,7 +331,7 @@ const ArmyManager = ({ user, onJoinGame }) => {
           background: white;
           padding: 2rem;
           border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .game-actions h3 {
@@ -367,7 +379,8 @@ const ArmyManager = ({ user, onJoinGame }) => {
             width: 100%;
           }
 
-          .upload-army-btn, .create-army-btn {
+          .upload-army-btn,
+          .create-army-btn {
             width: 100%;
             text-align: center;
           }

@@ -93,7 +93,7 @@ const makeGameDoc = (withTarget = false) => ({
   gameState: {},
 });
 
-jest.mock("../../firebase/database", () => {
+jest.mock("../../../firebase/database", () => {
   return {
     subscribeToGame: jest.fn((gameId, cb) => {
       // default with no target; tests can re-mock per case
@@ -119,7 +119,7 @@ async function clickCardByTextAsync(txt) {
 describe("Attack Helper panel", () => {
   test("opens from weapon row click and shows placeholders when no target", async () => {
     // Initial mock: no target
-    const db = require("../../firebase/database");
+    const db = require("../../../firebase/database");
     db.subscribeToGame.mockImplementation((_id, cb) => {
       cb(makeGameDoc(false));
       return () => {};
@@ -139,13 +139,12 @@ describe("Attack Helper panel", () => {
 
     // Shows dice notation instruction
     expect(await screen.findByText(/Roll\s*D6\+1/i)).toBeInTheDocument();
-
     // No target yet => messages prompt to select target
     expect(screen.getAllByText(/select a target/i).length).toBeGreaterThan(0);
   });
 
   test("with a target, shows to-hit, to-wound, and defender save details", async () => {
-    const db = require("../../firebase/database");
+    const db = require("../../../firebase/database");
     db.subscribeToGame.mockImplementation((_id, cb) => {
       cb(makeGameDoc(true));
       return () => {};
@@ -157,7 +156,6 @@ describe("Attack Helper panel", () => {
     await clickCardByTextAsync(/Test Squad/i);
     const row = await screen.findByRole("button", { name: /bolt rifle/i });
     fireEvent.click(row);
-
     // With target selected later, panel remains visible and shows details
     // Click enemy to set target
     await clickCardByTextAsync(/Enemy/i);
@@ -177,7 +175,7 @@ describe("Attack Helper panel", () => {
   });
 
   test("changing models in range updates expected hits", async () => {
-    const db = require("../../firebase/database");
+    const db = require("../../../firebase/database");
     db.subscribeToGame.mockImplementation((_id, cb) => {
       cb(makeGameDoc(false));
       return () => {};

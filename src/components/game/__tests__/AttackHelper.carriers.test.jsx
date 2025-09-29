@@ -41,7 +41,7 @@ jest.mock("@dnd-kit/utilities", () => ({
 }));
 
 // Mock firebase
-jest.mock("../../firebase/database", () => {
+jest.mock("../../../firebase/database", () => {
   return {
     subscribeToGame: jest.fn((gameId, cb) => {
       cb({
@@ -108,7 +108,7 @@ async function clickCardByTextAsync(txt) {
 describe("Weapon carrier defaults", () => {
   test("Power Fist defaults to 1; Chainsword defaults to 2 via 2x prefix", async () => {
     // Ensure initial snapshot includes armies
-    const db = require("../../firebase/database");
+    const db = require("../../../firebase/database");
     db.subscribeToGame.mockImplementation((gameId, cb) => {
       cb({
         id: gameId,

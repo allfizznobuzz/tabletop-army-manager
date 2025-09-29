@@ -47,7 +47,7 @@ jest.mock("@dnd-kit/utilities", () => ({
 }));
 
 // Mock firebase database module used by GameSession
-jest.mock("../../firebase/database", () => {
+jest.mock("../../../firebase/database", () => {
   return {
     subscribeToGame: jest.fn((gameId, cb) => {
       // Minimal game doc with two armies and 2 units each
@@ -150,7 +150,7 @@ describe("GameSession Attack Helper interactions", () => {
   test("weapon→enemy opens, enemy→enemy recomputes, enemy→friendly collapses; click-away collapses (no console errors)", async () => {
     const spyErr = jest.spyOn(console, "error").mockImplementation(() => {});
     // Force initial game snapshot with both armies before rendering
-    const db = require("../../firebase/database");
+    const db = require("../../../firebase/database");
     db.subscribeToGame.mockImplementation((gameId, cb) => {
       cb({
         id: gameId,

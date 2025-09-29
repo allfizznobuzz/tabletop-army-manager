@@ -1,0 +1,72 @@
+{
+  "numFailedTestSuites": 1,
+  "numFailedTests": 2,
+  "numPassedTestSuites": 0,
+  "numPassedTests": 1,
+  "numPendingTestSuites": 0,
+  "numPendingTests": 0,
+  "numRuntimeErrorTestSuites": 0,
+  "numTodoTests": 0,
+  "numTotalTestSuites": 1,
+  "numTotalTests": 3,
+  "openHandles": [],
+  "snapshot": {
+    "added": 0,
+    "didUpdate": false,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0
+  },
+  "startTime": 1759115573209,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Attack Helper panel"],
+          "failureMessages": [],
+          "fullName": "Attack Helper panel opens from weapon row click and shows placeholders when no target",
+          "location": null,
+          "status": "passed",
+          "title": "opens from weapon row click and shows placeholders when no target"
+        },
+        {
+          "ancestorTitles": ["Attack Helper panel"],
+          "failureMessages": [
+            "Error: Cannot find module '../../firebase/database' from 'src/components/game/__tests__/AttackHelper.panel.test.jsx'\n    at Resolver.resolveModule (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-resolve\\build\\resolver.js:324:11)\n    at Resolver._getVirtualMockPath (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-resolve\\build\\resolver.js:471:14)\n    at Resolver._getAbsolutePath (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-resolve\\build\\resolver.js:457:14)\n    at Resolver.getModuleID (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-resolve\\build\\resolver.js:424:31)\n    at Runtime._shouldMock (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runtime\\build\\index.js:1917:37)\n    at Runtime.require [as requireModuleOrMock] (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runtime\\build\\index.js:1204:14)\n    at Object.<anonymous> (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\game\\__tests__\\AttackHelper.panel.test.jsx:148:16)\n    at Promise.then.completed (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\utils.js:391:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\utils.js:316:10)\n    at _callCircusTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:218:40)\n    at _runTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:155:3)\n    at _runTestsForDescribeBlock (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:66:9)\n    at _runTestsForDescribeBlock (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:60:9)\n    at run (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:25:3)\n    at runAndTransformResultsToJestFormat (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\legacy-code-todo-rewrite\\jestAdapterInit.js:170:21)\n    at jestAdapter (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\legacy-code-todo-rewrite\\jestAdapter.js:82:19)\n    at runTestInternal (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\runTest.js:389:16)\n    at runTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\runTest.js:475:34)\n    at TestRunner.runTests (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\index.js:101:12)\n    at TestScheduler.scheduleTests (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\@jest\\core\\build\\TestScheduler.js:333:13)\n    at runJest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\@jest\\core\\build\\runJest.js:404:19)\n    at _run10000 (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\@jest\\core\\build\\cli\\index.js:320:7)\n    at runCLI (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\@jest\\core\\build\\cli\\index.js:173:3)\n    at Object.run (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-cli\\build\\cli\\index.js:155:37)"
+          ],
+          "fullName": "Attack Helper panel with a target, shows to-hit, to-wound, and defender save details",
+          "location": null,
+          "status": "failed",
+          "title": "with a target, shows to-hit, to-wound, and defender save details"
+        },
+        {
+          "ancestorTitles": ["Attack Helper panel"],
+          "failureMessages": [
+            "Error: Cannot find module '../../firebase/database' from 'src/components/game/__tests__/AttackHelper.panel.test.jsx'\n    at Resolver.resolveModule (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-resolve\\build\\resolver.js:324:11)\n    at Resolver._getVirtualMockPath (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-resolve\\build\\resolver.js:471:14)\n    at Resolver._getAbsolutePath (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-resolve\\build\\resolver.js:457:14)\n    at Resolver.getModuleID (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-resolve\\build\\resolver.js:424:31)\n    at Runtime._shouldMock (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runtime\\build\\index.js:1917:37)\n    at Runtime.require [as requireModuleOrMock] (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runtime\\build\\index.js:1204:14)\n    at Object.<anonymous> (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\game\\__tests__\\AttackHelper.panel.test.jsx:180:16)\n    at Promise.then.completed (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\utils.js:391:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\utils.js:316:10)\n    at _callCircusTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:218:40)\n    at _runTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:155:3)\n    at _runTestsForDescribeBlock (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:66:9)\n    at _runTestsForDescribeBlock (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:60:9)\n    at run (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:25:3)\n    at runAndTransformResultsToJestFormat (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\legacy-code-todo-rewrite\\jestAdapterInit.js:170:21)\n    at jestAdapter (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\legacy-code-todo-rewrite\\jestAdapter.js:82:19)\n    at runTestInternal (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\runTest.js:389:16)\n    at runTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\runTest.js:475:34)\n    at TestRunner.runTests (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\index.js:101:12)\n    at TestScheduler.scheduleTests (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\@jest\\core\\build\\TestScheduler.js:333:13)\n    at runJest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\@jest\\core\\build\\runJest.js:404:19)\n    at _run10000 (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\@jest\\core\\build\\cli\\index.js:320:7)\n    at runCLI (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\@jest\\core\\build\\cli\\index.js:173:3)\n    at Object.run (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-cli\\build\\cli\\index.js:155:37)"
+          ],
+          "fullName": "Attack Helper panel changing models in range updates expected hits",
+          "location": null,
+          "status": "failed",
+          "title": "changing models in range updates expected hits"
+        }
+      ],
+      "endTime": 1759115575379,
+      "message": "\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mAttack Helper panel › with a target, shows to-hit, to-wound, and defender save details\u001b[39m\u001b[22m\n\n    Cannot find module '../../firebase/database' from 'src/components/game/__tests__/AttackHelper.panel.test.jsx'\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 146 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 147 |\u001b[39m   test(\u001b[32m\"with a target, shows to-hit, to-wound, and defender save details\"\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 148 |\u001b[39m     \u001b[36mconst\u001b[39m db \u001b[33m=\u001b[39m require(\u001b[32m\"../../firebase/database\"\u001b[39m)\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 149 |\u001b[39m     db\u001b[33m.\u001b[39msubscribeToGame\u001b[33m.\u001b[39mmockImplementation((_id\u001b[33m,\u001b[39m cb) \u001b[33m=>\u001b[39m {\u001b[22m\n\u001b[2m     \u001b[90m 150 |\u001b[39m       cb(makeGameDoc(\u001b[36mtrue\u001b[39m))\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 151 |\u001b[39m       \u001b[36mreturn\u001b[39m () \u001b[33m=>\u001b[39m {}\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Resolver.resolveModule (\u001b[22m\u001b[2mnode_modules/jest-resolve/build/resolver.js\u001b[2m:324:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36msrc/components/game/__tests__/AttackHelper.panel.test.jsx\u001b[39m\u001b[0m\u001b[2m:148:16)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat TestScheduler.scheduleTests (\u001b[22m\u001b[2mnode_modules/@jest/core/build/TestScheduler.js\u001b[2m:333:13)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat runJest (\u001b[22m\u001b[2mnode_modules/@jest/core/build/runJest.js\u001b[2m:404:19)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat _run10000 (\u001b[22m\u001b[2mnode_modules/@jest/core/build/cli/index.js\u001b[2m:320:7)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat runCLI (\u001b[22m\u001b[2mnode_modules/@jest/core/build/cli/index.js\u001b[2m:173:3)\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mAttack Helper panel › changing models in range updates expected hits\u001b[39m\u001b[22m\n\n    Cannot find module '../../firebase/database' from 'src/components/game/__tests__/AttackHelper.panel.test.jsx'\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 178 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 179 |\u001b[39m   test(\u001b[32m\"changing models in range updates expected hits\"\u001b[39m\u001b[33m,\u001b[39m \u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 180 |\u001b[39m     \u001b[36mconst\u001b[39m db \u001b[33m=\u001b[39m require(\u001b[32m\"../../firebase/database\"\u001b[39m)\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m                \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 181 |\u001b[39m     db\u001b[33m.\u001b[39msubscribeToGame\u001b[33m.\u001b[39mmockImplementation((_id\u001b[33m,\u001b[39m cb) \u001b[33m=>\u001b[39m {\u001b[22m\n\u001b[2m     \u001b[90m 182 |\u001b[39m       cb(makeGameDoc(\u001b[36mfalse\u001b[39m))\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 183 |\u001b[39m       \u001b[36mreturn\u001b[39m () \u001b[33m=>\u001b[39m {}\u001b[33m;\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Resolver.resolveModule (\u001b[22m\u001b[2mnode_modules/jest-resolve/build/resolver.js\u001b[2m:324:11)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36msrc/components/game/__tests__/AttackHelper.panel.test.jsx\u001b[39m\u001b[0m\u001b[2m:180:16)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat TestScheduler.scheduleTests (\u001b[22m\u001b[2mnode_modules/@jest/core/build/TestScheduler.js\u001b[2m:333:13)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat runJest (\u001b[22m\u001b[2mnode_modules/@jest/core/build/runJest.js\u001b[2m:404:19)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat _run10000 (\u001b[22m\u001b[2mnode_modules/@jest/core/build/cli/index.js\u001b[2m:320:7)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat runCLI (\u001b[22m\u001b[2mnode_modules/@jest/core/build/cli/index.js\u001b[2m:173:3)\u001b[22m\u001b[2m\u001b[22m\n",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\game\\__tests__\\AttackHelper.panel.test.jsx",
+      "startTime": 1759115574244,
+      "status": "failed",
+      "summary": ""
+    }
+  ],
+  "wasInterrupted": false
+}
