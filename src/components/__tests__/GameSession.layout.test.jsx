@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-import GameSession from "../GameSession";
+import GameSession from "../GameSessionView";
 import { updateGameState } from "../../firebase/database";
 import { parseArmyFile } from "../../utils/armyParser";
 

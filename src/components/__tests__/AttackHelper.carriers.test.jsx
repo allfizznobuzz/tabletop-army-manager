@@ -95,7 +95,7 @@ jest.mock("../../firebase/database", () => {
 });
 
 // Import after mocks so they apply
-const GameSession = require("../GameSession").default;
+const GameSession = require("../GameSessionView").default;
 
 const user = { uid: "user-1" };
 
