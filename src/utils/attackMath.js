@@ -102,3 +102,20 @@ export function parseDiceNotation(value) {
   const max = diceCount * dieSides + bonus;
   return { kind: "dice", value: str, avg, min, max };
 }
+
+// Parse Rapid Fire X from a weapon type string; returns integer X or 0 when absent
+export function parseRapidFire(type) {
+  if (!type) return 0;
+  const m = String(type).match(/Rapid\s*Fire\s*(\d+)/i);
+  return m ? Number(m[1]) || 0 : 0;
+}
+
+// Parse Sustained Hits X from a weapon type/keyword string; returns integer X or 0
+export function parseSustainedHits(typeOrKeywords) {
+  if (!typeOrKeywords) return 0;
+  const str = Array.isArray(typeOrKeywords)
+    ? typeOrKeywords.join(" ")
+    : String(typeOrKeywords);
+  const m = str.match(/Sustained\s*Hits\s*(\d+)/i);
+  return m ? Number(m[1]) || 0 : 0;
+}

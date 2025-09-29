@@ -6,7 +6,7 @@ import {
 } from "./firebase/auth";
 import { createUser } from "./firebase/database";
 import GameDashboard from "./components/GameDashboard";
-import GameSession from "./components/GameSession2";
+import GameSession from "./components/GameSessionView";
 import ThemeToggle from "./components/ThemeToggle";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import "./App.css";
@@ -37,7 +37,7 @@ function App() {
       photoURL,
       provider: "google",
     }).catch((err) => console.error("Failed to upsert user doc:", err));
-  }, [user?.uid]);
+  }, [user]);
 
   const handleSignIn = async () => {
     try {

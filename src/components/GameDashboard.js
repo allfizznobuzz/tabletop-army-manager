@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   getUserGames,
   createGame,
@@ -21,12 +21,7 @@ const GameDashboard = ({ user, onJoinGame }) => {
     gameName: "",
   });
 
-  useEffect(() => {
-    if (!user?.uid) return;
-    loadUserGames();
-  }, [user?.uid]);
-
-  const loadUserGames = async () => {
+  const loadUserGames = useCallback(async () => {
     try {
       const userGames = await getUserGames(user.uid);
       // Sort by most recent first
@@ -45,7 +40,12 @@ const GameDashboard = ({ user, onJoinGame }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid) return;
+    loadUserGames();
+  }, [user?.uid, loadUserGames]);
 
   // No army upload for New Game; armies are added later inside the session
 
