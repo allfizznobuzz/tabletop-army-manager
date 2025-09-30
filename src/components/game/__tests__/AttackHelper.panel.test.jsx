@@ -95,6 +95,7 @@ const makeGameDoc = (withTarget = false) => ({
 
 jest.mock("../../../firebase/database", () => {
   return {
+    __esModule: true,
     subscribeToGame: jest.fn((gameId, cb) => {
       // default with no target; tests can re-mock per case
       cb(makeGameDoc(false));
@@ -119,7 +120,8 @@ async function clickCardByTextAsync(txt) {
 describe("Attack Helper panel", () => {
   test("opens from weapon row click and shows placeholders when no target", async () => {
     // Initial mock: no target
-    const db = require("../../../firebase/database");
+    const _dbMod1 = require("../../../firebase/database");
+    const db = _dbMod1 && _dbMod1.default ? _dbMod1.default : _dbMod1;
     db.subscribeToGame.mockImplementation((_id, cb) => {
       cb(makeGameDoc(false));
       return () => {};

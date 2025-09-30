@@ -5,10 +5,10 @@ import {
   signOutUser,
 } from "./firebase/auth";
 import { createUser } from "./firebase/database";
-import GameDashboard from "./components/GameDashboard";
-import GameSession from "./components/game/GameSessionView";
-import ThemeToggle from "./components/ThemeToggle";
-import { ThemeProvider } from "./contexts/ThemeContext";
+import GameDashboard from "components/GameDashboard";
+import GameSession from "components/game/GameSessionView";
+import ThemeToggle from "components/ThemeToggle";
+import { ThemeProvider } from "contexts/ThemeContext";
 import "./App.css";
 import "./styles/themes.css";
 

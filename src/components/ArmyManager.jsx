@@ -5,7 +5,7 @@ import {
   createGame,
   joinGame,
 } from "../firebase/database";
-import { parseArmyFile } from "../utils/armyParser";
+import { parseArmyFile } from "utils/armyParser";
 
 const ArmyManager = ({ user, onJoinGame }) => {
   const [armies, setArmies] = useState([]);

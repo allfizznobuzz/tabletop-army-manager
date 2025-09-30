@@ -40,7 +40,7 @@ jest.mock("@dnd-kit/utilities", () => ({
   CSS: { Transform: { toString: () => "" } },
 }));
 
-// Mock firebase
+// Mock firebase (use relative path to match source import string)
 jest.mock("../../../firebase/database", () => {
   return {
     subscribeToGame: jest.fn((gameId, cb) => {

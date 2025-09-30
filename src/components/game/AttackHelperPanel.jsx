@@ -5,8 +5,8 @@ import {
   parseDiceNotation,
   computeDefenderSave,
   parseAp,
-} from "../../utils/attackMath";
-import { resolveDefenderStats } from "../../utils/defenderResolver";
+} from "utils/attackMath";
+import { resolveDefenderStats } from "utils/defenderResolver";
 
 // Local helper to group weapons similar to GameSessionView.groupWeapons
 const groupWeapons = (unit) => {

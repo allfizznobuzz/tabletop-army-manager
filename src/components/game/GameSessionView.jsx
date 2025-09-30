@@ -2,15 +2,15 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { updateGameState, subscribeToGame } from "../../firebase/database";
 // AuthContext will be implemented later
-import UnitDatasheet from "../UnitDatasheet";
-import ArmyColumn from "./ArmyColumn";
-import AttackHelperPanel from "./AttackHelperPanel";
-import { canAttach } from "../../utils/eligibility";
-import { parseArmyFile } from "../../utils/armyParser";
-import { resolveWeaponCarrierCount } from "../../utils/weaponCarrier";
-import useGameSubscription from "../../hooks/useGameSubscription";
-import useMedia from "../../hooks/useMedia";
-import useStickyHeaderHeight from "../../hooks/useStickyHeaderHeight";
+import UnitDatasheet from "components/UnitDatasheet";
+import ArmyColumn from "components/game/ArmyColumn";
+import AttackHelperPanel from "components/game/AttackHelperPanel";
+import { canAttach } from "utils/eligibility";
+import { parseArmyFile } from "utils/armyParser";
+import { resolveWeaponCarrierCount } from "utils/weaponCarrier";
+import useGameSubscription from "hooks/useGameSubscription";
+import useMedia from "hooks/useMedia";
+import useStickyHeaderHeight from "hooks/useStickyHeaderHeight";
 
 // ArmyColumn renders one player's army column with fully-contained DnD and attach logic.
 // It persists state to gameState.columns.<col>.{attachments,unitOrder} and never crosses columns.

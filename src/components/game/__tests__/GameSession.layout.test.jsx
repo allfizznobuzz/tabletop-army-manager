@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
 import GameSession from "../GameSessionView";
 import { updateGameState } from "../../../firebase/database";
-import { parseArmyFile } from "../../../utils/armyParser";
+import { parseArmyFile } from "utils/armyParser";
 
 // Mock @dnd-kit (ESM) to avoid transform issues in Jest
 jest.mock("@dnd-kit/core", () => ({
@@ -63,7 +63,7 @@ jest.mock("../../../firebase/database", () => {
 });
 
 // Mock parseArmyFile to return a normalized army structure
-jest.mock("../../../utils/armyParser", () => {
+jest.mock("utils/armyParser", () => {
   return {
     parseArmyFile: jest.fn((json) => json),
   };

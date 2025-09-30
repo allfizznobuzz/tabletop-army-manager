@@ -13,7 +13,7 @@ import { updateGameState } from "../../firebase/database";
 import {
   hasActiveOverrides as ovHasActive,
   getOverrideSummary as ovSummary,
-} from "../../utils/eligibility";
+} from "utils/eligibility";
 import SortableUnit from "./UnitCard";
 import AttachedUnit from "./AttachedUnit";
 
