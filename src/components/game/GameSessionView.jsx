@@ -8,6 +8,9 @@ import AttackHelperPanel from "./AttackHelperPanel";
 import { canAttach } from "../../utils/eligibility";
 import { parseArmyFile } from "../../utils/armyParser";
 import { resolveWeaponCarrierCount } from "../../utils/weaponCarrier";
+import useGameSubscription from "../../hooks/useGameSubscription";
+import useMedia from "../../hooks/useMedia";
+import useStickyHeaderHeight from "../../hooks/useStickyHeaderHeight";
 
 // ArmyColumn renders one player's army column with fully-contained DnD and attach logic.
 // It persists state to gameState.columns.<col>.{attachments,unitOrder} and never crosses columns.
@@ -15,10 +18,10 @@ import { resolveWeaponCarrierCount } from "../../utils/weaponCarrier";
 // Attached unit sortable is implemented inside ./ArmyColumn
 
 const GameSessionView = ({ gameId, user }) => {
-  const [gameData, setGameData] = useState(null);
+  const gameData = useGameSubscription(gameId, subscribeToGame);
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
-  const [isNarrow, setIsNarrow] = useState(false);
+  const isNarrow = useMedia("(max-width: 768px)", false);
   const [draggedUnit, setDraggedUnit] = useState(null);
   // Attack Helper state
   const [attackHelper, setAttackHelper] = useState({
@@ -32,41 +35,8 @@ const GameSessionView = ({ gameId, user }) => {
     showExpected: false,
   });
 
-  // Sync CSS variable for sticky army header height to keep columns perfectly level at any width
-  // Batch reads/writes to avoid ResizeObserver loop warnings.
-  useEffect(() => {
-    const root = document.documentElement;
-    let rafId = 0;
-    let lastH = 0;
-    const measureAndSet = () => {
-      if (rafId) return; // coalesce
-      rafId = requestAnimationFrame(() => {
-        rafId = 0;
-        let h = 0;
-        document
-          .querySelectorAll(".army-column .column-header")
-          .forEach((el) => {
-            const rect = el.getBoundingClientRect();
-            h = Math.max(h, Math.ceil(rect.height));
-          });
-        if (h && h !== lastH) {
-          lastH = h;
-          root.style.setProperty("--army-header-offset", `${h}px`);
-        }
-      });
-    };
-    const ro = new ResizeObserver(() => measureAndSet());
-    document
-      .querySelectorAll(".army-column .column-header")
-      .forEach((el) => ro.observe(el));
-    window.addEventListener("resize", measureAndSet);
-    measureAndSet();
-    return () => {
-      window.removeEventListener("resize", measureAndSet);
-      ro.disconnect();
-      if (rafId) cancelAnimationFrame(rafId);
-    };
-  }, []);
+  // Keep sticky header height synced via hook
+  useStickyHeaderHeight(".army-column .column-header", "--army-header-offset");
   const [pulseTargetId, setPulseTargetId] = useState(null);
   const [attachmentsA, setAttachmentsA] = useState({});
   const [attachmentsB, setAttachmentsB] = useState({});
@@ -92,30 +62,9 @@ const GameSessionView = ({ gameId, user }) => {
     else if (u.column === "B") setPinnedUnitIdB(u.id);
   };
 
-  useEffect(() => {
-    if (!gameId) return;
-    const unsubscribeGame = subscribeToGame(gameId, (gameDoc) => {
-      setGameData(gameDoc);
-    });
-    return () => {
-      if (typeof unsubscribeGame === "function") unsubscribeGame();
-    };
-  }, [gameId]);
+  // gameData provided by useGameSubscription
 
-  // Narrow layout detection for overlay fallback
-  useEffect(() => {
-    if (typeof window === "undefined" || !window.matchMedia) return;
-    const mql = window.matchMedia("(max-width: 768px)");
-    const handle = (e) => setIsNarrow(!!e.matches);
-    // Initialize
-    handle(mql);
-    if (mql.addEventListener) mql.addEventListener("change", handle);
-    else if (mql.addListener) mql.addListener(handle);
-    return () => {
-      if (mql.removeEventListener) mql.removeEventListener("change", handle);
-      else if (mql.removeListener) mql.removeListener(handle);
-    };
-  }, []);
+  // isNarrow provided by useMedia
 
   // Close overlay when deselecting or when exiting narrow mode
   useEffect(() => {
