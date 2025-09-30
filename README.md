@@ -115,9 +115,26 @@ If a finding is reported, remove the secret, rotate it, and rerun the scan.
 
 ## Project Structure
 
-- `src/components/` – React components (`GameSession`, `UnitDatasheet`, etc.)
-- `src/utils/` – Utilities (`eligibility.js`, parsing)
-- `src/firebase/` – Firebase config and database code
+- `src/components/` – React components shared across the app (e.g. `UnitDatasheet`, `ConfirmDialog`, `ThemeToggle`)
+- `src/components/game/` – Game feature components (e.g. `GameSessionView`, `ArmyColumn`, `AttackHelperPanel`)
+- `src/components/**/__tests__/` – Tests colocated with components. Feature tests live under their feature folder (e.g. `components/game/__tests__`).
+- `src/hooks/` – Reusable hooks (e.g. `useGameSubscription`, `useMedia`, `useStickyHeaderHeight`)
+- `src/utils/` – Pure utilities (e.g. `eligibility.js`, `attackMath.js`, `armyParser.js`)
+- `src/firebase/` – Project Firebase integration (`config.js`, `auth.js`, `database.js`). Imported via relative paths to avoid name collision with the npm `firebase` package.
+- `src/contexts/` – React contexts (e.g. `ThemeContext.js`)
+- `src/samples/` – Sample JSON armies for testing/dev
+
+### Import Conventions
+
+- Absolute imports are enabled via `tsconfig.json` with `baseUrl: "src"`:
+  - Examples: `import { canAttach } from "utils/eligibility";`, `import AttackHelperPanel from "components/game/AttackHelperPanel";`
+- Project Firebase modules must use relative paths (e.g. `../../firebase/database`) to avoid colliding with the npm `firebase` package name under Jest/CRA.
+
+### Test Conventions
+
+- Component tests are colocated in `__tests__/` next to their feature/component.
+- Utilities have tests alongside in `src/utils/__tests__/`.
+- `@dnd-kit` is mocked in tests to avoid ESM transform issues.
 
 ## Notes on Costs
 
