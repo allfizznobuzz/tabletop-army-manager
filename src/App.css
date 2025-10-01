@@ -206,7 +206,38 @@
   background: var(--color-tertiary);
   padding: 0;
   display: flex;
+  gap: 8px; /* space between items */
   border-bottom: 2px solid var(--border-primary);
+}
+
+.app-nav a,
+.app-nav a:visited {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  background: none;
+  border: 1px solid var(--border-primary);
+  color: var(--text-primary);
+  padding: 1rem 2rem;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.app-nav a:hover {
+  background: var(--interactive-hover);
+  border-color: var(--border-focus);
+  border-bottom-color: var(--border-focus);
+}
+
+.app-nav a.active {
+  background: var(--nav-active-bg);
+  color: #000000;
+  border: 1px solid var(--nav-active-bg);
+  border-bottom: 3px solid var(--nav-active-bg);
+  border-top: 3px solid var(--nav-active-bg);
+  margin-top: 0;
 }
 
 .app-nav button {
