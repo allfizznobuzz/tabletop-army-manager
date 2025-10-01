@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { updateGameState, subscribeToGame } from "../../firebase/database";
 // AuthContext will be implemented later
-import UnitDatasheet from "components/UnitDatasheet";
+import UnitDatasheet from "components/game/UnitDatasheet";
 import ArmyColumn from "components/game/ArmyColumn";
 import AttackHelperPanel from "components/game/AttackHelperPanel";
 import { canAttach } from "utils/eligibility";
@@ -11,14 +11,20 @@ import { resolveWeaponCarrierCount } from "utils/weaponCarrier";
 import useGameSubscription from "hooks/useGameSubscription";
 import useMedia from "hooks/useMedia";
 import useStickyHeaderHeight from "hooks/useStickyHeaderHeight";
+import GameHeader from "components/game/session/GameHeader";
+import UploadDropzone from "components/game/session/UploadDropzone";
+import ArmySidebar from "components/game/session/ArmySidebar";
+import DatasheetRail from "components/game/session/DatasheetRail";
+import DatasheetCompare from "components/game/session/DatasheetCompare";
 
 // ArmyColumn renders one player's army column with fully-contained DnD and attach logic.
 // It persists state to gameState.columns.<col>.{attachments,unitOrder} and never crosses columns.
 
 // Attached unit sortable is implemented inside ./ArmyColumn
 
-const GameSessionView = ({ gameId, user }) => {
-  const gameData = useGameSubscription(gameId, subscribeToGame);
+const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
+  const subscribedGameData = useGameSubscription(gameId, subscribeToGame);
+  const gameData = gameDataProp ?? subscribedGameData;
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
   const isNarrow = useMedia("(max-width: 768px)", false);
@@ -444,121 +450,173 @@ const GameSessionView = ({ gameId, user }) => {
 
   return (
     <div className="game-session">
-      <div className="game-header">
-        <h2>{gameData?.name || "Game"}</h2>
-        <div className="game-info">
-          <span>Round: {gameData?.round || 1}</span>
-          <span>Current Turn: {isMyTurn ? "Your Turn" : "Waiting..."}</span>
-          <span>Game ID: {gameId}</span>
-        </div>
-        {isNarrow && selectedUnit ? (
-          <div style={{ marginTop: "0.5rem" }}>
-            <button
-              type="button"
-              className="action-btn"
-              aria-label="Open Datasheet overlay"
-              onClick={() => setOverlayOpen(true)}
-            >
-              Open Datasheet
-            </button>
-          </div>
-        ) : null}
-      </div>
+      <GameHeader
+        name={gameData?.name}
+        round={gameData?.round}
+        isMyTurn={isMyTurn}
+        gameId={gameId}
+        isNarrow={isNarrow}
+        hasSelectedUnit={!!selectedUnit}
+        onOpenOverlay={() => setOverlayOpen(true)}
+      />
 
       <div className="game-content" data-testid="game-content">
         {/* Column 1: Player A */}
-        <aside
-          className="units-sidebar army-column"
-          id="armyA"
-          aria-label="Army A"
+        <ArmySidebar
+          columnKey="A"
+          displayName={gameData?.playerA?.displayName}
+          inputRef={inputARef}
+          hasArmy={hasArmyA}
+          uploadError={uploadErrorA}
+          onFileInputChange={onFileInputChange}
+          onDragOverZone={onDragOverZone}
+          onDropZone={onDropZone}
         >
-          <div className="column-header">
-            <h3>Player A — {gameData?.playerA?.displayName || "Player A"}</h3>
-            <input
-              ref={inputARef}
-              type="file"
-              accept=".json,application/json"
-              style={{ display: "none" }}
-              aria-label="Upload army file for Player A"
-              onChange={(e) => onFileInputChange("A", e)}
+          {hasArmyA ? (
+            <ArmyColumn
+              columnKey="A"
+              title="Player A"
+              units={allUnitsA}
+              attachments={attachmentsA}
+              setAttachments={setAttachmentsA}
+              unitOrder={unitOrderA}
+              setUnitOrder={setUnitOrderA}
+              leadershipOverrides={leadershipOverrides}
+              allUnitsById={allUnitsById}
+              selectedUnit={selectedUnit}
+              setSelectedUnit={setSelectedUnit}
+              updateUnitOverrides={updateUnitOverrides}
+              getUnitStatusClass={getUnitStatusClass}
+              isLeaderUnit={isLeaderUnit}
+              canLeaderAttachToUnit={canLeaderAttachToUnit}
+              gameId={gameId}
+              sensors={sensors}
+              draggedUnit={draggedUnit}
+              setDraggedUnit={setDraggedUnit}
+              pinUnit={pinUnit}
+              pinnedUnitId={pinnedUnitIdA}
+              pointerRef={pointerRef}
+              scrollRafRef={scrollRafRef}
+              draggingRef={draggingRef}
+              // Attack Helper wiring
+              attackHelper={attackHelper}
+              setAttackHelper={setAttackHelper}
+              pulseTargetId={pulseTargetId}
+              setPulseTargetId={setPulseTargetId}
             />
-            {hasArmyA ? (
-              <button
-                className="action-btn"
-                onClick={() => inputARef.current?.click()}
-              >
-                Replace army
-              </button>
-            ) : null}
-          </div>
-          <div className="units-scroll">
-            {!hasArmyA && (
-              <div
-                className="upload-dropzone"
-                role="button"
-                aria-label="Upload army file dropzone for Player A"
-                onDragOver={onDragOverZone}
-                onDrop={(e) => onDropZone("A", e)}
-                onClick={() => inputARef.current?.click()}
-              >
-                <p>
-                  <strong>Upload army file</strong>
-                </p>
-                <p>Click to select or drag & drop a .json file</p>
-                {uploadErrorA && (
-                  <div className="error-message">{uploadErrorA}</div>
-                )}
-              </div>
-            )}
-            {hasArmyA ? (
-              <ArmyColumn
-                columnKey="A"
-                title="Player A"
-                units={allUnitsA}
-                attachments={attachmentsA}
-                setAttachments={setAttachmentsA}
-                unitOrder={unitOrderA}
-                setUnitOrder={setUnitOrderA}
-                leadershipOverrides={leadershipOverrides}
-                allUnitsById={allUnitsById}
-                selectedUnit={selectedUnit}
-                setSelectedUnit={setSelectedUnit}
-                updateUnitOverrides={updateUnitOverrides}
-                getUnitStatusClass={getUnitStatusClass}
-                isLeaderUnit={isLeaderUnit}
-                canLeaderAttachToUnit={canLeaderAttachToUnit}
-                gameId={gameId}
-                sensors={sensors}
-                draggedUnit={draggedUnit}
-                setDraggedUnit={setDraggedUnit}
-                pinUnit={pinUnit}
-                pinnedUnitId={pinnedUnitIdA}
-                pointerRef={pointerRef}
-                scrollRafRef={scrollRafRef}
-                draggingRef={draggingRef}
-                // Attack Helper wiring
-                attackHelper={attackHelper}
-                setAttackHelper={setAttackHelper}
-                pulseTargetId={pulseTargetId}
-                setPulseTargetId={setPulseTargetId}
-              />
-            ) : (
-              <div className="empty-army">
-                <p>No army yet. Add one to begin.</p>
-              </div>
-            )}
-          </div>
-        </aside>
+          ) : (
+            <div className="empty-army">
+              <p>No army yet. Add one to begin.</p>
+            </div>
+          )}
+        </ArmySidebar>
 
         {/* Column 2: Center area with sticky rail + independent scroll pane */}
         <main className="datasheet-area">
-          <div className="datasheet-sticky-rail">
-            {selectedUnit ? (
-              <AttackHelperPanel
+          <DatasheetRail
+            selectedUnit={selectedUnit}
+            attackHelper={attackHelper}
+            allUnitsById={allUnitsById}
+            defaultTargetUnit={targetUnit}
+            onChangeModelsInRange={(val) =>
+              setAttackHelper((prev) => ({
+                ...prev,
+                modelsInRange: Math.max(1, Number(val) || 1),
+              }))
+            }
+            onToggleExpected={() =>
+              setAttackHelper((prev) => ({
+                ...prev,
+                showExpected: !prev.showExpected,
+              }))
+            }
+          />
+          <div className="datasheet-scroll">
+            {leftUnit || rightUnit ? (
+              <DatasheetCompare
+                leftUnit={leftUnit}
+                rightUnit={rightUnit}
                 selectedUnit={selectedUnit}
+                hasArmyA={hasArmyA}
+                hasArmyB={hasArmyB}
+                leadershipOverrides={leadershipOverrides}
+                allUnits={allUnits}
+                updateUnitOverrides={updateUnitOverrides}
                 attackHelper={attackHelper}
-                allUnitsById={allUnitsById}
-                defaultTargetUnit={targetUnit}
+                onToggleWeaponLeft={(section, index, weapon) => {
+                  if (!pinnedUnitIdB && rightUnit)
+                    setPinnedUnitIdB(rightUnit.id);
+                  lastActionRef.current = "toggle_weapon";
+                  setAttackHelper((prev) => {
+                    const defaultModels = resolveWeaponCarrierCount(
+                      leftUnit,
+                      weapon,
+                    );
+                    let nextTargetId =
+                      prev.targetUnitId ||
+                      pinnedUnitIdB ||
+                      (rightUnit ? rightUnit.id : null);
+                    if (nextTargetId) {
+                      const cand = allUnitsById[nextTargetId];
+                      if (!cand || cand.column === leftUnit.column)
+                        nextTargetId = null;
+                    }
+                    const hasTarget = !!nextTargetId;
+                    return {
+                      open: true,
+                      section,
+                      index,
+                      modelsInRange: defaultModels,
+                      targetUnitId: nextTargetId,
+                      attackerUnitId: leftUnit.id,
+                      intent: hasTarget ? "open_with_target" : "open_no_target",
+                      showExpected: prev.showExpected,
+                    };
+                  });
+                  setSelectedUnit(leftUnit);
+                }}
+                onToggleWeaponRight={(section, index, weapon) => {
+                  if (!pinnedUnitIdA && leftUnit) setPinnedUnitIdA(leftUnit.id);
+                  lastActionRef.current = "toggle_weapon";
+                  setAttackHelper((prev) => {
+                    const defaultModels = resolveWeaponCarrierCount(
+                      rightUnit,
+                      weapon,
+                    );
+                    let nextTargetId =
+                      prev.targetUnitId ||
+                      pinnedUnitIdA ||
+                      (leftUnit ? leftUnit.id : null);
+                    if (nextTargetId) {
+                      const cand = allUnitsById[nextTargetId];
+                      if (!cand || cand.column === rightUnit.column)
+                        nextTargetId = null;
+                    }
+                    const hasTarget = !!nextTargetId;
+                    return {
+                      open: true,
+                      section,
+                      index,
+                      modelsInRange: defaultModels,
+                      targetUnitId: nextTargetId,
+                      attackerUnitId: rightUnit.id,
+                      intent: hasTarget ? "open_with_target" : "open_no_target",
+                      showExpected: prev.showExpected,
+                    };
+                  });
+                  setSelectedUnit(rightUnit);
+                }}
+                onCloseAttackHelper={() =>
+                  setAttackHelper({
+                    open: false,
+                    section: null,
+                    index: null,
+                    modelsInRange: null,
+                    targetUnitId: null,
+                    intent: "idle",
+                    showExpected: attackHelper?.showExpected,
+                  })
+                }
                 onChangeModelsInRange={(val) =>
                   setAttackHelper((prev) => ({
                     ...prev,
@@ -571,207 +629,8 @@ const GameSessionView = ({ gameId, user }) => {
                     showExpected: !prev.showExpected,
                   }))
                 }
+                targetUnit={targetUnit}
               />
-            ) : null}
-          </div>
-          <div className="datasheet-scroll">
-            {leftUnit || rightUnit ? (
-              <div className="datasheet-compare-grid">
-                <div className="pane left">
-                  {leftUnit ? (
-                    <UnitDatasheet
-                      unit={leftUnit}
-                      isSelected={selectedUnit?.id === leftUnit.id}
-                      onClick={() => {}}
-                      overrides={
-                        leadershipOverrides[leftUnit.id] || {
-                          canLead: "auto",
-                          canBeLed: "auto",
-                          allowList: [],
-                        }
-                      }
-                      allUnits={allUnits}
-                      onUpdateOverrides={(partial) =>
-                        updateUnitOverrides(leftUnit.id, partial)
-                      }
-                      attackHelper={attackHelper}
-                      onToggleWeapon={(section, index, weapon) => {
-                        // Pin the opposite side so it doesn't default when switching attackers
-                        if (!pinnedUnitIdB && rightUnit)
-                          setPinnedUnitIdB(rightUnit.id);
-                        lastActionRef.current = "toggle_weapon";
-                        setAttackHelper((prev) => {
-                          const defaultModels = resolveWeaponCarrierCount(
-                            leftUnit,
-                            weapon,
-                          );
-                          let nextTargetId =
-                            prev.targetUnitId ||
-                            pinnedUnitIdB ||
-                            (rightUnit ? rightUnit.id : null);
-                          if (nextTargetId) {
-                            const cand = allUnitsById[nextTargetId];
-                            if (!cand || cand.column === leftUnit.column)
-                              nextTargetId = null;
-                          }
-                          const hasTarget = !!nextTargetId;
-                          return {
-                            open: true,
-                            section,
-                            index,
-                            modelsInRange: defaultModels,
-                            targetUnitId: nextTargetId,
-                            attackerUnitId: leftUnit.id,
-                            intent: hasTarget
-                              ? "open_with_target"
-                              : "open_no_target",
-                            showExpected: prev.showExpected,
-                          };
-                        });
-                        setSelectedUnit(leftUnit);
-                      }}
-                      onCloseAttackHelper={() =>
-                        setAttackHelper({
-                          open: false,
-                          section: null,
-                          index: null,
-                          modelsInRange: null,
-                          targetUnitId: null,
-                          intent: "idle",
-                          showExpected: attackHelper?.showExpected,
-                        })
-                      }
-                      onChangeModelsInRange={(val) =>
-                        setAttackHelper((prev) => ({
-                          ...prev,
-                          modelsInRange: Math.max(1, Number(val) || 1),
-                        }))
-                      }
-                      onToggleExpected={() =>
-                        setAttackHelper((prev) => ({
-                          ...prev,
-                          showExpected: !prev.showExpected,
-                        }))
-                      }
-                      selectedTargetUnit={targetUnit}
-                    />
-                  ) : (
-                    <div className="no-unit-selected">
-                      {!hasArmyA && !hasArmyB ? (
-                        <>
-                          <h3>Start by adding armies to both columns</h3>
-                          <p>
-                            Use the Upload army controls in each column to
-                            import an army JSON.
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <h3>Select a unit from Player A to view details</h3>
-                          <p>Click on any unit in the left roster.</p>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className="pane right">
-                  {rightUnit ? (
-                    <UnitDatasheet
-                      unit={rightUnit}
-                      isSelected={selectedUnit?.id === rightUnit.id}
-                      onClick={() => {}}
-                      overrides={
-                        leadershipOverrides[rightUnit.id] || {
-                          canLead: "auto",
-                          canBeLed: "auto",
-                          allowList: [],
-                        }
-                      }
-                      allUnits={allUnits}
-                      onUpdateOverrides={(partial) =>
-                        updateUnitOverrides(rightUnit.id, partial)
-                      }
-                      attackHelper={attackHelper}
-                      onToggleWeapon={(section, index, weapon) => {
-                        // Pin the opposite side so it doesn't default when switching attackers
-                        if (!pinnedUnitIdA && leftUnit)
-                          setPinnedUnitIdA(leftUnit.id);
-                        lastActionRef.current = "toggle_weapon";
-                        setAttackHelper((prev) => {
-                          const defaultModels = resolveWeaponCarrierCount(
-                            rightUnit,
-                            weapon,
-                          );
-                          let nextTargetId =
-                            prev.targetUnitId ||
-                            pinnedUnitIdA ||
-                            (leftUnit ? leftUnit.id : null);
-                          if (nextTargetId) {
-                            const cand = allUnitsById[nextTargetId];
-                            if (!cand || cand.column === rightUnit.column)
-                              nextTargetId = null;
-                          }
-                          const hasTarget = !!nextTargetId;
-                          return {
-                            open: true,
-                            section,
-                            index,
-                            modelsInRange: defaultModels,
-                            targetUnitId: nextTargetId,
-                            attackerUnitId: rightUnit.id,
-                            intent: hasTarget
-                              ? "open_with_target"
-                              : "open_no_target",
-                            showExpected: prev.showExpected,
-                          };
-                        });
-                        setSelectedUnit(rightUnit);
-                      }}
-                      onCloseAttackHelper={() =>
-                        setAttackHelper({
-                          open: false,
-                          section: null,
-                          index: null,
-                          modelsInRange: null,
-                          targetUnitId: null,
-                          intent: "idle",
-                          showExpected: attackHelper?.showExpected,
-                        })
-                      }
-                      onChangeModelsInRange={(val) =>
-                        setAttackHelper((prev) => ({
-                          ...prev,
-                          modelsInRange: Math.max(1, Number(val) || 1),
-                        }))
-                      }
-                      onToggleExpected={() =>
-                        setAttackHelper((prev) => ({
-                          ...prev,
-                          showExpected: !prev.showExpected,
-                        }))
-                      }
-                      selectedTargetUnit={targetUnit}
-                    />
-                  ) : (
-                    <div className="no-unit-selected">
-                      {!hasArmyA && !hasArmyB ? (
-                        <>
-                          <h3>Start by adding armies to both columns</h3>
-                          <p>
-                            Use the Upload army controls in each column to
-                            import an army JSON.
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <h3>Select a unit from Player B to view details</h3>
-                          <p>Click on any unit in the right roster.</p>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
             ) : (
               <div className="no-unit-selected">
                 {!hasArmyA && !hasArmyB ? (
@@ -797,95 +656,57 @@ const GameSessionView = ({ gameId, user }) => {
         </main>
 
         {/* Column 3: Player B */}
-        <aside
-          className="units-sidebar army-column"
-          id="armyB"
-          aria-label="Army B"
+        <ArmySidebar
+          columnKey="B"
+          displayName={gameData?.playerB?.displayName}
+          inputRef={inputBRef}
+          hasArmy={hasArmyB}
+          uploadError={uploadErrorB}
+          onFileInputChange={onFileInputChange}
+          onDragOverZone={onDragOverZone}
+          onDropZone={onDropZone}
         >
-          <div className="column-header">
-            <h3>Player B — {gameData?.playerB?.displayName || "Player B"}</h3>
-            <input
-              ref={inputBRef}
-              type="file"
-              accept=".json,application/json"
-              style={{ display: "none" }}
-              aria-label="Upload army file for Player B"
-              onChange={(e) => onFileInputChange("B", e)}
+          {hasArmyB ? (
+            <ArmyColumn
+              columnKey="B"
+              title="Player B"
+              units={allUnitsB}
+              attachments={attachmentsB}
+              setAttachments={setAttachmentsB}
+              unitOrder={unitOrderB}
+              setUnitOrder={setUnitOrderB}
+              leadershipOverrides={leadershipOverrides}
+              allUnitsById={allUnitsById}
+              selectedUnit={selectedUnit}
+              setSelectedUnit={setSelectedUnit}
+              updateUnitOverrides={updateUnitOverrides}
+              getUnitStatusClass={getUnitStatusClass}
+              isLeaderUnit={isLeaderUnit}
+              canLeaderAttachToUnit={canLeaderAttachToUnit}
+              gameId={gameId}
+              sensors={sensors}
+              draggedUnit={draggedUnit}
+              setDraggedUnit={setDraggedUnit}
+              pinUnit={pinUnit}
+              pinnedUnitId={pinnedUnitIdB}
+              pointerRef={pointerRef}
+              scrollRafRef={scrollRafRef}
+              draggingRef={draggingRef}
+              // Attack Helper wiring
+              attackHelper={attackHelper}
+              setAttackHelper={setAttackHelper}
+              pulseTargetId={pulseTargetId}
+              setPulseTargetId={setPulseTargetId}
             />
-            {hasArmyB ? (
-              <button
-                className="action-btn"
-                onClick={() => inputBRef.current?.click()}
-              >
-                Replace army
-              </button>
-            ) : null}
-          </div>
-          <div className="units-scroll">
-            {!hasArmyB && (
-              <div
-                className="upload-dropzone"
-                role="button"
-                aria-label="Upload army file dropzone for Player B"
-                onDragOver={onDragOverZone}
-                onDrop={(e) => onDropZone("B", e)}
-                onClick={() => inputBRef.current?.click()}
-              >
-                <p>
-                  <strong>Upload army file</strong>
-                </p>
-                <p>Click to select or drag & drop a .json file</p>
-                {uploadErrorB && (
-                  <div className="error-message">{uploadErrorB}</div>
-                )}
-              </div>
-            )}
-            {hasArmyB ? (
-              <ArmyColumn
-                columnKey="B"
-                title="Player B"
-                units={allUnitsB}
-                attachments={attachmentsB}
-                setAttachments={setAttachmentsB}
-                unitOrder={unitOrderB}
-                setUnitOrder={setUnitOrderB}
-                leadershipOverrides={leadershipOverrides}
-                allUnitsById={allUnitsById}
-                selectedUnit={selectedUnit}
-                setSelectedUnit={setSelectedUnit}
-                updateUnitOverrides={updateUnitOverrides}
-                getUnitStatusClass={getUnitStatusClass}
-                isLeaderUnit={isLeaderUnit}
-                canLeaderAttachToUnit={canLeaderAttachToUnit}
-                gameId={gameId}
-                sensors={sensors}
-                draggedUnit={draggedUnit}
-                setDraggedUnit={setDraggedUnit}
-                pinUnit={pinUnit}
-                pinnedUnitId={pinnedUnitIdB}
-                pointerRef={pointerRef}
-                scrollRafRef={scrollRafRef}
-                draggingRef={draggingRef}
-                // Attack Helper wiring
-                attackHelper={attackHelper}
-                setAttackHelper={setAttackHelper}
-                pulseTargetId={pulseTargetId}
-                setPulseTargetId={setPulseTargetId}
-              />
-            ) : (
-              <div className="empty-army">
-                <p>No armies yet. Add one to begin.</p>
-              </div>
-            )}
-          </div>
-        </aside>
+          ) : (
+            <div className="empty-army">
+              <p>No army yet. Add one to begin.</p>
+            </div>
+          )}
+        </ArmySidebar>
       </div>
       {isNarrow && overlayOpen && selectedUnit ? (
-        <div
-          className="datasheet-overlay"
-          role="dialog"
-          aria-label="Datasheet Overlay"
-        >
+        <div className="datasheet-overlay" role="dialog">
           <button
             type="button"
             className="overlay-close"

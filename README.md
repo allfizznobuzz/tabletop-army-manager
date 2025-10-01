@@ -123,11 +123,12 @@ If a finding is reported, remove the secret, rotate it, and rerun the scan.
 - `src/firebase/` – Project Firebase integration (`config.js`, `auth.js`, `database.js`). Imported via relative paths to avoid name collision with the npm `firebase` package.
 - `src/contexts/` – React contexts (e.g. `ThemeContext.js`)
 - `src/samples/` – Sample JSON armies for testing/dev
+- `src/pages/` – Route-level pages (e.g. `GameDashboard.jsx`, `GameSession.jsx`) that orchestrate data-loading and compose feature components.
 
 ### Import Conventions
 
 - Absolute imports are enabled via `tsconfig.json` with `baseUrl: "src"`:
-  - Examples: `import { canAttach } from "utils/eligibility";`, `import AttackHelperPanel from "components/game/AttackHelperPanel";`
+  - Examples: `import { canAttach } from "utils/eligibility";`, `import AttackHelperPanel from "components/game/AttackHelperPanel";`, `import GameSession from "pages/GameSession";`
 - Project Firebase modules must use relative paths (e.g. `../../firebase/database`) to avoid colliding with the npm `firebase` package name under Jest/CRA.
 
 ### Test Conventions
