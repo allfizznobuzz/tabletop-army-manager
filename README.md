@@ -115,26 +115,28 @@ If a finding is reported, remove the secret, rotate it, and rerun the scan.
 
 ## Project Structure
 
-- `src/components/` – React components shared across the app (e.g. `UnitDatasheet`, `ConfirmDialog`, `ThemeToggle`)
-- `src/components/game/` – Game feature components (e.g. `GameSessionView`, `ArmyColumn`, `AttackHelperPanel`)
-- `src/components/**/__tests__/` – Tests colocated with components. Feature tests live under their feature folder (e.g. `components/game/__tests__`).
+- `src/components/` – React components grouped by feature:
+  - `components/army/` – `ArmyColumn`, `ArmySidebar`, `UnitCard`, `AttachedUnit`, `UploadDropzone`
+  - `components/datasheet/` – `UnitDatasheet`, `DatasheetRail`, `DatasheetCompare`, `DatasheetOverlay`
+  - `components/attack/` – `AttackHelperPanel`
+  - `components/session/` – `GameHeader`
+- `src/components/**/__tests__/` – Tests colocated with components (e.g. `components/datasheet/__tests__`).
 - `src/hooks/` – Reusable hooks (e.g. `useGameSubscription`, `useMedia`, `useStickyHeaderHeight`)
 - `src/utils/` – Pure utilities (e.g. `eligibility.js`, `attackMath.js`, `armyParser.js`)
 - `src/firebase/` – Project Firebase integration (`config.js`, `auth.js`, `database.js`). Imported via relative paths to avoid name collision with the npm `firebase` package.
 - `src/contexts/` – React contexts (e.g. `ThemeContext.js`)
-- `src/samples/` – Sample JSON armies for testing/dev
 - `src/pages/` – Route-level pages (e.g. `GameDashboard.jsx`, `GameSession.jsx`) that orchestrate data-loading and compose feature components.
 
 ### Import Conventions
 
 - Absolute imports are enabled via `tsconfig.json` with `baseUrl: "src"`:
-  - Examples: `import { canAttach } from "utils/eligibility";`, `import AttackHelperPanel from "components/game/AttackHelperPanel";`, `import GameSession from "pages/GameSession";`
+  - Examples: `import { canAttach } from "utils/eligibility";`, `import AttackHelperPanel from "components/attack/AttackHelperPanel";`, `import GameSession from "pages/GameSession"`
 - Project Firebase modules must use relative paths (e.g. `../../firebase/database`) to avoid colliding with the npm `firebase` package name under Jest/CRA.
 
 ### Test Conventions
 
 - Component tests are colocated in `__tests__/` next to their feature/component.
-- Utilities have tests alongside in `src/utils/__tests__/`.
+- Test paths are relative to the component being tested (e.g. `components/army/__tests__/ArmyColumn.test.jsx`).
 - `@dnd-kit` is mocked in tests to avoid ESM transform issues.
 
 ## Notes on Costs
@@ -148,7 +150,7 @@ The in-game view uses a three-column grid layout: `Player A | Datasheet | Player
 
 - Left/Right columns render each player's army as compact, draggable unit cards.
 - The center column renders a sticky, scrollable datasheet for the selected unit.
-- Columns are implemented in `src/components/GameSession.js` and styled in `src/App.css`.
+- Columns are implemented in `src/pages/GameSession.jsx` using components from `components/army/`, `components/datasheet/`, `components/attack/`, and `components/session/`, styled in `src/App.css`.
 
 Key styles and classes:
 
@@ -186,7 +188,7 @@ npm run test:ci
 
 Highlights:
 
-- Component tests cover the three-column layout and per-column upload flow: `src/components/__tests__/GameSession.layout.test.jsx`.
+- Component tests cover the three-column layout and per-column upload flow: `src/pages/__tests__/GameSession.layout.test.jsx`.
 - `@dnd-kit` is mocked in tests to avoid ESM transform issues in Jest.
 - Upload flow tests include positive paths (Player A and Player B) and negative cases (invalid file type, JSON parse errors) with inline error rendering.
 

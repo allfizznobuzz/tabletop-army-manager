@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent, within } from "@testing-library/react";
-import UnitDatasheet from "../game/UnitDatasheet";
+import UnitDatasheet from "../datasheet/UnitDatasheet";
 
 const baseUnit = {
   id: "u1",

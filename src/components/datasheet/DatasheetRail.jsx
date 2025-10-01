@@ -1,5 +1,5 @@
 import React from "react";
-import AttackHelperPanel from "components/game/AttackHelperPanel";
+import AttackHelperPanel from "components/attack/AttackHelperPanel";
 
 export default function DatasheetRail({
   selectedUnit,

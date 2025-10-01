@@ -11,11 +11,77 @@ import ThemeToggle from "components/ThemeToggle";
 import { ThemeProvider } from "contexts/ThemeContext";
 import "./App.css";
 import "./styles/themes.css";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useParams,
+  Link,
+  useLocation,
+} from "react-router-dom";
+
+function GameSessionRoute({ user }) {
+  const { id } = useParams();
+  return <GameSession gameId={id} user={user} />;
+}
+
+function AppRoutes({ user, onSignOut, currentGameId, setCurrentGameId }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isDashboard = location.pathname === "/";
+  const isGame = location.pathname.startsWith("/game/");
+
+  const joinGame = (gameId) => {
+    setCurrentGameId(gameId);
+    navigate(`/game/${gameId}`);
+  };
+
+  return (
+    <div className="app">
+      <header className="app-header">
+        <h1>🎲 Tabletop Army Manager</h1>
+        <div className="user-info">
+          <span>Welcome, {user.displayName}</span>
+          <ThemeToggle />
+          <button onClick={onSignOut} className="signout-button">
+            Sign Out
+          </button>
+        </div>
+      </header>
+
+      <nav className="app-nav">
+        <Link to="/" className={isDashboard ? "active" : ""}>
+          Game Dashboard
+        </Link>
+        {currentGameId && (
+          <Link
+            to={`/game/${currentGameId}`}
+            className={isGame ? "active" : ""}
+          >
+            Current Game
+          </Link>
+        )}
+      </nav>
+
+      <main className="app-main">
+        <Routes>
+          <Route
+            path="/"
+            element={<GameDashboard user={user} onJoinGame={joinGame} />}
+          />
+          <Route path="/game/:id" element={<GameSessionRoute user={user} />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
 
 function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [currentView, setCurrentView] = useState("dashboard"); // 'dashboard', 'game'
   const [currentGameId, setCurrentGameId] = useState(null);
 
   useEffect(() => {
@@ -50,16 +116,10 @@ function App() {
   const handleSignOut = async () => {
     try {
       await signOutUser();
-      setCurrentView("dashboard");
       setCurrentGameId(null);
     } catch (error) {
       console.error("Sign out failed:", error);
     }
-  };
-
-  const joinGame = (gameId) => {
-    setCurrentGameId(gameId);
-    setCurrentView("game");
   };
 
   if (loading) {
@@ -86,44 +146,14 @@ function App() {
 
   return (
     <ThemeProvider>
-      <div className="app">
-        <header className="app-header">
-          <h1>🎲 Tabletop Army Manager</h1>
-          <div className="user-info">
-            <span>Welcome, {user.displayName}</span>
-            <ThemeToggle />
-            <button onClick={handleSignOut} className="signout-button">
-              Sign Out
-            </button>
-          </div>
-        </header>
-
-        <nav className="app-nav">
-          <button
-            onClick={() => setCurrentView("dashboard")}
-            className={currentView === "dashboard" ? "active" : ""}
-          >
-            Game Dashboard
-          </button>
-          {currentGameId && (
-            <button
-              onClick={() => setCurrentView("game")}
-              className={currentView === "game" ? "active" : ""}
-            >
-              Current Game
-            </button>
-          )}
-        </nav>
-
-        <main className="app-main">
-          {currentView === "dashboard" && (
-            <GameDashboard user={user} onJoinGame={joinGame} />
-          )}
-          {currentView === "game" && currentGameId && (
-            <GameSession gameId={currentGameId} user={user} />
-          )}
-        </main>
-      </div>
+      <BrowserRouter>
+        <AppRoutes
+          user={user}
+          onSignOut={handleSignOut}
+          currentGameId={currentGameId}
+          setCurrentGameId={setCurrentGameId}
+        />
+      </BrowserRouter>
     </ThemeProvider>
   );
 }

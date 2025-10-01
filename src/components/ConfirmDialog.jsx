@@ -1,6 +1,15 @@
-import React from 'react';
+import React from "react";
 
-const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, confirmText = "Delete", cancelText = "Cancel", isDestructive = false }) => {
+const ConfirmDialog = ({
+  isOpen,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  confirmText = "Delete",
+  cancelText = "Cancel",
+  isDestructive = false,
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -9,18 +18,18 @@ const ConfirmDialog = ({ isOpen, title, message, onConfirm, onCancel, confirmTex
         <div className="confirm-dialog-header">
           <h3>{title}</h3>
         </div>
-        
+
         <div className="confirm-dialog-body">
           <p>{message}</p>
         </div>
-        
+
         <div className="confirm-dialog-actions">
           <button onClick={onCancel} className="cancel-btn">
             {cancelText}
           </button>
-          <button 
-            onClick={onConfirm} 
-            className={`confirm-btn ${isDestructive ? 'destructive' : ''}`}
+          <button
+            onClick={onConfirm}
+            className={`confirm-btn ${isDestructive ? "destructive" : ""}`}
           >
             {confirmText}
           </button>

@@ -1,13 +1,12 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import ArmySidebar from "components/game/session/ArmySidebar";
+import ArmySidebar from "components/army/ArmySidebar";
 
 function makeRef() {
   // Simple ref object; React will replace .current with the DOM node, which is fine for these tests
   return { current: null };
 }
-
 describe("ArmySidebar", () => {
   test("renders header and Replace button when hasArmy is true (Player A)", () => {
     const inputRef = makeRef();

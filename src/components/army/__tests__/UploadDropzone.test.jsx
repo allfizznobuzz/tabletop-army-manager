@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import UploadDropzone from "components/game/session/UploadDropzone";
+import UploadDropzone from "components/army/UploadDropzone";
 
 describe("UploadDropzone", () => {
   test("renders with error and calls handlers", () => {

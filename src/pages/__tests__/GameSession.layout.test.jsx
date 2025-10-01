@@ -1,8 +1,8 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-import GameSession from "../GameSessionView";
-import { updateGameState } from "../../../firebase/database";
+import GameSession from "pages/GameSession";
+import { updateGameState } from "../../firebase/database";
 import { parseArmyFile } from "utils/armyParser";
 
 // Mock @dnd-kit (ESM) to avoid transform issues in Jest
@@ -40,7 +40,7 @@ jest.mock("@dnd-kit/utilities", () => ({
 }));
 
 // Mock firebase database module used by GameSession
-jest.mock("../../../firebase/database", () => {
+jest.mock("../../firebase/database", () => {
   return {
     subscribeToGame: jest.fn((gameId, cb) => {
       // minimal game doc with no armies

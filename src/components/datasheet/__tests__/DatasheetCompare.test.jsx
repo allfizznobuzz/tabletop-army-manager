@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import DatasheetCompare from "components/game/session/DatasheetCompare";
+import DatasheetCompare from "components/datasheet/DatasheetCompare";
 
 const leftUnit = {
   id: "left1",

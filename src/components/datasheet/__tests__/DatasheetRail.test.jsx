@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import DatasheetRail from "components/game/session/DatasheetRail";
+import DatasheetRail from "components/datasheet/DatasheetRail";
 
 const selectedUnit = { id: "u1", name: "Assault Intercessors", weapons: [] };
 

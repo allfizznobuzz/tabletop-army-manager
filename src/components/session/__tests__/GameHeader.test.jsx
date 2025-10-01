@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import GameHeader from "components/game/session/GameHeader";
+import GameHeader from "components/session/GameHeader";
 
 describe("GameHeader", () => {
   test("renders name, round, turn, game id and shows overlay button when narrow with selection", () => {

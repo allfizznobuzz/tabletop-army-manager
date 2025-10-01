@@ -1,5 +1,5 @@
 import React from "react";
-import UnitDatasheet from "components/game/UnitDatasheet";
+import UnitDatasheet from "components/datasheet/UnitDatasheet";
 
 export default function DatasheetCompare({
   leftUnit,

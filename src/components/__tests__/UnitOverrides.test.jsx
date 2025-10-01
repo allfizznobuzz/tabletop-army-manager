@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import UnitDatasheet from "../game/UnitDatasheet";
+import UnitDatasheet from "../datasheet/UnitDatasheet";
 
 function Wrapper() {
   const [overrides, setOverrides] = React.useState({

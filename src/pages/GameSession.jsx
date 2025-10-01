@@ -1,9 +1,380 @@
-import React from "react";
-import GameSessionView from "components/game/GameSessionView";
-import { subscribeToGame } from "../firebase/database";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
+import { updateGameState, subscribeToGame } from "../firebase/database";
+// AuthContext will be implemented later
+import ArmyColumn from "components/army/ArmyColumn";
+import {
+  canAttach,
+  isLeaderUnit as inferIsLeaderUnit,
+  sourceCanAttach as strictSourceCanAttach,
+} from "utils/eligibility";
+// Army import handled via hook
 import useGameSubscription from "hooks/useGameSubscription";
+import useMedia from "hooks/useMedia";
+import useStickyHeaderHeight from "hooks/useStickyHeaderHeight";
+import useUnitsSnapshot from "hooks/useUnitsSnapshot";
+import useColumnSync from "hooks/useColumnSync";
+import useCompareUnits from "hooks/useCompareUnits";
+import useAttackHelper from "hooks/useAttackHelper";
+import useArmyImport from "hooks/useArmyImport";
+import GameHeader from "components/session/GameHeader";
+import ArmySidebar from "components/army/ArmySidebar";
+import DatasheetRail from "components/datasheet/DatasheetRail";
+import DatasheetCompare from "components/datasheet/DatasheetCompare";
+import DatasheetOverlay from "components/datasheet/DatasheetOverlay";
 
-export default function GameSessionPage({ gameId, user }) {
-  const gameData = useGameSubscription(gameId, subscribeToGame);
-  return <GameSessionView gameId={gameId} user={user} gameData={gameData} />;
-}
+// ArmyColumn renders one player's army column with fully-contained DnD and attach logic.
+// It persists state to gameState.columns.<col>.{attachments,unitOrder} and never crosses columns.
+
+// Attached unit sortable is implemented inside ./ArmyColumn
+
+const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
+  const subscribedGameData = useGameSubscription(gameId, subscribeToGame);
+  const gameData = gameDataProp ?? subscribedGameData;
+  const [selectedUnit, setSelectedUnit] = useState(null);
+  const [overlayOpen, setOverlayOpen] = useState(false);
+  const isNarrow = useMedia("(max-width: 768px)", false);
+  const [draggedUnit, setDraggedUnit] = useState(null);
+
+  // Keep sticky header height synced via hook
+  useStickyHeaderHeight(".army-column .column-header", "--army-header-offset");
+  const [pulseTargetId, setPulseTargetId] = useState(null);
+  const {
+    attachmentsA,
+    setAttachmentsA,
+    attachmentsB,
+    setAttachmentsB,
+    unitOrderA,
+    setUnitOrderA,
+    unitOrderB,
+    setUnitOrderB,
+  } = useColumnSync(gameData);
+  const [leadershipOverrides, setLeadershipOverrides] = useState({});
+  const pointerRef = useRef({ x: 0, y: 0, has: false });
+  const scrollRafRef = useRef(null);
+  const draggingRef = useRef(false);
+  const {
+    inputARef,
+    inputBRef,
+    uploadErrorA,
+    uploadErrorB,
+    onFileInputChange,
+    onDragOverZone,
+    onDropZone,
+  } = useArmyImport(gameId);
+  // Keep last-clicked unit per column pinned so both datasheets can display
+  const [pinnedUnitIdA, setPinnedUnitIdA] = useState(null);
+  const [pinnedUnitIdB, setPinnedUnitIdB] = useState(null);
+
+  const pinUnit = (u) => {
+    if (!u) return;
+    if (u.column === "A") setPinnedUnitIdA(u.id);
+    else if (u.column === "B") setPinnedUnitIdB(u.id);
+  };
+
+  // gameData provided by useGameSubscription
+
+  // isNarrow provided by useMedia
+
+  // Close overlay when deselecting or when exiting narrow mode
+  useEffect(() => {
+    if (!isNarrow) setOverlayOpen(false);
+    if (!selectedUnit) setOverlayOpen(false);
+  }, [isNarrow, selectedUnit]);
+
+  // Build full units list (snapshot from gameData)
+  const { allUnitsA, allUnitsB, allUnits, allUnitsById } =
+    useUnitsSnapshot(gameData);
+
+  // Resolve attacker/defender for compare view
+  const { leftUnit, rightUnit, targetUnit } = useCompareUnits(
+    selectedUnit,
+    pinnedUnitIdA,
+    pinnedUnitIdB,
+    allUnitsById,
+  );
+
+  // Centralize Attack Helper state and handlers
+  const {
+    attackHelper,
+    setAttackHelper,
+    onToggleWeaponLeft,
+    onToggleWeaponRight,
+    onChangeModelsInRange,
+    onToggleExpected,
+    close: closeAttackHelper,
+  } = useAttackHelper({
+    leftUnit,
+    rightUnit,
+    pinnedUnitIdA,
+    pinnedUnitIdB,
+    setPinnedUnitIdA,
+    setPinnedUnitIdB,
+    allUnitsById,
+    setSelectedUnit,
+  });
+
+  // Per-column ordering is managed inside ArmyColumn
+
+  // Placeholder approach needs no visual order effect
+
+  // Per-column state synced via hook
+
+  // dnd-kit sensors and handlers
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 1 } }),
+  );
+
+  // sensors are reused in per-column DnD
+
+  // Sync leadership overrides from backend
+  useEffect(() => {
+    const backend = gameData?.gameState?.leadershipOverrides || {};
+    setLeadershipOverrides(backend);
+  }, [gameData?.gameState?.leadershipOverrides]);
+
+  // Per-column detach handled inside ArmyColumn
+
+  // Update overrides for a unit and persist
+  const updateUnitOverrides = (unitId, partial) => {
+    setLeadershipOverrides((prev) => {
+      const next = { ...(prev || {}) };
+      const current = next[unitId] || {
+        canLead: "auto",
+        canBeLed: "auto",
+        allowList: [],
+      };
+      const merged = {
+        ...current,
+        ...partial,
+        allowList:
+          partial.allowList !== undefined
+            ? Array.from(new Set(partial.allowList))
+            : current.allowList,
+      };
+      next[unitId] = merged;
+      updateGameState(gameId, { "gameState.leadershipOverrides": next }).catch(
+        (err) => console.error("persist overrides failed", err),
+      );
+      return next;
+    });
+  };
+
+  // Helper functions for new unit status system
+  const getUnitStatusClass = (unit) => {
+    if (unit.currentWounds === 0) return "dead";
+    if (unit.hasActed) return "done"; // Assuming we'll add this field
+    return "ready";
+  };
+
+  // Quick leader check for visuals (orange glow)
+  const isLeaderUnitVisual = (unit) =>
+    inferIsLeaderUnit(unit, leadershipOverrides);
+
+  // Baseline source-data check (strict, from abilities text)
+  // Centralized eligibility helpers are imported from ../../utils/eligibility
+  const canLeaderAttachToUnit = (leader, draggedUnit) => {
+    return canAttach(
+      leader,
+      draggedUnit,
+      leadershipOverrides,
+      strictSourceCanAttach,
+    );
+  };
+
+  // File import/drag-drop handled via useArmyImport(gameId)
+
+  // Determine whose turn it is
+  const isMyTurn = gameData?.currentTurn === user?.uid;
+
+  const hasArmyA = !!gameData?.playerA?.armyData;
+  const hasArmyB = !!gameData?.playerB?.armyData;
+
+  return (
+    <div className="game-session">
+      <GameHeader
+        name={gameData?.name}
+        round={gameData?.round}
+        isMyTurn={isMyTurn}
+        gameId={gameId}
+        isNarrow={isNarrow}
+        hasSelectedUnit={!!selectedUnit}
+        onOpenOverlay={() => setOverlayOpen(true)}
+      />
+
+      <div className="game-content" data-testid="game-content">
+        {/* Column 1: Player A */}
+        <ArmySidebar
+          columnKey="A"
+          displayName={gameData?.playerA?.displayName}
+          inputRef={inputARef}
+          hasArmy={hasArmyA}
+          uploadError={uploadErrorA}
+          onFileInputChange={onFileInputChange}
+          onDragOverZone={onDragOverZone}
+          onDropZone={onDropZone}
+        >
+          {hasArmyA ? (
+            <ArmyColumn
+              columnKey="A"
+              title="Player A"
+              units={allUnitsA}
+              attachments={attachmentsA}
+              setAttachments={setAttachmentsA}
+              unitOrder={unitOrderA}
+              setUnitOrder={setUnitOrderA}
+              leadershipOverrides={leadershipOverrides}
+              allUnitsById={allUnitsById}
+              selectedUnit={selectedUnit}
+              setSelectedUnit={setSelectedUnit}
+              updateUnitOverrides={updateUnitOverrides}
+              getUnitStatusClass={getUnitStatusClass}
+              isLeaderUnit={isLeaderUnitVisual}
+              canLeaderAttachToUnit={canLeaderAttachToUnit}
+              gameId={gameId}
+              sensors={sensors}
+              draggedUnit={draggedUnit}
+              setDraggedUnit={setDraggedUnit}
+              pinUnit={pinUnit}
+              pinnedUnitId={pinnedUnitIdA}
+              pointerRef={pointerRef}
+              scrollRafRef={scrollRafRef}
+              draggingRef={draggingRef}
+              // Attack Helper wiring
+              attackHelper={attackHelper}
+              setAttackHelper={setAttackHelper}
+              pulseTargetId={pulseTargetId}
+              setPulseTargetId={setPulseTargetId}
+            />
+          ) : (
+            <div className="empty-army">
+              <p>No army yet. Add one to begin.</p>
+            </div>
+          )}
+        </ArmySidebar>
+
+        {/* Column 2: Center area with sticky rail + independent scroll pane */}
+        <main className="datasheet-area">
+          <DatasheetRail
+            selectedUnit={selectedUnit}
+            attackHelper={attackHelper}
+            allUnitsById={allUnitsById}
+            defaultTargetUnit={targetUnit}
+            onChangeModelsInRange={onChangeModelsInRange}
+            onToggleExpected={onToggleExpected}
+          />
+          <div className="datasheet-scroll">
+            {leftUnit || rightUnit ? (
+              <DatasheetCompare
+                leftUnit={leftUnit}
+                rightUnit={rightUnit}
+                selectedUnit={selectedUnit}
+                hasArmyA={hasArmyA}
+                hasArmyB={hasArmyB}
+                leadershipOverrides={leadershipOverrides}
+                allUnits={allUnits}
+                updateUnitOverrides={updateUnitOverrides}
+                attackHelper={attackHelper}
+                onToggleWeaponLeft={onToggleWeaponLeft}
+                onToggleWeaponRight={onToggleWeaponRight}
+                onCloseAttackHelper={closeAttackHelper}
+                onChangeModelsInRange={onChangeModelsInRange}
+                onToggleExpected={onToggleExpected}
+                targetUnit={targetUnit}
+              />
+            ) : (
+              <div className="no-unit-selected">
+                {!hasArmyA && !hasArmyB ? (
+                  <>
+                    <h3>Start by adding armies to both columns</h3>
+                    <p>
+                      Use the Upload army controls in each column to import an
+                      army JSON.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h3>Select a unit from either column to view details</h3>
+                    <p>
+                      Click on any unit to see its datasheet and available
+                      actions.
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </main>
+
+        {/* Column 3: Player B */}
+        <ArmySidebar
+          columnKey="B"
+          displayName={gameData?.playerB?.displayName}
+          inputRef={inputBRef}
+          hasArmy={hasArmyB}
+          uploadError={uploadErrorB}
+          onFileInputChange={onFileInputChange}
+          onDragOverZone={onDragOverZone}
+          onDropZone={onDropZone}
+        >
+          {hasArmyB ? (
+            <ArmyColumn
+              columnKey="B"
+              title="Player B"
+              units={allUnitsB}
+              attachments={attachmentsB}
+              setAttachments={setAttachmentsB}
+              unitOrder={unitOrderB}
+              setUnitOrder={setUnitOrderB}
+              leadershipOverrides={leadershipOverrides}
+              allUnitsById={allUnitsById}
+              selectedUnit={selectedUnit}
+              setSelectedUnit={setSelectedUnit}
+              updateUnitOverrides={updateUnitOverrides}
+              getUnitStatusClass={getUnitStatusClass}
+              isLeaderUnit={isLeaderUnitVisual}
+              canLeaderAttachToUnit={canLeaderAttachToUnit}
+              gameId={gameId}
+              sensors={sensors}
+              draggedUnit={draggedUnit}
+              setDraggedUnit={setDraggedUnit}
+              pinUnit={pinUnit}
+              pinnedUnitId={pinnedUnitIdB}
+              pointerRef={pointerRef}
+              scrollRafRef={scrollRafRef}
+              draggingRef={draggingRef}
+              // Attack Helper wiring
+              attackHelper={attackHelper}
+              setAttackHelper={setAttackHelper}
+              pulseTargetId={pulseTargetId}
+              setPulseTargetId={setPulseTargetId}
+            />
+          ) : (
+            <div className="empty-army">
+              <p>No army yet. Add one to begin.</p>
+            </div>
+          )}
+        </ArmySidebar>
+      </div>
+      {isNarrow && overlayOpen && selectedUnit ? (
+        <DatasheetOverlay
+          selectedUnit={selectedUnit}
+          leftUnit={leftUnit}
+          rightUnit={rightUnit}
+          pinnedUnitIdA={pinnedUnitIdA}
+          pinnedUnitIdB={pinnedUnitIdB}
+          allUnits={allUnits}
+          allUnitsById={allUnitsById}
+          leadershipOverrides={leadershipOverrides}
+          updateUnitOverrides={updateUnitOverrides}
+          attackHelper={attackHelper}
+          setAttackHelper={setAttackHelper}
+          targetUnit={targetUnit}
+          onClose={() => setOverlayOpen(false)}
+        />
+      ) : null}
+    </div>
+  );
+};
+
+export default GameSessionView;
