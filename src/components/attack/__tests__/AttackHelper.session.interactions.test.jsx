@@ -251,18 +251,27 @@ describe("GameSession Attack Helper interactions", () => {
     expect(
       screen.getByRole("region", { name: /attack helper/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Defender Save/i)).toBeInTheDocument();
+    expect(screen.getByText(/\bSave\b/i)).toBeInTheDocument();
     // Best save is shown as e.g. "3+ (Inv)"
     expect(screen.getByText(/\(\s*Inv\s*\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/Armour after AP/i)).toBeInTheDocument();
+    // Breakdown now hover-only
+    const panelEl = screen.getByRole("region", { name: /attack helper/i });
+    const saveNum = within(panelEl).getByText(/\d\+\s*\(\s*Inv\s*\)/i);
+    fireEvent.mouseEnter(saveNum);
+    const tip1 = await screen.findByRole("tooltip");
+    expect(tip1).toHaveTextContent(/Armour after AP/i);
 
     // Click enemy target 2 (different save) -> recompute stays open
     await clickCardByTextAsync(/B Target 2/i);
     expect(
       screen.getByRole("region", { name: /attack helper/i }),
     ).toBeInTheDocument();
-    // New best armour should reflect armour after AP breakdown
-    expect(screen.getByText(/Armour after AP/i)).toBeInTheDocument();
+    // New best armour breakdown via hover
+    const panelEl2 = screen.getByRole("region", { name: /attack helper/i });
+    const saveNum2 = within(panelEl2).getByText(/\d\+/i);
+    fireEvent.mouseEnter(saveNum2);
+    const tip2 = await screen.findByRole("tooltip");
+    expect(tip2).toHaveTextContent(/Armour after AP/i);
 
     // Click friendly unit -> panel persists (sticky rail) but resets selection; datasheet switches
     await clickCardByTextAsync(/A Grunts 2/i);

@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   woundTarget,
   probabilityFromTarget,
   parseDiceNotation,
   computeDefenderSave,
   parseAp,
+  explainWoundRule,
 } from "utils/attackMath";
 import { resolveDefenderStats } from "utils/defenderResolver";
 
@@ -55,6 +56,37 @@ const AttackHelperPanel = ({
   onChangeModelsInRange,
   onToggleExpected,
 }) => {
+  // Floating tooltip that follows the mouse
+  const [tooltip, setTooltip] = useState({
+    visible: false,
+    text: "",
+    x: 0,
+    y: 0,
+  });
+  const showTip = (text) => (e) =>
+    setTooltip({
+      visible: true,
+      text: text || "",
+      x: e.clientX + 12,
+      y: e.clientY + 12,
+    });
+  const moveTip = (text) => (e) =>
+    setTooltip((t) => ({
+      ...t,
+      visible: true,
+      text: text || "",
+      x: e.clientX + 12,
+      y: e.clientY + 12,
+    }));
+  const hideTip = () => setTooltip((t) => ({ ...t, visible: false }));
+  const tipHandlers = (text) =>
+    text
+      ? {
+          onMouseEnter: showTip(text),
+          onMouseMove: moveTip(text),
+          onMouseLeave: hideTip,
+        }
+      : {};
   const attacker = attackHelper?.attackerUnitId
     ? allUnitsById[attackHelper.attackerUnitId]
     : selectedUnit;
@@ -70,6 +102,10 @@ const AttackHelperPanel = ({
         ? melee[index]
         : null;
   const modelsInRange = attackHelper?.modelsInRange || attacker.models || 1;
+  // Now safe to derive stepper helpers
+  const modelsVal = Number(modelsInRange || 1);
+  const decModels = () => onChangeModelsInRange?.(Math.max(1, modelsVal - 1));
+  const incModels = () => onChangeModelsInRange?.(modelsVal + 1);
 
   // to hit depends on weapon.skill override or unit base skill by section
   const toHitTarget = (weaponObj, sec) => {
@@ -98,6 +134,26 @@ const AttackHelperPanel = ({
   const toHitP = toHitT ? probabilityFromTarget(toHitT) : null;
   const woundT = tVal ? woundTarget(sVal, tVal) : null;
   const woundP = woundT ? probabilityFromTarget(woundT) : null;
+  const woundRule = woundT ? explainWoundRule(sVal, tVal) : null;
+  // Hover details
+  const toHitSrc =
+    weapon && typeof weapon.skill === "number"
+      ? `Weapon skill ${weapon.skill}+`
+      : section === "ranged"
+        ? `BS ${attacker?.ballistic_skill ?? "—"}+`
+        : `WS ${attacker?.weapon_skill ?? "—"}+`;
+  const toHitHover =
+    weapon && toHitT
+      ? `${toHitSrc} → ${toHitT}+${
+          toHitP != null ? `; p≈${(toHitP * 100).toFixed(1)}%` : ""
+        }`
+      : null;
+  const woundHover =
+    weapon && woundT
+      ? `${woundRule || ""}${woundRule ? " " : ""}(S ${sVal} vs T ${tVal})${
+          woundP != null ? `; p≈${(woundP * 100).toFixed(1)}%` : ""
+        }`
+      : null;
   const apInt = parseAp(weapon?.ap || 0);
   const breakdown = computeDefenderSave(svResolved, apInt, invulnSave);
   const bestSv = breakdown.best;
@@ -109,14 +165,34 @@ const AttackHelperPanel = ({
   const bestHint = selectedTarget
     ? bestSv != null
       ? breakdown.used === "invuln"
-        ? "invulnerable"
-        : "armor after AP"
+        ? `using invulnerable (${bestSv}+)`
+        : `using armour after AP (${bestSv}+)`
       : "missing"
     : "select a target";
+  const defSaveHover = weapon
+    ? `Armour after AP: ${
+        breakdown.armourAfterAp ? `${breakdown.armourAfterAp}+` : "—"
+      }${svResolved ? ` (SV ${svResolved}+)` : ""} AP ${apInt || 0}; ` +
+      `Invulnerable: ${invulnSave ? `${invulnSave}+` : "—"}`
+    : null;
 
   let totalAttacks = null;
   if (AParsed.kind === "fixed")
     totalAttacks = Number(AParsed.value || 0) * modelsInRange;
+
+  // Hover text for Attacks math
+  let attacksHover = null;
+  if (weapon) {
+    if (AParsed.kind === "fixed") {
+      const perModel = Number(AParsed.value || 0);
+      const total = Number.isFinite(perModel) ? perModel * modelsInRange : null;
+      attacksHover = `${modelsInRange} models × ${perModel} attacks = ${total ?? "—"}`;
+    } else {
+      const avgPer = Number(AParsed.avg || 0);
+      const totalAvg = modelsInRange * avgPer;
+      attacksHover = `${modelsInRange} models × avg(${AParsed.value}) ≈ ${totalAvg.toFixed(1)}`;
+    }
+  }
 
   const showHeaderNames = !!weapon;
 
@@ -143,16 +219,63 @@ const AttackHelperPanel = ({
           <strong>{weapon ? weapon.name : "—"}</strong>
         </div>
       </div>
-
+      {tooltip.visible ? (
+        <div
+          className="app-tooltip"
+          style={{ position: "fixed", top: tooltip.y, left: tooltip.x }}
+          role="tooltip"
+        >
+          {tooltip.text}
+        </div>
+      ) : null}
       <div className="helper-grid">
         <div className="helper-cell">
+          <div className="section-title">Models</div>
+          <div className="value">
+            <div
+              className="number-stepper"
+              role="group"
+              aria-label="Models selector"
+            >
+              <button
+                type="button"
+                className="btn-step"
+                aria-label="Decrease models"
+                onClick={decModels}
+              >
+                −
+              </button>
+              <input
+                className="models-input"
+                type="number"
+                min={1}
+                aria-label="Models in range"
+                value={modelsInRange}
+                onChange={(e) => onChangeModelsInRange?.(e.target.value)}
+              />
+              <button
+                type="button"
+                className="btn-step"
+                aria-label="Increase models"
+                onClick={incModels}
+              >
+                +
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="helper-cell"
+          {...(weapon ? tipHandlers(attacksHover) : {})}
+        >
           <div className="section-title">Attacks</div>
           <div className="value">
             {weapon ? (
               AParsed.kind === "fixed" ? (
-                (totalAttacks ?? "—")
+                <span className="primary-number">{totalAttacks ?? "—"}</span>
               ) : (
-                `Roll ${AParsed.value}`
+                <span className="primary-number">{`Roll ${AParsed.value}`}</span>
               )
             ) : (
               <>
@@ -160,32 +283,19 @@ const AttackHelperPanel = ({
               </>
             )}
           </div>
-          <label className="models-input-row">
-            <span>Models in range/engaged</span>
-            <input
-              type="number"
-              min={1}
-              aria-label="Models in range"
-              value={modelsInRange}
-              onChange={(e) => onChangeModelsInRange?.(e.target.value)}
-            />
-          </label>
         </div>
 
-        <div className="helper-cell">
-          <div className="section-title">To Hit</div>
+        <div
+          className="helper-cell"
+          {...(weapon && toHitT ? tipHandlers(toHitHover) : {})}
+        >
+          <div className="section-title">Hit</div>
           <div className="value">
             {weapon && toHitT ? (
-              <>
-                {toHitT}+
-                <span className="meta">
-                  {" "}
-                  {toHitP != null ? `(p≈${(toHitP * 100).toFixed(1)}%)` : ""}
-                </span>
-              </>
+              <span className="primary-number">{toHitT}+</span>
             ) : (
               <>
-                —{" "}
+                —
                 <span className="meta">
                   {weapon ? "missing" : "select a weapon"}
                 </span>
@@ -194,20 +304,17 @@ const AttackHelperPanel = ({
           </div>
         </div>
 
-        <div className="helper-cell">
-          <div className="section-title">To Wound</div>
+        <div
+          className="helper-cell"
+          {...(weapon && woundT ? tipHandlers(woundHover) : {})}
+        >
+          <div className="section-title">Wound</div>
           <div className="value">
             {weapon && woundT ? (
-              <>
-                {woundT}+
-                <span className="meta">
-                  {" "}
-                  {woundP != null ? `(p≈${(woundP * 100).toFixed(1)}%)` : ""}
-                </span>
-              </>
+              <span className="primary-number">{woundT}+</span>
             ) : (
               <>
-                —{" "}
+                —
                 <span className="meta">
                   {weapon ? "select a target" : "select a weapon & target"}
                 </span>
@@ -216,19 +323,22 @@ const AttackHelperPanel = ({
           </div>
         </div>
 
-        <div className="helper-cell">
-          <div className="section-title">Defender Save</div>
+        <div
+          className="helper-cell"
+          {...(weapon ? tipHandlers(defSaveHover) : {})}
+        >
+          <div className="section-title">Save</div>
           <div className="value">
-            {bestLabel}
-            <span className="meta"> {bestHint}</span>
+            {weapon ? (
+              <>
+                <span className="primary-number">{bestLabel}</span>
+              </>
+            ) : (
+              <>
+                — <span className="meta">select a weapon</span>
+              </>
+            )}
           </div>
-          {weapon ? (
-            <div className="meta">
-              Armour after AP:{" "}
-              {breakdown.armourAfterAp ? `${breakdown.armourAfterAp}+` : "—"}
-              {svResolved ? ` (SV ${svResolved}+)` : ""} AP {apInt || 0}
-            </div>
-          ) : null}
         </div>
       </div>
 

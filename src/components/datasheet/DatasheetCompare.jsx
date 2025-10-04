@@ -10,6 +10,9 @@ export default function DatasheetCompare({
   leadershipOverrides,
   allUnits,
   updateUnitOverrides,
+  isLeaderUnit,
+  canLeaderAttachToUnit,
+  onAttachUnit,
   attackHelper,
   onToggleWeaponLeft,
   onToggleWeaponRight,
@@ -37,6 +40,9 @@ export default function DatasheetCompare({
             onUpdateOverrides={(partial) =>
               updateUnitOverrides(leftUnit.id, partial)
             }
+            isLeaderUnit={isLeaderUnit}
+            canLeaderAttachToUnit={canLeaderAttachToUnit}
+            onAttachUnit={onAttachUnit}
             attackHelper={attackHelper}
             onToggleWeapon={onToggleWeaponLeft}
             onCloseAttackHelper={onCloseAttackHelper}
@@ -80,6 +86,9 @@ export default function DatasheetCompare({
             onUpdateOverrides={(partial) =>
               updateUnitOverrides(rightUnit.id, partial)
             }
+            isLeaderUnit={isLeaderUnit}
+            canLeaderAttachToUnit={canLeaderAttachToUnit}
+            onAttachUnit={onAttachUnit}
             attackHelper={attackHelper}
             onToggleWeapon={onToggleWeaponRight}
             onCloseAttackHelper={onCloseAttackHelper}

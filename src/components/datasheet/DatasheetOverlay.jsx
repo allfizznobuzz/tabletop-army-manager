@@ -13,6 +13,9 @@ export default function DatasheetOverlay({
   allUnitsById,
   leadershipOverrides,
   updateUnitOverrides,
+  isLeaderUnit,
+  canLeaderAttachToUnit,
+  onAttachUnit,
   attackHelper,
   setAttackHelper,
   targetUnit,
@@ -59,6 +62,9 @@ export default function DatasheetOverlay({
           }
         }
         allUnits={allUnits}
+        isLeaderUnit={isLeaderUnit}
+        canLeaderAttachToUnit={canLeaderAttachToUnit}
+        onAttachUnit={onAttachUnit}
         onUpdateOverrides={(partial) =>
           updateUnitOverrides(selectedUnit.id, partial)
         }

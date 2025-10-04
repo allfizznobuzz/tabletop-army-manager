@@ -12,6 +12,22 @@ export const parseArmyFile = (jsonData) => {
   return validateSimpleFormat(jsonData);
 };
 
+// Ensure a unit has a consistent shape for UI/tests
+const ensureUnitDefaults = (unit) => {
+  const out = { ...unit };
+  if (out.move == null) out.move = '6"';
+  if (out.leadership == null) out.leadership = 7;
+  if (out.oc == null) out.oc = 1;
+  if (out.wounds == null) out.wounds = 1;
+  if (out.currentWounds == null) out.currentWounds = out.wounds;
+  if (!Array.isArray(out.weapons)) out.weapons = [];
+  if (!Array.isArray(out.modelGroups)) out.modelGroups = [];
+  if (!Array.isArray(out.abilities)) out.abilities = [];
+  if (!Array.isArray(out.rules)) out.rules = [];
+  if (!Array.isArray(out.keywords)) out.keywords = [];
+  return out;
+};
+
 /**
  * Converts BattleScribe format to simple format
  */
@@ -33,11 +49,15 @@ const convertBattleScribeToSimple = (battleScribeData) => {
   };
 
   // Process each selection to extract units
+  const factionAbilityName = extractFaction(force);
   selections.forEach((selection) => {
     if (isUnitSelection(selection)) {
       const unit = convertBattleScribeUnit(selection);
       if (unit) {
-        armyData.units.push(unit);
+        const withDefaults = ensureUnitDefaults(unit);
+        if (factionAbilityName)
+          withDefaults.factionAbilityName = factionAbilityName;
+        armyData.units.push(withDefaults);
       }
     }
   });
@@ -77,6 +97,11 @@ const createBaseUnit = (selection) => ({
   abilities: [],
   rules: [],
   keywords: [],
+  // common header defaults; will be overwritten if present in profiles
+  move: '6"',
+  armor_save: 3,
+  leadership: 7,
+  oc: 1,
 });
 
 /**
@@ -89,29 +114,49 @@ const extractUnitStats = (selection, unit) => {
     if (profile.typeName === "Unit" && profile.characteristics) {
       profile.characteristics.forEach((char) => {
         const value = char.$text;
+        const name = (char.name || "").toLowerCase();
 
-        switch (char.name) {
-          case "W":
+        switch (name) {
+          case "m":
+            // Movement usually like 7" – keep as provided string
+            if (value && value !== "-") unit.move = value;
+            break;
+          case "w":
             const wounds = parseInt(value, 10);
             if (isFinite(wounds)) {
               unit.wounds = wounds;
               unit.currentWounds = wounds;
             }
             break;
-          case "WS":
+          case "ws":
             unit.weapon_skill = extractSkillValue(value);
             break;
-          case "BS":
+          case "bs":
             unit.ballistic_skill = extractSkillValue(value);
             break;
-          case "T":
+          case "t":
             const toughness = parseInt(value, 10);
             if (isFinite(toughness)) unit.toughness = toughness;
             break;
-          case "Sv":
+          case "sv":
+          case "save":
             unit.armor_save = extractSkillValue(value);
             break;
-          case "Keywords":
+          case "ld":
+          case "leadership":
+            // Store as number (e.g., 7) so UI can render as 7+
+            {
+              const ld = extractSkillValue(value);
+              if (ld !== undefined) unit.leadership = ld;
+            }
+            break;
+          case "oc":
+            {
+              const oc = parseInt(value, 10);
+              if (isFinite(oc)) unit.oc = oc;
+            }
+            break;
+          case "keywords":
             if (value && value !== "-") {
               const keywords = value
                 .split(",")
@@ -132,6 +177,28 @@ const extractUnitStats = (selection, unit) => {
  * Extracts abilities, rules, and keywords from selection
  */
 const extractAbilitiesRulesKeywords = (selection, unit) => {
+  const seen = new Set(
+    (unit.keywords || []).map((k) => String(k).toLowerCase()),
+  );
+  const pushKeyword = (name) => {
+    if (!name) return;
+    let k = String(name).trim();
+    // Strip BattleScribe-style faction prefix
+    k = k.replace(/^Faction:\s*/i, "");
+    const lower = k.toLowerCase();
+    // Skip config/noise groups common in BS exports
+    const blacklist = new Set([
+      "configuration",
+      "show/hide options",
+      "battle size",
+    ]);
+    if (!k || blacklist.has(lower)) return;
+    if (!seen.has(lower)) {
+      unit.keywords.push(k);
+      seen.add(lower);
+    }
+  };
+
   const processSelection = (sel) => {
     // Extract from profiles
     if (sel.profiles) {
@@ -144,6 +211,21 @@ const extractAbilitiesRulesKeywords = (selection, unit) => {
             name: profile.name,
             description: description ? description.$text : "",
           });
+          // Detect invulnerable save values within ability text (e.g., "This model has a 4+ invulnerable save.")
+          try {
+            const nameStr = String(profile.name || "").toLowerCase();
+            const descStr = String(description?.$text || "").toLowerCase();
+            const hay = `${nameStr} ${descStr}`;
+            if (/invulnerable/.test(hay) || /daemon(ic)?\s*save/.test(hay)) {
+              const m = (description?.$text || "").match(/(\d)\s*\+/);
+              if (m) {
+                const inv = parseInt(m[1], 10);
+                if (Number.isFinite(inv)) unit.invulnerable_save = inv;
+              }
+            }
+          } catch (e) {
+            // best effort; ignore parsing errors
+          }
         }
       });
     }
@@ -155,6 +237,11 @@ const extractAbilitiesRulesKeywords = (selection, unit) => {
           unit.rules.push(rule.name);
         }
       });
+    }
+
+    // Extract from categories (treat as unit keywords)
+    if (Array.isArray(sel.categories)) {
+      sel.categories.forEach((cat) => pushKeyword(cat?.name));
     }
 
     // Recursively process nested selections
@@ -293,6 +380,7 @@ const createWeaponFromProfile = (profile, count = 1) => {
     ap: 0,
     damage: 1,
     abilities: [],
+    keywords: [],
     count: count,
   };
 
@@ -327,8 +415,27 @@ const createWeaponFromProfile = (profile, count = 1) => {
           if (isFinite(ap)) weapon.ap = ap;
           break;
         case "D":
-          const damage = parseInt(value, 10);
-          if (isFinite(damage)) weapon.damage = damage;
+          {
+            const damageNum = parseInt(value, 10);
+            if (
+              Number.isFinite(damageNum) &&
+              String(value).trim().match(/^\d+$/)
+            ) {
+              weapon.damage = damageNum;
+            } else {
+              // Preserve dice notation like D6, D6+2, 2D3+1
+              weapon.damage = value || weapon.damage;
+            }
+          }
+          break;
+        case "Keywords":
+          if (typeof value === "string" && value.trim()) {
+            const arr = value
+              .split(",")
+              .map((k) => k.trim())
+              .filter(Boolean);
+            weapon.keywords.push(...arr);
+          }
           break;
         default:
           break;
@@ -401,6 +508,14 @@ const validateSimpleFormat = (armyData) => {
     unit.models = unit.models || 1;
     unit.wounds = unit.wounds || 1;
     unit.currentWounds = unit.currentWounds || unit.wounds;
+    unit.move = unit.move || '6"';
+    // leadership stored as number (e.g., 7), render with '+' in UI
+    if (unit.leadership === undefined || unit.leadership === null) {
+      unit.leadership = 7;
+    }
+    if (unit.oc === undefined || unit.oc === null) {
+      unit.oc = 1;
+    }
     unit.points = unit.points || 0;
     unit.weapons = unit.weapons || [];
     unit.modelGroups = unit.modelGroups || [];

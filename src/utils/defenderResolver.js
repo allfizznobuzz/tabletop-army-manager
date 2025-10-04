@@ -49,7 +49,33 @@ export function resolveDefenderStats(unit) {
 
   const T = Number(get(unit, toughnessKeys));
   const SvRaw = get(unit, svKeys);
-  const InvRaw = get(unit, invulnKeys);
+  let InvRaw = get(unit, invulnKeys);
+
+  // Fallback: attempt to extract invulnerable save from abilities array if present
+  if (
+    (InvRaw === undefined || InvRaw === null) &&
+    Array.isArray(unit.abilities)
+  ) {
+    for (const ab of unit.abilities) {
+      try {
+        const name = String(ab?.name || "").toLowerCase();
+        const desc = String(ab?.description || "").toLowerCase();
+        if (
+          /invulnerable/.test(name) ||
+          /invulnerable/.test(desc) ||
+          /daemon(ic)?\s*save/.test(desc)
+        ) {
+          const m = String(ab?.description || "").match(/(\d)\s*\+/);
+          if (m) {
+            InvRaw = m[1];
+            break;
+          }
+        }
+      } catch (_) {
+        // ignore ability parse errors
+      }
+    }
+  }
 
   const toughness = T && !Number.isNaN(T) ? T : null;
   const armourSave = parseSave(SvRaw);

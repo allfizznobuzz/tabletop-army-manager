@@ -32,6 +32,7 @@ const AttachedUnit = ({
   overrideActive,
   overrideSummary,
   pulse,
+  stickDy = 0,
 }) => {
   const {
     attributes,
@@ -41,9 +42,17 @@ const AttachedUnit = ({
     transition,
     isDragging,
   } = useSafeSortable(unit.id);
+  const base = CSS.Transform.toString(transform) || "";
+  const offset =
+    typeof stickDy === "number" && stickDy !== 0
+      ? `translate3d(0, ${Math.round(stickDy)}px, 0)`
+      : "";
+  const composed = offset
+    ? `${offset}${base ? ` ${base}` : ""}`
+    : base || undefined;
   const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+    transform: composed,
+    transition: offset ? "none" : transition,
     zIndex: isDragging ? 20 : "auto",
   };
   const handleKey = (e) => {
@@ -62,6 +71,8 @@ const AttachedUnit = ({
       data-column={unit.column}
       data-unit-id={unit.id}
       onClick={() => onClick(unit)}
+      {...attributes}
+      {...listeners}
     >
       <div
         className="between-slot top"
@@ -80,30 +91,9 @@ const AttachedUnit = ({
         data-leader-id={leaderId}
       />
 
-      {overrideActive ? (
-        <div className="card-meta">
-          <span
-            className="override-pill"
-            tabIndex={0}
-            aria-label={overrideSummary}
-            title={overrideSummary}
-          >
-            Overridden
-          </span>
-        </div>
-      ) : null}
+      {/* Suppress override tags on attached units */}
 
-      <div
-        className="drag-handle"
-        role="button"
-        tabIndex={0}
-        aria-label="Drag to reorder"
-        title="Drag to reorder"
-        {...attributes}
-        {...listeners}
-      >
-        ⋮⋮
-      </div>
+      {/* Drag handle removed for attached units; whole card is draggable */}
       <button
         type="button"
         className="detach-btn"

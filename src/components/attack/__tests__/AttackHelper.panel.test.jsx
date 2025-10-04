@@ -162,18 +162,21 @@ describe("Attack Helper panel", () => {
     // Click enemy to set target
     await clickCardByTextAsync(/Enemy/i);
 
-    // To Hit probability helper
+    // Hit shows target only; probability now in tooltip
     const panel = await screen.findByRole("region", { name: /attack helper/i });
-    expect(within(panel).getByText(/to hit/i)).toBeInTheDocument();
-    expect(within(panel).getByText(/p≈66\.7%/i)).toBeInTheDocument();
+    expect(within(panel).getByText(/\bHit\b/i)).toBeInTheDocument();
+    expect(within(panel).getByText(/3\+/i)).toBeInTheDocument();
 
-    // To Wound: S 4 vs T 5 => 5+
-    expect(within(panel).getByText(/to wound/i)).toBeInTheDocument();
+    // Wound: S 4 vs T 5 => 5+
+    expect(within(panel).getByText(/\bWound\b/i)).toBeInTheDocument();
     expect(within(panel).getByText(/5\+/i)).toBeInTheDocument();
-    expect(within(panel).getByText(/p≈33\.3%/i)).toBeInTheDocument();
+    // probability now hover-only; verify via tooltip on Defender Save instead
 
-    // Defender Save breakdown line
-    expect(await screen.findByText(/Armour after AP/i)).toBeInTheDocument();
+    // Save breakdown now hover-only: hover the number and assert tooltip appears
+    const defNum = within(panel).getByText(/4\+/i);
+    fireEvent.mouseEnter(defNum);
+    const tip = await screen.findByRole("tooltip");
+    expect(tip).toHaveTextContent(/Armour after AP/i);
   });
 
   test("changing models in range updates expected hits", async () => {

@@ -33,6 +33,11 @@ const SortableUnitBase = ({
   pulse,
   overrideActive,
   overrideSummary,
+  isLeader,
+  onTransformChange,
+  onDraggingChange,
+  layoutMarginTop = 0,
+  layoutMarginBottom = 0,
 }) => {
   const {
     attributes,
@@ -43,16 +48,34 @@ const SortableUnitBase = ({
     isDragging,
   } = useSafeSortable(unit.id);
 
+  const computedTransform = isDragging
+    ? undefined
+    : freezeTransform
+      ? "translate3d(0px, 0px, 0px)"
+      : CSS.Transform.toString(transform);
+  const computedTransition =
+    isDragging || freezeTransform ? "none" : transition;
+
+  // Notify parent of transform and dragging state changes
+  React.useEffect(() => {
+    onTransformChange?.(unit.id, computedTransform, computedTransition);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unit.id, computedTransform, computedTransition]);
+
+  React.useEffect(() => {
+    onDraggingChange?.(unit.id, isDragging === true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unit.id, isDragging]);
+
   const style = {
-    transform: isDragging
-      ? undefined
-      : freezeTransform
-        ? undefined
-        : CSS.Transform.toString(transform),
-    transition: isDragging ? undefined : transition,
+    transform: computedTransform,
+    transition: computedTransition,
     zIndex: isDragging ? 20 : "auto",
     opacity: isDragging ? 0 : 1,
     willChange: isDragging || freezeTransform ? "auto" : "transform",
+    marginTop: layoutMarginTop || undefined,
+    marginBottom: layoutMarginBottom || undefined,
+    position: "relative",
   };
 
   return (
@@ -63,7 +86,7 @@ const SortableUnitBase = ({
         shouldGlowAsLeader ? "can-attach" : ""
       } ${dropIntent ? "drop-intent" : ""} ${insertEdge === "top" ? "drag-over-before" : ""} ${
         insertEdge === "bottom" ? "drag-over-after" : ""
-      } ${pulse ? "pulse" : ""}`}
+      } ${pulse ? "pulse" : ""} ${freezeTransform ? "frozen" : ""} ${overrideActive ? "has-override" : ""}`}
       data-column={unit.column}
       data-unit-id={unit.id}
       title={titleText}
@@ -90,16 +113,20 @@ const SortableUnitBase = ({
       />
 
       {overrideActive ? (
-        <div className="card-meta">
-          <span
-            className="override-pill"
-            tabIndex={0}
-            aria-label={overrideSummary}
-            title={overrideSummary}
-          >
-            Overridden
-          </span>
-        </div>
+        <span
+          className="override-pill"
+          tabIndex={0}
+          aria-label={overrideSummary}
+          title={overrideSummary}
+          style={{
+            position: "absolute",
+            left: 8,
+            bottom: 6,
+            pointerEvents: "none",
+          }}
+        >
+          Overridden
+        </span>
       ) : null}
 
       <div

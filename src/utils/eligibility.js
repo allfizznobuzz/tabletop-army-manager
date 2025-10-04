@@ -1,12 +1,36 @@
 // Eligibility & overrides helpers
 // Precedence: Pairwise Allow > Flags (canLead/canBeLed) > Auto (source data)
 
+const abilityOverrideCount = (ov) => {
+  try {
+    const ab = ov?.abilities;
+    if (!ab) return 0;
+    let n = 0;
+    // Count faction only when a custom string is provided
+    if (typeof ab.faction === "string" && ab.faction.trim()) n += 1;
+    // Count core entries only when not undefined and not explicitly false
+    if (ab.core) {
+      n += Object.keys(ab.core).filter(
+        (k) => ab.core[k] !== undefined && ab.core[k] !== false,
+      ).length;
+    }
+    // Named support deprecated; if present, count only those explicitly enabled
+    if (ab.named) {
+      n += Object.keys(ab.named).filter((k) => ab.named[k] === true).length;
+    }
+    return n;
+  } catch (_) {
+    return 0;
+  }
+};
+
 export const hasActiveOverrides = (ov) => {
   if (!ov) return false;
   const lead = !!(ov.canLead && ov.canLead !== "auto");
   const led = !!(ov.canBeLed && ov.canBeLed !== "auto");
   const allow = Array.isArray(ov.allowList) && ov.allowList.length > 0;
-  return lead || led || allow;
+  const abilities = abilityOverrideCount(ov) > 0;
+  return lead || led || allow || abilities;
 };
 
 export const countActiveOverrides = (ov) => {
@@ -15,6 +39,7 @@ export const countActiveOverrides = (ov) => {
   if (ov.canLead && ov.canLead !== "auto") n += 1;
   if (ov.canBeLed && ov.canBeLed !== "auto") n += 1;
   n += ov.allowList?.length || 0;
+  n += abilityOverrideCount(ov);
   return n;
 };
 
@@ -29,6 +54,8 @@ export const getOverrideSummary = (ov, resolveName) => {
     resolveName ? resolveName(id) : id,
   );
   if (names.length) parts.push(`Allow: ${names.join(", ")}`);
+  const abCount = abilityOverrideCount(ov);
+  if (abCount > 0) parts.push(`Abilities ${abCount}`);
   return parts.join("; ");
 };
 
@@ -124,13 +151,6 @@ export const isLeaderUnit = (unit, overridesMap) => {
 export const sourceCanAttach = (leader, draggedUnit) => {
   if (!leader || !draggedUnit) return false;
   const abilities = leader.abilities || [];
-  const hasLeaderAbility = abilities.some((a) =>
-    String(a.name || "")
-      .toLowerCase()
-      .includes("leader"),
-  );
-  if (!hasLeaderAbility) return false;
-
   const normalize = (s) =>
     String(s || "")
       .toLowerCase()
@@ -143,16 +163,12 @@ export const sourceCanAttach = (leader, draggedUnit) => {
 
   return abilities.some((ability) => {
     const name = normalize(ability.name);
-    const text = normalize(ability.description || ability.text);
-    if (
-      !(
-        name.includes("leader") ||
-        text.includes("this model can be attached to") ||
-        text.includes("can be attached to")
-      )
-    ) {
-      return false;
-    }
+    const rawText = ability.description || ability.text || ability.$text || "";
+    const text = normalize(rawText);
+    if (!text) return false;
+    // Accept any ability that clearly mentions attach/attached, or the name contains "leader"
+    const mentionsAttach = text.includes("attach") || text.includes("attached");
+    if (!(mentionsAttach || name.includes("leader"))) return false;
     return text.includes(unitFull) || text.includes(unitBase);
   });
 };

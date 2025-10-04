@@ -1,4 +1,7 @@
 /* Warhammer 40K Datasheet Styling */
+.datasheet-area .unit-datasheet {
+  margin: 0; /* remove top and bottom margins inside center column */
+}
 .unit-datasheet {
   background: var(--surface-2);
   border: 1px solid var(--border);
@@ -49,6 +52,64 @@
   font-weight: 600;
   text-transform: none;
   color: var(--text);
+}
+
+/* Header info (Faction + Keywords) */
+.header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 6px 0 8px 0;
+}
+.header-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.header-line .label {
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+.header-line .value {
+  color: var(--text-primary);
+  text-decoration: underline dotted var(--line);
+  text-underline-offset: 2px;
+}
+.header-faction .value {
+  font-weight: 700;
+}
+.header-keywords .value {
+  font-weight: 600;
+}
+/* Slim abilities line under title */
+.abilities-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 6px 0 8px 0;
+}
+.ability-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+.ability-key {
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  color: var(--text-secondary);
+}
+.ability-value {
+  color: var(--text-primary);
 }
 
 .unit-size {
@@ -395,6 +456,25 @@
   line-height: 1.2;
 }
 
+.weapon-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+.weapon-tags .weapon-tag,
+.weapon-tags span {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg-subtle);
+  letter-spacing: 0.04em;
+}
+
 .weapon-count {
   font-size: 0.75rem;
   color: var(--text-muted);
@@ -614,6 +694,24 @@ summary::-webkit-details-marker {
   background: var(--color-secondary);
 }
 
+.override-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.override-preview .preview-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+
 /* Center the collapsible header when requested */
 .overrides-header.center {
   justify-content: center; /* center the text */
@@ -654,6 +752,75 @@ summary::-webkit-details-marker {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+}
+
+/* Modern chip toggles */
+.chip-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  user-select: none;
+  /* Reset native button chrome when used on <button> */
+  background: transparent;
+  border: none;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.chip-toggle:focus {
+  outline: none;
+}
+.chip-toggle input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.chip-toggle .chip-body {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+.chip-toggle.on .chip-body {
+  background: color-mix(in oklab, var(--action-success) 15%, var(--bg-subtle));
+  border-color: var(--action-success);
+  color: var(--text-primary);
+}
+/* Disabled (explicitly off) state */
+.chip-toggle.disabled .chip-body,
+.chip-toggle[data-state="disabled"] .chip-body {
+  background: color-mix(in oklab, var(--action-danger) 18%, var(--bg-subtle));
+  border-color: var(--action-danger);
+  color: var(--text-primary);
+}
+/* Hover/focus tweaks for button chips */
+.chip-toggle:focus-visible .chip-body {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.chip-toggle:hover .chip-body {
+  filter: brightness(1.02);
+}
+
+.param-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.param-toggle .param-input {
+  width: 56px;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
 }
 
 .pairwise-overrides {

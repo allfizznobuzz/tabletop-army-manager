@@ -52,6 +52,12 @@ export default function GameDashboardPage({ user, onJoinGame }) {
         name: (gameName || "").trim() || "Untitled Game",
         createdBy: user.uid,
         players: [user.uid],
+        playerArmies: {
+          [user.uid]: {
+            playerName: user.displayName || user.email || "Player A",
+            armyData: null,
+          },
+        },
         playerA: {
           displayName: user.displayName || user.email || "Player A",
           armyRef: null,

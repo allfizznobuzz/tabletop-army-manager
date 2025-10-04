@@ -72,6 +72,40 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
     else if (u.column === "B") setPinnedUnitIdB(u.id);
   };
 
+  // Manual attach from datasheet: attach childId under leaderId, update state and persist
+  const attachUnitToLeader = (leaderId, childId) => {
+    const leader = allUnitsById[leaderId];
+    const child = allUnitsById[childId];
+    if (!leader || !child) return;
+    if (leader.column !== child.column) return; // never cross columns
+    const col = leader.column;
+    const isA = col === "A";
+    const attachments = isA ? attachmentsA : attachmentsB;
+    const setAttachments = isA ? setAttachmentsA : setAttachmentsB;
+    const unitOrder = isA ? unitOrderA : unitOrderB;
+    const setUnitOrder = isA ? setUnitOrderA : setUnitOrderB;
+
+    const next = { ...(attachments || {}) };
+    // Remove child from any existing groups
+    Object.keys(next).forEach((lid) => {
+      next[lid] = (next[lid] || []).filter((id) => id !== childId);
+      if ((next[lid] || []).length === 0) delete next[lid];
+    });
+    const arr = next[leaderId] || [];
+    if (!arr.includes(childId)) arr.push(childId);
+    next[leaderId] = arr;
+    setAttachments(next);
+
+    const newTop = (unitOrder || []).filter((id) => id !== childId);
+    setUnitOrder(newTop);
+
+    const base = `gameState.columns.${col}`;
+    updateGameState(gameId, {
+      [`${base}.attachments`]: next,
+      [`${base}.unitOrder`]: newTop,
+    }).catch((err) => console.error("persist attach (datasheet) failed", err));
+  };
+
   // gameData provided by useGameSubscription
 
   // isNarrow provided by useMedia
@@ -93,6 +127,46 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
     pinnedUnitIdB,
     allUnitsById,
   );
+
+  // Compute merged keywords for a unit based on current attachments
+  const withMergedKeywords = useMemo(() => {
+    const build = (u) => {
+      if (!u) return u;
+      const attachments = u.column === "A" ? attachmentsA : attachmentsB;
+      const merged = new Set((u.keywords || []).map((k) => String(k)));
+      // If leader: include all children keywords
+      const childIds = attachments?.[u.id] || [];
+      childIds.forEach((cid) => {
+        (allUnitsById[cid]?.keywords || []).forEach((k) =>
+          merged.add(String(k)),
+        );
+      });
+      // If attached: include leader keywords
+      const leaderId = Object.keys(attachments || {}).find((lid) =>
+        (attachments[lid] || []).includes(u.id),
+      );
+      if (leaderId) {
+        (allUnitsById[leaderId]?.keywords || []).forEach((k) =>
+          merged.add(String(k)),
+        );
+      }
+      return { ...u, keywords: Array.from(merged) };
+    };
+    return {
+      left: build(leftUnit),
+      right: build(rightUnit),
+      target: build(targetUnit),
+      selected: build(selectedUnit),
+    };
+  }, [
+    leftUnit,
+    rightUnit,
+    targetUnit,
+    selectedUnit,
+    attachmentsA,
+    attachmentsB,
+    allUnitsById,
+  ]);
 
   // Centralize Attack Helper state and handlers
   const {
@@ -173,13 +247,39 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
 
   // Baseline source-data check (strict, from abilities text)
   // Centralized eligibility helpers are imported from ../../utils/eligibility
-  const canLeaderAttachToUnit = (leader, draggedUnit) => {
-    return canAttach(
-      leader,
-      draggedUnit,
-      leadershipOverrides,
-      strictSourceCanAttach,
+  const canLeaderAttachToUnit = (leader, unit) => {
+    if (!leader || !unit) return false;
+    const lOv = leadershipOverrides?.[leader.id] || {
+      canLead: "auto",
+      canBeLed: "auto",
+      allowList: [],
+    };
+    const uOv = leadershipOverrides?.[unit.id] || {
+      canLead: "auto",
+      canBeLed: "auto",
+      allowList: [],
+    };
+    const unitKeywords = (unit.keywords || []).map((k) =>
+      String(k).toLowerCase(),
     );
+    const unitIsCharacter = unitKeywords.includes("character");
+    // Never attach a Character unless explicitly allowed by overrides or pairwise allow
+    if (unitIsCharacter && uOv.canBeLed !== "yes") {
+      // Pairwise allow can still permit
+      const pairAllowed =
+        (lOv.allowList || []).includes(unit.id) ||
+        (uOv.allowList || []).includes(leader.id);
+      if (!pairAllowed) return false;
+    }
+    // Pairwise allow overrides
+    if ((lOv.allowList || []).includes(unit.id)) return true;
+    if ((uOv.allowList || []).includes(leader.id)) return true;
+    // Only care about follower: explicit NO on follower blocks
+    if (uOv.canBeLed === "no") return false;
+    // Only care about follower: explicit YES on follower allows
+    if (uOv.canBeLed === "yes") return true;
+    // Otherwise rely on strict source text
+    return strictSourceCanAttach(leader, unit) === true;
   };
 
   // File import/drag-drop handled via useArmyImport(gameId)
@@ -256,7 +356,7 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
         {/* Column 2: Center area with sticky rail + independent scroll pane */}
         <main className="datasheet-area">
           <DatasheetRail
-            selectedUnit={selectedUnit}
+            selectedUnit={withMergedKeywords.selected}
             attackHelper={attackHelper}
             allUnitsById={allUnitsById}
             defaultTargetUnit={targetUnit}
@@ -264,23 +364,28 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
             onToggleExpected={onToggleExpected}
           />
           <div className="datasheet-scroll">
-            {leftUnit || rightUnit ? (
+            {withMergedKeywords.left || withMergedKeywords.right ? (
               <DatasheetCompare
-                leftUnit={leftUnit}
-                rightUnit={rightUnit}
-                selectedUnit={selectedUnit}
+                leftUnit={withMergedKeywords.left}
+                rightUnit={withMergedKeywords.right}
+                selectedUnit={withMergedKeywords.selected}
                 hasArmyA={hasArmyA}
                 hasArmyB={hasArmyB}
                 leadershipOverrides={leadershipOverrides}
                 allUnits={allUnits}
                 updateUnitOverrides={updateUnitOverrides}
+                isLeaderUnit={isLeaderUnitVisual}
+                canLeaderAttachToUnit={canLeaderAttachToUnit}
+                onAttachUnit={(leaderId, childId) =>
+                  attachUnitToLeader(leaderId, childId)
+                }
                 attackHelper={attackHelper}
                 onToggleWeaponLeft={onToggleWeaponLeft}
                 onToggleWeaponRight={onToggleWeaponRight}
                 onCloseAttackHelper={closeAttackHelper}
                 onChangeModelsInRange={onChangeModelsInRange}
                 onToggleExpected={onToggleExpected}
-                targetUnit={targetUnit}
+                targetUnit={withMergedKeywords.target}
               />
             ) : (
               <div className="no-unit-selected">
@@ -358,15 +463,20 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
       </div>
       {isNarrow && overlayOpen && selectedUnit ? (
         <DatasheetOverlay
-          selectedUnit={selectedUnit}
-          leftUnit={leftUnit}
-          rightUnit={rightUnit}
+          selectedUnit={withMergedKeywords.selected}
+          leftUnit={withMergedKeywords.left}
+          rightUnit={withMergedKeywords.right}
           pinnedUnitIdA={pinnedUnitIdA}
           pinnedUnitIdB={pinnedUnitIdB}
           allUnits={allUnits}
           allUnitsById={allUnitsById}
           leadershipOverrides={leadershipOverrides}
           updateUnitOverrides={updateUnitOverrides}
+          isLeaderUnit={isLeaderUnitVisual}
+          canLeaderAttachToUnit={canLeaderAttachToUnit}
+          onAttachUnit={(leaderId, childId) =>
+            attachUnitToLeader(leaderId, childId)
+          }
           attackHelper={attackHelper}
           setAttackHelper={setAttackHelper}
           targetUnit={targetUnit}
