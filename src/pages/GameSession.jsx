@@ -245,41 +245,15 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
   const isLeaderUnitVisual = (unit) =>
     inferIsLeaderUnit(unit, leadershipOverrides);
 
-  // Baseline source-data check (strict, from abilities text)
-  // Centralized eligibility helpers are imported from ../../utils/eligibility
+  // Attach eligibility: only pairwise allow list controls this. No default/keyword-based attach.
   const canLeaderAttachToUnit = (leader, unit) => {
     if (!leader || !unit) return false;
-    const lOv = leadershipOverrides?.[leader.id] || {
-      canLead: "auto",
-      canBeLed: "auto",
-      allowList: [],
-    };
-    const uOv = leadershipOverrides?.[unit.id] || {
-      canLead: "auto",
-      canBeLed: "auto",
-      allowList: [],
-    };
-    const unitKeywords = (unit.keywords || []).map((k) =>
-      String(k).toLowerCase(),
+    const lOv = leadershipOverrides?.[leader.id] || { allowList: [] };
+    const uOv = leadershipOverrides?.[unit.id] || { allowList: [] };
+    return (
+      (lOv.allowList || []).includes(unit.id) ||
+      (uOv.allowList || []).includes(leader.id)
     );
-    const unitIsCharacter = unitKeywords.includes("character");
-    // Never attach a Character unless explicitly allowed by overrides or pairwise allow
-    if (unitIsCharacter && uOv.canBeLed !== "yes") {
-      // Pairwise allow can still permit
-      const pairAllowed =
-        (lOv.allowList || []).includes(unit.id) ||
-        (uOv.allowList || []).includes(leader.id);
-      if (!pairAllowed) return false;
-    }
-    // Pairwise allow overrides
-    if ((lOv.allowList || []).includes(unit.id)) return true;
-    if ((uOv.allowList || []).includes(leader.id)) return true;
-    // Only care about follower: explicit NO on follower blocks
-    if (uOv.canBeLed === "no") return false;
-    // Only care about follower: explicit YES on follower allows
-    if (uOv.canBeLed === "yes") return true;
-    // Otherwise rely on strict source text
-    return strictSourceCanAttach(leader, unit) === true;
   };
 
   // File import/drag-drop handled via useArmyImport(gameId)

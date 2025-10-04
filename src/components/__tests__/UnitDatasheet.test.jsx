@@ -101,7 +101,7 @@ describe("UnitDatasheet", () => {
     expect(screen.getByText(/INFANTRY, ADEPTUS ASTARTES/i)).toBeInTheDocument();
   });
 
-  test("groups identical ranged weapons and separates ranged/melee sections", () => {
+  test("groups identical ranged weapons (without count bubble) and separates ranged/melee sections", () => {
     render(
       <UnitDatasheet
         unit={baseUnit}
@@ -117,9 +117,9 @@ describe("UnitDatasheet", () => {
     // Melee section header
     expect(screen.getByText(/MELEE WEAPONS/i)).toBeInTheDocument();
 
-    // Bolt rifle appears once with count x2
+    // Bolt rifle appears once; no per-row (xN) count is displayed now
     expect(screen.getAllByText(/Bolt rifle/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/\(x2\)/)).toBeInTheDocument();
+    expect(screen.queryByText(/\(x\d+\)/i)).not.toBeInTheDocument();
 
     // Melee weapon row shows Melee range cell
     expect(screen.getByText(/Astartes chainsword/i)).toBeInTheDocument();
@@ -159,7 +159,7 @@ describe("UnitDatasheet", () => {
     expect(screen.getByText(/10 models - 200 pts/i)).toBeInTheDocument();
   });
 
-  test("override controls call onUpdateOverrides for toggles and pairwise add/remove", async () => {
+  test("override controls call onUpdateOverrides for pairwise add/remove", async () => {
     const onUpdateOverrides = jest.fn();
     const { rerender } = render(
       <UnitDatasheet
@@ -173,16 +173,6 @@ describe("UnitDatasheet", () => {
 
     // Open the overrides collapsible
     fireEvent.click(screen.getByRole("button", { name: /override/i }));
-
-    // Toggle Can lead
-    const canLead = screen.getByRole("checkbox", { name: /can lead/i });
-    fireEvent.click(canLead);
-    expect(onUpdateOverrides).toHaveBeenCalledWith({ canLead: "yes" });
-
-    // Toggle Can be led
-    const canBeLed = screen.getByRole("checkbox", { name: /can be led/i });
-    fireEvent.click(canBeLed);
-    expect(onUpdateOverrides).toHaveBeenCalledWith({ canBeLed: "yes" });
 
     // Add pairwise allow for Captain (u2)
     const select = screen.getByLabelText(/select unit to allow/i);

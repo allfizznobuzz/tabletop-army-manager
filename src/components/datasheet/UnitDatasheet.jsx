@@ -802,44 +802,65 @@ const UnitDatasheet = ({
           <Collapsible title="Unit Composition" defaultOpen={false} centerTitle>
             {unit.modelGroups && unit.modelGroups.length > 0 ? (
               <>
-                {unit.modelGroups.map((group, index) => {
-                  const raw = Array.isArray(group.weapons) ? group.weapons : [];
-                  // Aggregate counts per weapon name (case-insensitive), skipping placeholders
-                  const byName = new Map();
-                  for (const w of raw) {
-                    const name = String(w?.name || "").trim();
-                    if (
-                      !name ||
-                      name === "-" ||
-                      name === "—" ||
-                      name.toLowerCase() === "none" ||
-                      name.toLowerCase() === "n/a"
-                    )
-                      continue;
-                    const key = name.toLowerCase();
-                    const prev = byName.get(key);
-                    const add = Number.isFinite(w?.count) ? w.count : 1;
-                    if (prev) prev.count += add;
-                    else byName.set(key, { name, count: add });
-                  }
-                  const parts = Array.from(byName.values()).map((e) =>
-                    e.count > 1 ? `${e.name} (x${e.count})` : e.name,
+                {(() => {
+                  const partsOf = (weapons) => {
+                    const byName = new Map();
+                    for (const w of weapons || []) {
+                      const name = String(w?.name || "").trim();
+                      if (
+                        !name ||
+                        name === "-" ||
+                        name === "—" ||
+                        name.toLowerCase() === "none" ||
+                        name.toLowerCase() === "n/a"
+                      )
+                        continue;
+                      const key = name.toLowerCase();
+                      const prev = byName.get(key);
+                      const add = Number.isFinite(w?.count) ? w.count : 1;
+                      if (prev) prev.count += add;
+                      else byName.set(key, { name, count: add });
+                    }
+                    return Array.from(byName.values()).map((e) =>
+                      e.count > 1 ? `${e.name} (x${e.count})` : e.name,
+                    );
+                  };
+
+                  const groupPartsList = unit.modelGroups.map((g) =>
+                    partsOf(g.weapons),
                   );
+                  const anyGroupHasParts = groupPartsList.some(
+                    (p) => p.length > 0,
+                  );
+                  const unitParts = partsOf(unit.weapons);
+
                   return (
-                    <div key={index} className="composition-item">
-                      • {group.count}x {group.name}
-                      {parts.length > 0 && (
-                        <span className="composition-weapons">
-                          {" "}
-                          — {parts.join(", ")}
-                        </span>
+                    <>
+                      {unit.modelGroups.map((group, index) => {
+                        const parts = groupPartsList[index];
+                        return (
+                          <div key={index} className="composition-item">
+                            • {group.count}x {group.name}
+                            {parts.length > 0 && (
+                              <span className="composition-weapons">
+                                {" "}
+                                — {parts.join(", ")}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {!anyGroupHasParts && unitParts.length > 0 && (
+                        <div className="composition-item">
+                          Weapons: {unitParts.join(", ")}
+                        </div>
                       )}
-                    </div>
+                      <div className="points-cost">
+                        {unit.models} models - {unit.points} pts
+                      </div>
+                    </>
                   );
-                })}
-                <div className="points-cost">
-                  {unit.models} models - {unit.points} pts
-                </div>
+                })()}
               </>
             ) : (
               <>
@@ -931,8 +952,6 @@ const OverridesCollapsible = ({
 
   const activeCount = useMemo(() => {
     let n = 0;
-    if (overrides?.canLead && overrides.canLead !== "auto") n += 1;
-    if (overrides?.canBeLed && overrides.canBeLed !== "auto") n += 1;
     n += overrides?.allowList?.length || 0;
     // abilities sub-count
     try {
@@ -956,17 +975,8 @@ const OverridesCollapsible = ({
   const statusText = activeCount > 0 ? `Overridden (${activeCount})` : "Off";
   const statusClass = activeCount > 0 ? "overridden" : "off";
 
-  const onToggleLead = (checked) => {
-    onUpdateOverrides?.({ canLead: checked ? "yes" : "auto" });
-  };
-  const onToggleLed = (checked) => {
-    onUpdateOverrides?.({ canBeLed: checked ? "yes" : "auto" });
-  };
-
   const onReset = () => {
     onUpdateOverrides?.({
-      canLead: "auto",
-      canBeLed: "auto",
       allowList: [],
       abilities: undefined,
     });
@@ -985,24 +995,7 @@ const OverridesCollapsible = ({
       </button>
       {open && (
         <div className="overrides-panel">
-          <div className="flags-row" role="group" aria-label="Override flags">
-            <label className="flag-item" aria-label="Can lead">
-              <input
-                type="checkbox"
-                checked={overrides?.canLead === "yes"}
-                onChange={(e) => onToggleLead(e.target.checked)}
-              />
-              <span>Can lead</span>
-            </label>
-            <label className="flag-item" aria-label="Can be led">
-              <input
-                type="checkbox"
-                checked={overrides?.canBeLed === "yes"}
-                onChange={(e) => onToggleLed(e.target.checked)}
-              />
-              <span>Can be led</span>
-            </label>
-          </div>
+          {/* Pairwise allow only; leader flags removed per product direction */}
 
           <PairwiseControls
             unit={unit}

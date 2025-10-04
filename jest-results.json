@@ -1,14 +1,14 @@
 {
-  "numFailedTestSuites": 0,
-  "numFailedTests": 0,
-  "numPassedTestSuites": 1,
-  "numPassedTests": 3,
+  "numFailedTestSuites": 1,
+  "numFailedTests": 1,
+  "numPassedTestSuites": 18,
+  "numPassedTests": 98,
   "numPendingTestSuites": 0,
   "numPendingTests": 0,
   "numRuntimeErrorTestSuites": 0,
   "numTodoTests": 0,
-  "numTotalTestSuites": 1,
-  "numTotalTests": 3,
+  "numTotalTestSuites": 19,
+  "numTotalTests": 99,
   "openHandles": [],
   "snapshot": {
     "added": 0,
@@ -26,9 +26,935 @@
     "unmatched": 0,
     "updated": 0
   },
-  "startTime": 1759600955436,
-  "success": true,
+  "startTime": 1759604055809,
+  "success": false,
   "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Sample army JSON schema"],
+          "failureMessages": [],
+          "fullName": "Sample army JSON schema Space Marines sample conforms to internal schema",
+          "location": null,
+          "status": "passed",
+          "title": "Space Marines sample conforms to internal schema"
+        }
+      ],
+      "endTime": 1759604063070,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\utils\\__tests__\\samplesSchema.test.js",
+      "startTime": 1759604060228,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["eligibility utils"],
+          "failureMessages": [],
+          "fullName": "eligibility utils hasActiveOverrides returns false for empty or auto values",
+          "location": null,
+          "status": "passed",
+          "title": "hasActiveOverrides returns false for empty or auto values"
+        },
+        {
+          "ancestorTitles": ["eligibility utils"],
+          "failureMessages": [],
+          "fullName": "eligibility utils hasActiveOverrides returns true when any flag or allow present",
+          "location": null,
+          "status": "passed",
+          "title": "hasActiveOverrides returns true when any flag or allow present"
+        },
+        {
+          "ancestorTitles": ["eligibility utils"],
+          "failureMessages": [],
+          "fullName": "eligibility utils countActiveOverrides counts flags and allow pairs",
+          "location": null,
+          "status": "passed",
+          "title": "countActiveOverrides counts flags and allow pairs"
+        },
+        {
+          "ancestorTitles": ["eligibility utils"],
+          "failureMessages": [],
+          "fullName": "eligibility utils getOverrideSummary composes readable summary",
+          "location": null,
+          "status": "passed",
+          "title": "getOverrideSummary composes readable summary"
+        },
+        {
+          "ancestorTitles": ["eligibility utils"],
+          "failureMessages": [],
+          "fullName": "eligibility utils canAttach precedence: allow > flags > auto(source)",
+          "location": null,
+          "status": "passed",
+          "title": "canAttach precedence: allow > flags > auto(source)"
+        }
+      ],
+      "endTime": 1759604063203,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\utils\\eligibility.test.js",
+      "startTime": 1759604060363,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["attackMath.woundTarget"],
+          "failureMessages": [],
+          "fullName": "attackMath.woundTarget S=8 vs T=4 => 2+",
+          "location": null,
+          "status": "passed",
+          "title": "S=8 vs T=4 => 2+"
+        },
+        {
+          "ancestorTitles": ["attackMath.woundTarget"],
+          "failureMessages": [],
+          "fullName": "attackMath.woundTarget S=5 vs T=4 => 3+",
+          "location": null,
+          "status": "passed",
+          "title": "S=5 vs T=4 => 3+"
+        },
+        {
+          "ancestorTitles": ["attackMath.woundTarget"],
+          "failureMessages": [],
+          "fullName": "attackMath.woundTarget S=4 vs T=4 => 4+",
+          "location": null,
+          "status": "passed",
+          "title": "S=4 vs T=4 => 4+"
+        },
+        {
+          "ancestorTitles": ["attackMath.woundTarget"],
+          "failureMessages": [],
+          "fullName": "attackMath.woundTarget S=3 vs T=4 => 5+",
+          "location": null,
+          "status": "passed",
+          "title": "S=3 vs T=4 => 5+"
+        },
+        {
+          "ancestorTitles": ["attackMath.woundTarget"],
+          "failureMessages": [],
+          "fullName": "attackMath.woundTarget S=2 vs T=5 => 6+",
+          "location": null,
+          "status": "passed",
+          "title": "S=2 vs T=5 => 6+"
+        },
+        {
+          "ancestorTitles": [
+            "attackMath.woundTarget",
+            "attackMath.computeDefenderSave"
+          ],
+          "failureMessages": [],
+          "fullName": "attackMath.woundTarget attackMath.computeDefenderSave applies AP correctly: 3+ with AP-2 => armourAfterAp 5+",
+          "location": null,
+          "status": "passed",
+          "title": "applies AP correctly: 3+ with AP-2 => armourAfterAp 5+"
+        },
+        {
+          "ancestorTitles": [
+            "attackMath.woundTarget",
+            "attackMath.computeDefenderSave"
+          ],
+          "failureMessages": [],
+          "fullName": "attackMath.woundTarget attackMath.computeDefenderSave prefers invuln on tie: 4+ armour after AP vs 4+ invuln",
+          "location": null,
+          "status": "passed",
+          "title": "prefers invuln on tie: 4+ armour after AP vs 4+ invuln"
+        },
+        {
+          "ancestorTitles": [
+            "attackMath.woundTarget",
+            "attackMath.computeDefenderSave"
+          ],
+          "failureMessages": [],
+          "fullName": "attackMath.woundTarget attackMath.computeDefenderSave no invuln uses armour after AP",
+          "location": null,
+          "status": "passed",
+          "title": "no invuln uses armour after AP"
+        },
+        {
+          "ancestorTitles": ["attackMath.woundTarget"],
+          "failureMessages": [],
+          "fullName": "attackMath.woundTarget returns null when S or T missing",
+          "location": null,
+          "status": "passed",
+          "title": "returns null when S or T missing"
+        },
+        {
+          "ancestorTitles": ["attackMath.probabilityFromTarget"],
+          "failureMessages": [],
+          "fullName": "attackMath.probabilityFromTarget maps target to probability clamped correctly",
+          "location": null,
+          "status": "passed",
+          "title": "maps target to probability clamped correctly"
+        },
+        {
+          "ancestorTitles": ["attackMath.probabilityFromTarget"],
+          "failureMessages": [],
+          "fullName": "attackMath.probabilityFromTarget returns null for invalid/low targets",
+          "location": null,
+          "status": "passed",
+          "title": "returns null for invalid/low targets"
+        },
+        {
+          "ancestorTitles": ["attackMath.parseDiceNotation"],
+          "failureMessages": [],
+          "fullName": "attackMath.parseDiceNotation parses fixed numbers",
+          "location": null,
+          "status": "passed",
+          "title": "parses fixed numbers"
+        },
+        {
+          "ancestorTitles": ["attackMath.parseDiceNotation"],
+          "failureMessages": [],
+          "fullName": "attackMath.parseDiceNotation treats undefined/null as fixed 0",
+          "location": null,
+          "status": "passed",
+          "title": "treats undefined/null as fixed 0"
+        },
+        {
+          "ancestorTitles": ["attackMath.parseDiceNotation"],
+          "failureMessages": [],
+          "fullName": "attackMath.parseDiceNotation parses D3",
+          "location": null,
+          "status": "passed",
+          "title": "parses D3"
+        },
+        {
+          "ancestorTitles": ["attackMath.parseDiceNotation"],
+          "failureMessages": [],
+          "fullName": "attackMath.parseDiceNotation parses 2D6",
+          "location": null,
+          "status": "passed",
+          "title": "parses 2D6"
+        },
+        {
+          "ancestorTitles": ["attackMath.parseDiceNotation"],
+          "failureMessages": [],
+          "fullName": "attackMath.parseDiceNotation parses D6+1",
+          "location": null,
+          "status": "passed",
+          "title": "parses D6+1"
+        },
+        {
+          "ancestorTitles": ["attackMath.parseDiceNotation"],
+          "failureMessages": [],
+          "fullName": "attackMath.parseDiceNotation parses 2D3+3",
+          "location": null,
+          "status": "passed",
+          "title": "parses 2D3+3"
+        },
+        {
+          "ancestorTitles": ["attackMath.saves"],
+          "failureMessages": [],
+          "fullName": "attackMath.saves applies AP to armour and selects best vs invuln",
+          "location": null,
+          "status": "passed",
+          "title": "applies AP to armour and selects best vs invuln"
+        },
+        {
+          "ancestorTitles": ["attackMath.saves"],
+          "failureMessages": [],
+          "fullName": "attackMath.saves prefers invuln when armour after AP is worse",
+          "location": null,
+          "status": "passed",
+          "title": "prefers invuln when armour after AP is worse"
+        },
+        {
+          "ancestorTitles": ["attackMath.saves"],
+          "failureMessages": [],
+          "fullName": "attackMath.saves returns the available save when one is missing",
+          "location": null,
+          "status": "passed",
+          "title": "returns the available save when one is missing"
+        }
+      ],
+      "endTime": 1759604063425,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\utils\\__tests__\\attackMath.test.js",
+      "startTime": 1759604063153,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "Simple JSON format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Simple JSON format should parse valid simple army format",
+          "location": null,
+          "status": "passed",
+          "title": "should parse valid simple army format"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "Simple JSON format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Simple JSON format should set default values for missing unit fields",
+          "location": null,
+          "status": "passed",
+          "title": "should set default values for missing unit fields"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "Simple JSON format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Simple JSON format should set default values for missing weapon fields",
+          "location": null,
+          "status": "passed",
+          "title": "should set default values for missing weapon fields"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "Simple JSON format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Simple JSON format should throw error for army without name",
+          "location": null,
+          "status": "passed",
+          "title": "should throw error for army without name"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "Simple JSON format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Simple JSON format should throw error for army without units array",
+          "location": null,
+          "status": "passed",
+          "title": "should throw error for army without units array"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "Simple JSON format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Simple JSON format should throw error for unit without name",
+          "location": null,
+          "status": "passed",
+          "title": "should throw error for unit without name"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "Simple JSON format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Simple JSON format should throw error for weapon without name",
+          "location": null,
+          "status": "passed",
+          "title": "should throw error for weapon without name"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "BattleScribe format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile BattleScribe format should detect and convert BattleScribe format",
+          "location": null,
+          "status": "passed",
+          "title": "should detect and convert BattleScribe format"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "BattleScribe format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile BattleScribe format should handle BattleScribe with nested weapon selections",
+          "location": null,
+          "status": "passed",
+          "title": "should handle BattleScribe with nested weapon selections"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "BattleScribe format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile BattleScribe format should use default army name when force has no name",
+          "location": null,
+          "status": "passed",
+          "title": "should use default army name when force has no name"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "BattleScribe format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile BattleScribe format should throw error for BattleScribe with no forces",
+          "location": null,
+          "status": "passed",
+          "title": "should throw error for BattleScribe with no forces"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "parseArmyFile",
+            "BattleScribe format"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile BattleScribe format should handle BattleScribe with missing roster",
+          "location": null,
+          "status": "passed",
+          "title": "should handle BattleScribe with missing roster"
+        },
+        {
+          "ancestorTitles": ["armyParser", "parseArmyFile", "Edge cases"],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Edge cases should handle empty units array",
+          "location": null,
+          "status": "passed",
+          "title": "should handle empty units array"
+        },
+        {
+          "ancestorTitles": ["armyParser", "parseArmyFile", "Edge cases"],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Edge cases should handle units with empty weapons array",
+          "location": null,
+          "status": "passed",
+          "title": "should handle units with empty weapons array"
+        },
+        {
+          "ancestorTitles": ["armyParser", "parseArmyFile", "Edge cases"],
+          "failureMessages": [],
+          "fullName": "armyParser parseArmyFile Edge cases should handle numeric strings in characteristics",
+          "location": null,
+          "status": "passed",
+          "title": "should handle numeric strings in characteristics"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "Nested BattleScribe structure parsing"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser Nested BattleScribe structure parsing should correctly parse Assault Intercessors with sergeant and standard models",
+          "location": null,
+          "status": "passed",
+          "title": "should correctly parse Assault Intercessors with sergeant and standard models"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "Nested BattleScribe structure parsing"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser Nested BattleScribe structure parsing should correctly parse Death Company Marines with uniform equipment",
+          "location": null,
+          "status": "passed",
+          "title": "should correctly parse Death Company Marines with uniform equipment"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "Nested BattleScribe structure parsing"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser Nested BattleScribe structure parsing should correctly parse character units with multiple weapons",
+          "location": null,
+          "status": "passed",
+          "title": "should correctly parse character units with multiple weapons"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "Nested BattleScribe structure parsing"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser Nested BattleScribe structure parsing should handle edge case with no weapons",
+          "location": null,
+          "status": "passed",
+          "title": "should handle edge case with no weapons"
+        },
+        {
+          "ancestorTitles": [
+            "armyParser",
+            "Nested BattleScribe structure parsing"
+          ],
+          "failureMessages": [],
+          "fullName": "armyParser Nested BattleScribe structure parsing should handle deeply nested selections",
+          "location": null,
+          "status": "passed",
+          "title": "should handle deeply nested selections"
+        }
+      ],
+      "endTime": 1759604063432,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\utils\\armyParser.test.js",
+      "startTime": 1759604060349,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["armyParser core stats normalization"],
+          "failureMessages": [],
+          "fullName": "armyParser core stats normalization parses M/T/Sv/W/Ld/OC from a BattleScribe Unit profile",
+          "location": null,
+          "status": "passed",
+          "title": "parses M/T/Sv/W/Ld/OC from a BattleScribe Unit profile"
+        },
+        {
+          "ancestorTitles": ["armyParser core stats normalization"],
+          "failureMessages": [],
+          "fullName": "armyParser core stats normalization parses Angron stats from sample-army-WE.json",
+          "location": null,
+          "status": "passed",
+          "title": "parses Angron stats from sample-army-WE.json"
+        }
+      ],
+      "endTime": 1759604063577,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\utils\\__tests__\\armyParser.stats.test.js",
+      "startTime": 1759604063274,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["weaponCarrier.resolveWeaponCarrierCount"],
+          "failureMessages": [],
+          "fullName": "weaponCarrier.resolveWeaponCarrierCount uses explicit unit.weaponCarriers map and caps to current models",
+          "location": null,
+          "status": "passed",
+          "title": "uses explicit unit.weaponCarriers map and caps to current models"
+        },
+        {
+          "ancestorTitles": ["weaponCarrier.resolveWeaponCarrierCount"],
+          "failureMessages": [],
+          "fullName": "weaponCarrier.resolveWeaponCarrierCount uses explicit carryCount on weapon",
+          "location": null,
+          "status": "passed",
+          "title": "uses explicit carryCount on weapon"
+        },
+        {
+          "ancestorTitles": ["weaponCarrier.resolveWeaponCarrierCount"],
+          "failureMessages": [],
+          "fullName": "weaponCarrier.resolveWeaponCarrierCount uses leader/sergeant-only flag => 1",
+          "location": null,
+          "status": "passed",
+          "title": "uses leader/sergeant-only flag => 1"
+        },
+        {
+          "ancestorTitles": ["weaponCarrier.resolveWeaponCarrierCount"],
+          "failureMessages": [],
+          "fullName": "weaponCarrier.resolveWeaponCarrierCount parses \"2x ...\" prefix from name/displayName",
+          "location": null,
+          "status": "passed",
+          "title": "parses \"2x ...\" prefix from name/displayName"
+        },
+        {
+          "ancestorTitles": ["weaponCarrier.resolveWeaponCarrierCount"],
+          "failureMessages": [],
+          "fullName": "weaponCarrier.resolveWeaponCarrierCount falls back to unit models",
+          "location": null,
+          "status": "passed",
+          "title": "falls back to unit models"
+        }
+      ],
+      "endTime": 1759604063687,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\utils\\__tests__\\weaponCarrier.test.js",
+      "startTime": 1759604063446,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["dndHotspot"],
+          "failureMessages": [],
+          "fullName": "dndHotspot leader -> unit: center is attach, edges are not",
+          "location": null,
+          "status": "passed",
+          "title": "leader -> unit: center is attach, edges are not"
+        },
+        {
+          "ancestorTitles": ["dndHotspot"],
+          "failureMessages": [],
+          "fullName": "dndHotspot unit -> leader: only lower tight band captures attach",
+          "location": null,
+          "status": "passed",
+          "title": "unit -> leader: only lower tight band captures attach"
+        },
+        {
+          "ancestorTitles": ["dndHotspot"],
+          "failureMessages": [],
+          "fullName": "dndHotspot deep freeze zone is smaller than hotspot",
+          "location": null,
+          "status": "passed",
+          "title": "deep freeze zone is smaller than hotspot"
+        }
+      ],
+      "endTime": 1759604063717,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\utils\\__tests__\\dndHotspot.test.js",
+      "startTime": 1759604063494,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["DatasheetRail"],
+          "failureMessages": [],
+          "fullName": "DatasheetRail renders AttackHelperPanel when a unit is selected",
+          "location": null,
+          "status": "passed",
+          "title": "renders AttackHelperPanel when a unit is selected"
+        }
+      ],
+      "endTime": 1759604064578,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\datasheet\\__tests__\\DatasheetRail.test.jsx",
+      "startTime": 1759604060158,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["GameSession three-column layout and upload"],
+          "failureMessages": [],
+          "fullName": "GameSession three-column layout and upload renders A | Datasheet | B columns with dropzones when empty",
+          "location": null,
+          "status": "passed",
+          "title": "renders A | Datasheet | B columns with dropzones when empty"
+        },
+        {
+          "ancestorTitles": ["GameSession three-column layout and upload"],
+          "failureMessages": [],
+          "fullName": "GameSession three-column layout and upload importing a JSON file updates game state for Player A",
+          "location": null,
+          "status": "passed",
+          "title": "importing a JSON file updates game state for Player A"
+        },
+        {
+          "ancestorTitles": ["GameSession three-column layout and upload"],
+          "failureMessages": [],
+          "fullName": "GameSession three-column layout and upload importing a JSON file updates game state for Player B",
+          "location": null,
+          "status": "passed",
+          "title": "importing a JSON file updates game state for Player B"
+        },
+        {
+          "ancestorTitles": ["GameSession three-column layout and upload"],
+          "failureMessages": [],
+          "fullName": "GameSession three-column layout and upload shows error message on invalid file type and JSON parse error",
+          "location": null,
+          "status": "passed",
+          "title": "shows error message on invalid file type and JSON parse error"
+        }
+      ],
+      "endTime": 1759604064674,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\pages\\__tests__\\GameSession.layout.test.jsx",
+      "startTime": 1759604059990,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["UploadDropzone"],
+          "failureMessages": [],
+          "fullName": "UploadDropzone renders with error and calls handlers",
+          "location": null,
+          "status": "passed",
+          "title": "renders with error and calls handlers"
+        }
+      ],
+      "endTime": 1759604064771,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\army\\__tests__\\UploadDropzone.test.jsx",
+      "startTime": 1759604060407,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["GameHeader"],
+          "failureMessages": [],
+          "fullName": "GameHeader renders name, round, turn, game id and shows overlay button when narrow with selection",
+          "location": null,
+          "status": "passed",
+          "title": "renders name, round, turn, game id and shows overlay button when narrow with selection"
+        },
+        {
+          "ancestorTitles": ["GameHeader"],
+          "failureMessages": [],
+          "fullName": "GameHeader hides overlay button when not narrow or no selection",
+          "location": null,
+          "status": "passed",
+          "title": "hides overlay button when not narrow or no selection"
+        }
+      ],
+      "endTime": 1759604064803,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\session\\__tests__\\GameHeader.test.jsx",
+      "startTime": 1759604060240,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["ArmySidebar"],
+          "failureMessages": [],
+          "fullName": "ArmySidebar renders header and Replace button when hasArmy is true (Player A)",
+          "location": null,
+          "status": "passed",
+          "title": "renders header and Replace button when hasArmy is true (Player A)"
+        },
+        {
+          "ancestorTitles": ["ArmySidebar"],
+          "failureMessages": [],
+          "fullName": "ArmySidebar renders dropzone when hasArmy is false and propagates onFileInputChange",
+          "location": null,
+          "status": "passed",
+          "title": "renders dropzone when hasArmy is false and propagates onFileInputChange"
+        }
+      ],
+      "endTime": 1759604064866,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\army\\__tests__\\ArmySidebar.test.jsx",
+      "startTime": 1759604060337,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["ConfirmDialog", "Rendering"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Rendering should not render when isOpen is false",
+          "location": null,
+          "status": "passed",
+          "title": "should not render when isOpen is false"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Rendering"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Rendering should render when isOpen is true",
+          "location": null,
+          "status": "passed",
+          "title": "should render when isOpen is true"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Rendering"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Rendering should render with default button text",
+          "location": null,
+          "status": "passed",
+          "title": "should render with default button text"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Rendering"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Rendering should render with custom button text",
+          "location": null,
+          "status": "passed",
+          "title": "should render with custom button text"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Rendering"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Rendering should apply destructive styling when isDestructive is true",
+          "location": null,
+          "status": "passed",
+          "title": "should apply destructive styling when isDestructive is true"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Rendering"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Rendering should not apply destructive styling when isDestructive is false",
+          "location": null,
+          "status": "passed",
+          "title": "should not apply destructive styling when isDestructive is false"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "User Interactions"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog User Interactions should call onConfirm when confirm button is clicked",
+          "location": null,
+          "status": "passed",
+          "title": "should call onConfirm when confirm button is clicked"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "User Interactions"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog User Interactions should call onCancel when cancel button is clicked",
+          "location": null,
+          "status": "passed",
+          "title": "should call onCancel when cancel button is clicked"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "User Interactions"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog User Interactions should call onCancel when overlay is clicked",
+          "location": null,
+          "status": "passed",
+          "title": "should call onCancel when overlay is clicked"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "User Interactions"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog User Interactions should not call onCancel when dialog content is clicked",
+          "location": null,
+          "status": "passed",
+          "title": "should not call onCancel when dialog content is clicked"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "User Interactions"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog User Interactions should handle keyboard events for accessibility",
+          "location": null,
+          "status": "passed",
+          "title": "should handle keyboard events for accessibility"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Accessibility"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Accessibility should have proper ARIA roles and attributes",
+          "location": null,
+          "status": "passed",
+          "title": "should have proper ARIA roles and attributes"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Accessibility"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Accessibility should focus on confirm button when opened",
+          "location": null,
+          "status": "passed",
+          "title": "should focus on confirm button when opened"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Content Variations"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Content Variations should handle long messages",
+          "location": null,
+          "status": "passed",
+          "title": "should handle long messages"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Content Variations"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Content Variations should handle special characters in title and message",
+          "location": null,
+          "status": "passed",
+          "title": "should handle special characters in title and message"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Content Variations"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Content Variations should handle empty title and message",
+          "location": null,
+          "status": "passed",
+          "title": "should handle empty title and message"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Multiple Instances"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Multiple Instances should handle multiple dialog instances correctly",
+          "location": null,
+          "status": "passed",
+          "title": "should handle multiple dialog instances correctly"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Button States"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Button States should handle rapid clicking without multiple calls",
+          "location": null,
+          "status": "passed",
+          "title": "should handle rapid clicking without multiple calls"
+        },
+        {
+          "ancestorTitles": ["ConfirmDialog", "Button States"],
+          "failureMessages": [],
+          "fullName": "ConfirmDialog Button States should maintain button functionality after prop changes",
+          "location": null,
+          "status": "passed",
+          "title": "should maintain button functionality after prop changes"
+        }
+      ],
+      "endTime": 1759604065071,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\ConfirmDialog.test.js",
+      "startTime": 1759604060321,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["DatasheetCompare"],
+          "failureMessages": [],
+          "fullName": "DatasheetCompare renders both datasheets with unit names",
+          "location": null,
+          "status": "passed",
+          "title": "renders both datasheets with unit names"
+        },
+        {
+          "ancestorTitles": ["DatasheetCompare"],
+          "failureMessages": [],
+          "fullName": "DatasheetCompare clicking a left weapon calls onToggleWeaponLeft",
+          "location": null,
+          "status": "passed",
+          "title": "clicking a left weapon calls onToggleWeaponLeft"
+        }
+      ],
+      "endTime": 1759604065227,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\datasheet\\__tests__\\DatasheetCompare.test.jsx",
+      "startTime": 1759604060438,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Weapon carrier defaults"],
+          "failureMessages": [],
+          "fullName": "Weapon carrier defaults Power Fist defaults to 1; Chainsword defaults to 2 via 2x prefix",
+          "location": null,
+          "status": "passed",
+          "title": "Power Fist defaults to 1; Chainsword defaults to 2 via 2x prefix"
+        }
+      ],
+      "endTime": 1759604065371,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\attack\\__tests__\\AttackHelper.carriers.test.jsx",
+      "startTime": 1759604060088,
+      "status": "passed",
+      "summary": ""
+    },
     {
       "assertionResults": [
         {
@@ -50,16 +976,112 @@
         {
           "ancestorTitles": ["UnitDatasheet Override panel"],
           "failureMessages": [],
-          "fullName": "UnitDatasheet Override panel badge count updates when toggling flags and adding allow",
+          "fullName": "UnitDatasheet Override panel badge count updates when adding allow",
           "location": null,
           "status": "passed",
-          "title": "badge count updates when toggling flags and adding allow"
+          "title": "badge count updates when adding allow"
         }
       ],
-      "endTime": 1759600959759,
+      "endTime": 1759604065424,
       "message": "",
       "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\__tests__\\UnitOverrides.test.jsx",
-      "startTime": 1759600956735,
+      "startTime": 1759604060346,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Attack Helper panel"],
+          "failureMessages": [],
+          "fullName": "Attack Helper panel opens from weapon row click and shows placeholders when no target",
+          "location": null,
+          "status": "passed",
+          "title": "opens from weapon row click and shows placeholders when no target"
+        },
+        {
+          "ancestorTitles": ["Attack Helper panel"],
+          "failureMessages": [],
+          "fullName": "Attack Helper panel with a target, shows to-hit, to-wound, and defender save details",
+          "location": null,
+          "status": "passed",
+          "title": "with a target, shows to-hit, to-wound, and defender save details"
+        },
+        {
+          "ancestorTitles": ["Attack Helper panel"],
+          "failureMessages": [],
+          "fullName": "Attack Helper panel changing models in range updates expected hits",
+          "location": null,
+          "status": "passed",
+          "title": "changing models in range updates expected hits"
+        }
+      ],
+      "endTime": 1759604065867,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\attack\\__tests__\\AttackHelper.panel.test.jsx",
+      "startTime": 1759604060210,
+      "status": "passed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["UnitDatasheet"],
+          "failureMessages": [],
+          "fullName": "UnitDatasheet renders header, model count, basic stats and keywords",
+          "location": null,
+          "status": "passed",
+          "title": "renders header, model count, basic stats and keywords"
+        },
+        {
+          "ancestorTitles": ["UnitDatasheet"],
+          "failureMessages": [],
+          "fullName": "UnitDatasheet groups identical ranged weapons (without count bubble) and separates ranged/melee sections",
+          "location": null,
+          "status": "passed",
+          "title": "groups identical ranged weapons (without count bubble) and separates ranged/melee sections"
+        },
+        {
+          "ancestorTitles": ["UnitDatasheet"],
+          "failureMessages": [],
+          "fullName": "UnitDatasheet renders abilities and composition with points",
+          "location": null,
+          "status": "passed",
+          "title": "renders abilities and composition with points"
+        },
+        {
+          "ancestorTitles": ["UnitDatasheet"],
+          "failureMessages": [
+            "TestingLibraryElementError: Unable to find an accessible element with the role \"checkbox\" and name `/can lead/i`\n\nHere are the accessible roles:\n\n  heading:\n\n  Name \"Assault Intercessors\":\n  \u001b[36m<h2 />\u001b[39m\n\n  --------------------------------------------------\n  button:\n\n  Name \"Bolt rifle 24\" 1 3+ 4 0 1\":\n  \u001b[36m<div\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-row \"\u001b[39m\n    \u001b[33mrole\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Astartes chainsword Melee 3 3+ 4 0 1\":\n  \u001b[36m<div\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-row \"\u001b[39m\n    \u001b[33mrole\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"▸ Abilities\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-header center\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"▸ Unit Composition\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-header center\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"▸ Override Off\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-header center\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Add\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"btn-primary\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Deep Strike\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n    \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Lone Operative\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n    \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Fights First\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n    \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Stealth\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n    \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Infiltrators\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n    \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Advance and Charge\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n    \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Deadly Demise\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n    \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Scouts\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n    \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Feel No Pain\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n    \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Reset\":\n  \u001b[36m<button\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"btn-secondary\"\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  combobox:\n\n  Name \"Select unit to allow\":\n  \u001b[36m<select\u001b[39m\n    \u001b[33maria-label\u001b[39m=\u001b[32m\"Select unit to allow\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  option:\n\n  Name \"Select a unit…\":\n  \u001b[36m<option\u001b[39m\n    \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Captain\":\n  \u001b[36m<option\u001b[39m\n    \u001b[33mvalue\u001b[39m=\u001b[32m\"u2\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Infernus Squad\":\n  \u001b[36m<option\u001b[39m\n    \u001b[33mvalue\u001b[39m=\u001b[32m\"u3\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  group:\n\n  Name \"Allowed list\":\n  \u001b[36m<div\u001b[39m\n    \u001b[33maria-label\u001b[39m=\u001b[32m\"Allowed list\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"chips\"\u001b[39m\n    \u001b[33mrole\u001b[39m=\u001b[32m\"group\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  checkbox:\n\n  Name \"Faction (Custom)\":\n  \u001b[36m<input\u001b[39m\n    \u001b[33mtype\u001b[39m=\u001b[32m\"checkbox\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<div\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"unit-datasheet selected\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"datasheet-header\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"unit-title\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<h2>\u001b[39m\n            \u001b[0mAssault Intercessors\u001b[0m\n          \u001b[36m</h2>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"unit-size\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0m10\u001b[0m\n            \u001b[0m \u001b[0m\n            \u001b[0mmodels\u001b[0m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33maria-label\u001b[39m=\u001b[32m\"Header pills\"\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"abilities-inline header-pills\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"ability-pill\"\u001b[39m\n            \u001b[33mtitle\u001b[39m=\u001b[32m\"\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<span\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"ability-key\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mCore:\u001b[0m\n            \u001b[36m</span>\u001b[39m\n            \u001b[36m<span\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"ability-value\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0m—\u001b[0m\n            \u001b[36m</span>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"ability-pill\"\u001b[39m\n            \u001b[33mtitle\u001b[39m=\u001b[32m\"INFANTRY, ADEPTUS ASTARTES\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<span\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"ability-key\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mKeywords:\u001b[0m\n            \u001b[36m</span>\u001b[39m\n            \u001b[36m<span\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"ability-value\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mINFANTRY, ADEPTUS ASTARTES\u001b[0m\n            \u001b[36m</span>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"unit-stats-row\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"stat-box\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"stat-label\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mM\u001b[0m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"stat-value\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0m6\"\u001b[0m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"stat-box\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"stat-label\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mT\u001b[0m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"stat-value\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0m4\u001b[0m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"stat-box\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"stat-label\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mSv\u001b[0m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"stat-value\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0m3+\u001b[0m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"stat-box\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"stat-label\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mW\u001b[0m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"stat-value\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0m2\u001b[0m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"stat-box\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"stat-label\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mLd\u001b[0m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"stat-value\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0m7+\u001b[0m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"stat-box\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"stat-label\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mOC\u001b[0m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"stat-value\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0m1\u001b[0m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"datasheet-content\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"weapons-section\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"section-header ranged-header\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<span\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-icon\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0m🎯\u001b[0m\n            \u001b[36m</span>\u001b[39m\n            \u001b[36m<span>\u001b[39m\n              \u001b[0mRANGED WEAPONS\u001b[0m\n            \u001b[36m</span>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"weapons-table\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"weapons-table-header\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-name-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mWEAPON\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mRANGE\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mA\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mBS\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mS\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mAP\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mD\u001b[0m\n              \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-row \"\u001b[39m\n              \u001b[33mrole\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-name-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-name\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mBolt rifle\u001b[0m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m24\"\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m1\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m3+\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m4\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m0\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m1\u001b[0m\n              \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"weapons-section\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"section-header melee-header\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<span\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-icon\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0m⚔️\u001b[0m\n            \u001b[36m</span>\u001b[39m\n            \u001b[36m<span>\u001b[39m\n              \u001b[0mMELEE WEAPONS\u001b[0m\n            \u001b[36m</span>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"weapons-table\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"weapons-table-header\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-name-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mWEAPON\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mRANGE\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mA\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mWS\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mS\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mAP\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mD\u001b[0m\n              \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-row \"\u001b[39m\n              \u001b[33mrole\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-name-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-name\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mAstartes chainsword\u001b[0m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mMelee\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m3\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m3+\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m4\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m0\u001b[0m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m1\u001b[0m\n              \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"datasheet-bottom\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-collapsible\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<button\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-header center\"\u001b[39m\n              \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<span\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"chevron \"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m▸\u001b[0m\n              \u001b[36m</span>\u001b[39m\n              \u001b[36m<span>\u001b[39m\n                \u001b[0mAbilities\u001b[0m\n              \u001b[36m</span>\u001b[39m\n            \u001b[36m</button>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-collapsible\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<button\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-header center\"\u001b[39m\n              \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<span\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"chevron \"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m▸\u001b[0m\n              \u001b[36m</span>\u001b[39m\n              \u001b[36m<span>\u001b[39m\n                \u001b[0mUnit Composition\u001b[0m\n              \u001b[36m</span>\u001b[39m\n            \u001b[36m</button>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-collapsible\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<button\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-header center\"\u001b[39m\n              \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<span\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"chevron open\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m▸\u001b[0m\n              \u001b[36m</span>\u001b[39m\n              \u001b[36m<span>\u001b[39m\n                \u001b[0mOverride\u001b[0m\n              \u001b[36m</span>\u001b[39m\n              \u001b[36m<span\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"status-chip off\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mOff\u001b[0m\n              \u001b[36m</span>\u001b[39m\n            \u001b[36m</button>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-panel\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"pairwise-overrides single\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33maria-label\u001b[39m=\u001b[32m\"Allow specific pairings\"\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"pair-column\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<label\u001b[39m\n                    \u001b[33mfor\u001b[39m=\u001b[32m\"allow-search\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mAllow specific pairings\u001b[0m\n                  \u001b[36m</label>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"pair-add-row\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<select\u001b[39m\n                      \u001b[33maria-label\u001b[39m=\u001b[32m\"Select unit to allow\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[36m<option\u001b[39m\n                        \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[0mSelect a unit…\u001b[0m\n                      \u001b[36m</option>\u001b[39m\n                      \u001b[36m<option\u001b[39m\n                        \u001b[33mvalue\u001b[39m=\u001b[32m\"u2\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[0mCaptain\u001b[0m\n                      \u001b[36m</option>\u001b[39m\n                      \u001b[36m<option\u001b[39m\n                        \u001b[33mvalue\u001b[39m=\u001b[32m\"u3\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[0mInfernus Squad\u001b[0m\n                      \u001b[36m</option>\u001b[39m\n                    \u001b[36m</select>\u001b[39m\n                    \u001b[36m<button\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"btn-primary\"\u001b[39m\n                      \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mAdd\u001b[0m\n                    \u001b[36m</button>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33maria-label\u001b[39m=\u001b[32m\"Allowed list\"\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"chips\"\u001b[39m\n                    \u001b[33mrole\u001b[39m=\u001b[32m\"group\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"block\"\u001b[39m\n                \u001b[33mstyle\u001b[39m=\u001b[32m\"margin-top: 12px;\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"block__header\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mAbility Controls\u001b[0m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"block__body\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"flags-row\"\u001b[39m\n                    \u001b[33mstyle\u001b[39m=\u001b[32m\"flex-wrap: wrap; gap: 0.75rem;\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<label\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"flag-item\"\u001b[39m\n                      \u001b[33mstyle\u001b[39m=\u001b[32m\"gap: 6px;\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[36m<input\u001b[39m\n                        \u001b[33mtype\u001b[39m=\u001b[32m\"checkbox\"\u001b[39m\n                      \u001b[36m/>\u001b[39m\n                      \u001b[36m<span>\u001b[39m\n                        \u001b[0mFaction (Custom)\u001b[0m\n                      \u001b[36m</span>\u001b[39m\n                    \u001b[36m</label>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"flags-row\"\u001b[39m\n                    \u001b[33mstyle\u001b[39m=\u001b[32m\"flex-wrap: wrap; gap: 0.5rem;\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<button\u001b[39m\n                      \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                      \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                      \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[36m<span\u001b[39m\n                        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[0mDeep Strike\u001b[0m\n                      \u001b[36m</span>\u001b[39m\n                    \u001b[36m</button>\u001b[39m\n                    \u001b[36m<button\u001b[39m\n                      \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                      \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                      \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[36m<span\u001b[39m\n                        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[0mLone Operative\u001b[0m\n                      \u001b[36m</span>\u001b[39m\n                    \u001b[36m</button>\u001b[39m\n                    \u001b[36m<button\u001b[39m\n                      \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                      \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                      \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[36m<span\u001b[39m\n                        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[0mFights First\u001b[0m\n                      \u001b[36m</span>\u001b[39m\n                    \u001b[36m</button>\u001b[39m\n                    \u001b[36m<button\u001b[39m\n                      \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                      \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                      \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[36m<span\u001b[39m\n                        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[0mStealth\u001b[0m\n                      \u001b[36m</span>\u001b[39m\n                    \u001b[36m</button>\u001b[39m\n                    \u001b[36m<button\u001b[39m\n                      \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                      \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                      \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[36m<span\u001b[39m\n                        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[0mInfiltrators\u001b[0m\n                      \u001b[36m</span>\u001b[39m\n                    \u001b[36m</button>\u001b[39m\n                    \u001b[36m<button\u001b[39m\n                      \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                      \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                      \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[36m<span\u001b[39m\n                        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[0mAdvance and Charge\u001b[0m\n                      \u001b[36m</span>\u001b[39m\n                    \u001b[36m</button>\u001b[39m\n                    \u001b[36m<button\u001b[39m\n                      \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                      \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                      \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[36m<span\u001b[39m\n                        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[0mDeadly Demise\u001b[0m\n                      \u001b[36m</span>\u001b[39m\n                    \u001b[36m</button>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"flags-row\"\u001b[39m\n                    \u001b[33mstyle\u001b[39m=\u001b[32m\"flex-wrap: wrap; gap: 0.5rem; margin-top: 8px;\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<div\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"param-toggle\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[36m<button\u001b[39m\n                        \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                        \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[36m<span\u001b[39m\n                          \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                        \u001b[36m>\u001b[39m\n                          \u001b[0mScouts\u001b[0m\n                        \u001b[36m</span>\u001b[39m\n                      \u001b[36m</button>\u001b[39m\n                    \u001b[36m</div>\u001b[39m\n                    \u001b[36m<div\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"param-toggle\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[36m<button\u001b[39m\n                        \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                        \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[36m<span\u001b[39m\n                          \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                        \u001b[36m>\u001b[39m\n                          \u001b[0mFeel No Pain\u001b[0m\n                        \u001b[36m</span>\u001b[39m\n                      \u001b[36m</button>\u001b[39m\n                    \u001b[36m</div>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"override-actions\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<button\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"btn-secondary\"\u001b[39m\n                  \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mReset\u001b[0m\n                \u001b[36m</button>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m\n    at Object.getElementError (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\@testing-library\\react\\node_modules\\@testing-library\\dom\\dist\\config.js:37:19)\n    at C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\@testing-library\\react\\node_modules\\@testing-library\\dom\\dist\\query-helpers.js:76:38\n    at C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\@testing-library\\react\\node_modules\\@testing-library\\dom\\dist\\query-helpers.js:52:17\n    at getByRole (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\@testing-library\\react\\node_modules\\@testing-library\\dom\\dist\\query-helpers.js:95:19)\n    at Object.<anonymous> (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\__tests__\\UnitDatasheet.test.jsx:178:28)\n    at Promise.then.completed (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\utils.js:391:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\utils.js:316:10)\n    at _callCircusTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:218:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:155:3)\n    at _runTestsForDescribeBlock (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:66:9)\n    at _runTestsForDescribeBlock (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:60:9)\n    at run (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\run.js:25:3)\n    at runAndTransformResultsToJestFormat (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\legacy-code-todo-rewrite\\jestAdapterInit.js:170:21)\n    at jestAdapter (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-circus\\build\\legacy-code-todo-rewrite\\jestAdapter.js:82:19)\n    at runTestInternal (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\runTest.js:389:16)\n    at runTest (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\runTest.js:475:34)\n    at Object.worker (C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\node_modules\\jest-runner\\build\\testWorker.js:133:12)"
+          ],
+          "fullName": "UnitDatasheet override controls call onUpdateOverrides for toggles and pairwise add/remove",
+          "location": null,
+          "status": "failed",
+          "title": "override controls call onUpdateOverrides for toggles and pairwise add/remove"
+        }
+      ],
+      "endTime": 1759604066235,
+      "message": "\u001b[1m\u001b[31m  \u001b[1m● \u001b[22m\u001b[1mUnitDatasheet › override controls call onUpdateOverrides for toggles and pairwise add/remove\u001b[39m\u001b[22m\n\n    TestingLibraryElementError: Unable to find an accessible element with the role \"checkbox\" and name `/can lead/i`\n\n    Here are the accessible roles:\n\n      heading:\n\n      Name \"Assault Intercessors\":\n      \u001b[36m<h2 />\u001b[39m\n\n      --------------------------------------------------\n      button:\n\n      Name \"Bolt rifle 24\" 1 3+ 4 0 1\":\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-row \"\u001b[39m\n        \u001b[33mrole\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"Astartes chainsword Melee 3 3+ 4 0 1\":\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-row \"\u001b[39m\n        \u001b[33mrole\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"▸ Abilities\":\n      \u001b[36m<button\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-header center\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"▸ Unit Composition\":\n      \u001b[36m<button\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-header center\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"▸ Override Off\":\n      \u001b[36m<button\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-header center\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"Add\":\n      \u001b[36m<button\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"btn-primary\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"Deep Strike\":\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n        \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"Lone Operative\":\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n        \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"Fights First\":\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n        \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"Stealth\":\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n        \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"Infiltrators\":\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n        \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"Advance and Charge\":\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n        \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"Deadly Demise\":\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n        \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"Scouts\":\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n        \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"Feel No Pain\":\n      \u001b[36m<button\u001b[39m\n        \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n        \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"Reset\":\n      \u001b[36m<button\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"btn-secondary\"\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      --------------------------------------------------\n      combobox:\n\n      Name \"Select unit to allow\":\n      \u001b[36m<select\u001b[39m\n        \u001b[33maria-label\u001b[39m=\u001b[32m\"Select unit to allow\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      --------------------------------------------------\n      option:\n\n      Name \"Select a unit…\":\n      \u001b[36m<option\u001b[39m\n        \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"Captain\":\n      \u001b[36m<option\u001b[39m\n        \u001b[33mvalue\u001b[39m=\u001b[32m\"u2\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      Name \"Infernus Squad\":\n      \u001b[36m<option\u001b[39m\n        \u001b[33mvalue\u001b[39m=\u001b[32m\"u3\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      --------------------------------------------------\n      group:\n\n      Name \"Allowed list\":\n      \u001b[36m<div\u001b[39m\n        \u001b[33maria-label\u001b[39m=\u001b[32m\"Allowed list\"\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"chips\"\u001b[39m\n        \u001b[33mrole\u001b[39m=\u001b[32m\"group\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      --------------------------------------------------\n      checkbox:\n\n      Name \"Faction (Custom)\":\n      \u001b[36m<input\u001b[39m\n        \u001b[33mtype\u001b[39m=\u001b[32m\"checkbox\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n\n      --------------------------------------------------\n\n    Ignored nodes: comments, script, style\n    \u001b[36m<body>\u001b[39m\n      \u001b[36m<div>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"unit-datasheet selected\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"datasheet-header\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"unit-title\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<h2>\u001b[39m\n                \u001b[0mAssault Intercessors\u001b[0m\n              \u001b[36m</h2>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"unit-size\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0m10\u001b[0m\n                \u001b[0m \u001b[0m\n                \u001b[0mmodels\u001b[0m\n              \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33maria-label\u001b[39m=\u001b[32m\"Header pills\"\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"abilities-inline header-pills\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"ability-pill\"\u001b[39m\n                \u001b[33mtitle\u001b[39m=\u001b[32m\"\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"ability-key\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mCore:\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"ability-value\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m—\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"ability-pill\"\u001b[39m\n                \u001b[33mtitle\u001b[39m=\u001b[32m\"INFANTRY, ADEPTUS ASTARTES\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"ability-key\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mKeywords:\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"ability-value\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mINFANTRY, ADEPTUS ASTARTES\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"unit-stats-row\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"stat-box\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"stat-label\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mM\u001b[0m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"stat-value\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m6\"\u001b[0m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"stat-box\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"stat-label\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mT\u001b[0m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"stat-value\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m4\u001b[0m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"stat-box\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"stat-label\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mSv\u001b[0m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"stat-value\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m3+\u001b[0m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"stat-box\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"stat-label\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mW\u001b[0m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"stat-value\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m2\u001b[0m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"stat-box\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"stat-label\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mLd\u001b[0m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"stat-value\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m7+\u001b[0m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"stat-box\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"stat-label\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mOC\u001b[0m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"stat-value\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m1\u001b[0m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"datasheet-content\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"weapons-section\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"section-header ranged-header\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-icon\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m🎯\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[0mRANGED WEAPONS\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapons-table\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"weapons-table-header\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-name-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mWEAPON\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mRANGE\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mA\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mBS\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mS\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mAP\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mD\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-row \"\u001b[39m\n                  \u001b[33mrole\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                  \u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-name-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<div\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-name\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mBolt rifle\u001b[0m\n                    \u001b[36m</div>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m24\"\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m1\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m3+\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m4\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m0\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m1\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"weapons-section\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"section-header melee-header\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-icon\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m⚔️\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[0mMELEE WEAPONS\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"weapons-table\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"weapons-table-header\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-name-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mWEAPON\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mRANGE\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mA\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mWS\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mS\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mAP\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mD\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-row \"\u001b[39m\n                  \u001b[33mrole\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                  \u001b[33mtabindex\u001b[39m=\u001b[32m\"0\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-name-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<div\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-name\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mAstartes chainsword\u001b[0m\n                    \u001b[36m</div>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mMelee\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m3\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m3+\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m4\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m0\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"weapon-stat-col\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m1\u001b[0m\n                  \u001b[36m</div>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"datasheet-bottom\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-collapsible\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<button\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-header center\"\u001b[39m\n                  \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"chevron \"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m▸\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                  \u001b[36m<span>\u001b[39m\n                    \u001b[0mAbilities\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                \u001b[36m</button>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-collapsible\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<button\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-header center\"\u001b[39m\n                  \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"chevron \"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m▸\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                  \u001b[36m<span>\u001b[39m\n                    \u001b[0mUnit Composition\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                \u001b[36m</button>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-collapsible\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<button\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-header center\"\u001b[39m\n                  \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"chevron open\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m▸\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                  \u001b[36m<span>\u001b[39m\n                    \u001b[0mOverride\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"status-chip off\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mOff\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                \u001b[36m</button>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"overrides-panel\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"pairwise-overrides single\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<div\u001b[39m\n                      \u001b[33maria-label\u001b[39m=\u001b[32m\"Allow specific pairings\"\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"pair-column\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[36m<label\u001b[39m\n                        \u001b[33mfor\u001b[39m=\u001b[32m\"allow-search\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[0mAllow specific pairings\u001b[0m\n                      \u001b[36m</label>\u001b[39m\n                      \u001b[36m<div\u001b[39m\n                        \u001b[33mclass\u001b[39m=\u001b[32m\"pair-add-row\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[36m<select\u001b[39m\n                          \u001b[33maria-label\u001b[39m=\u001b[32m\"Select unit to allow\"\u001b[39m\n                        \u001b[36m>\u001b[39m\n                          \u001b[36m<option\u001b[39m\n                            \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n                          \u001b[36m>\u001b[39m\n                            \u001b[0mSelect a unit…\u001b[0m\n                          \u001b[36m</option>\u001b[39m\n                          \u001b[36m<option\u001b[39m\n                            \u001b[33mvalue\u001b[39m=\u001b[32m\"u2\"\u001b[39m\n                          \u001b[36m>\u001b[39m\n                            \u001b[0mCaptain\u001b[0m\n                          \u001b[36m</option>\u001b[39m\n                          \u001b[36m<option\u001b[39m\n                            \u001b[33mvalue\u001b[39m=\u001b[32m\"u3\"\u001b[39m\n                          \u001b[36m>\u001b[39m\n                            \u001b[0mInfernus Squad\u001b[0m\n                          \u001b[36m</option>\u001b[39m\n                        \u001b[36m</select>\u001b[39m\n                        \u001b[36m<button\u001b[39m\n                          \u001b[33mclass\u001b[39m=\u001b[32m\"btn-primary\"\u001b[39m\n                          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                        \u001b[36m>\u001b[39m\n                          \u001b[0mAdd\u001b[0m\n                        \u001b[36m</button>\u001b[39m\n                      \u001b[36m</div>\u001b[39m\n                      \u001b[36m<div\u001b[39m\n                        \u001b[33maria-label\u001b[39m=\u001b[32m\"Allowed list\"\u001b[39m\n                        \u001b[33mclass\u001b[39m=\u001b[32m\"chips\"\u001b[39m\n                        \u001b[33mrole\u001b[39m=\u001b[32m\"group\"\u001b[39m\n                      \u001b[36m/>\u001b[39m\n                    \u001b[36m</div>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"block\"\u001b[39m\n                    \u001b[33mstyle\u001b[39m=\u001b[32m\"margin-top: 12px;\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<div\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"block__header\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mAbility Controls\u001b[0m\n                    \u001b[36m</div>\u001b[39m\n                    \u001b[36m<div\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"block__body\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[36m<div\u001b[39m\n                        \u001b[33mclass\u001b[39m=\u001b[32m\"flags-row\"\u001b[39m\n                        \u001b[33mstyle\u001b[39m=\u001b[32m\"flex-wrap: wrap; gap: 0.75rem;\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[36m<label\u001b[39m\n                          \u001b[33mclass\u001b[39m=\u001b[32m\"flag-item\"\u001b[39m\n                          \u001b[33mstyle\u001b[39m=\u001b[32m\"gap: 6px;\"\u001b[39m\n                        \u001b[36m>\u001b[39m\n                          \u001b[36m<input\u001b[39m\n                            \u001b[33mtype\u001b[39m=\u001b[32m\"checkbox\"\u001b[39m\n                          \u001b[36m/>\u001b[39m\n                          \u001b[36m<span>\u001b[39m\n                            \u001b[0mFaction (Custom)\u001b[0m\n                          \u001b[36m</span>\u001b[39m\n                        \u001b[36m</label>\u001b[39m\n                      \u001b[36m</div>\u001b[39m\n                      \u001b[36m<div\u001b[39m\n                        \u001b[33mclass\u001b[39m=\u001b[32m\"flags-row\"\u001b[39m\n                        \u001b[33mstyle\u001b[39m=\u001b[32m\"flex-wrap: wrap; gap: 0.5rem;\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[36m<button\u001b[39m\n                          \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                          \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                          \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                        \u001b[36m>\u001b[39m\n                          \u001b[36m<span\u001b[39m\n                            \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                          \u001b[36m>\u001b[39m\n                            \u001b[0mDeep Strike\u001b[0m\n                          \u001b[36m</span>\u001b[39m\n                        \u001b[36m</button>\u001b[39m\n                        \u001b[36m<button\u001b[39m\n                          \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                          \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                          \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                        \u001b[36m>\u001b[39m\n                          \u001b[36m<span\u001b[39m\n                            \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                          \u001b[36m>\u001b[39m\n                            \u001b[0mLone Operative\u001b[0m\n                          \u001b[36m</span>\u001b[39m\n                        \u001b[36m</button>\u001b[39m\n                        \u001b[36m<button\u001b[39m\n                          \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                          \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                          \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                        \u001b[36m>\u001b[39m\n                          \u001b[36m<span\u001b[39m\n                            \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                          \u001b[36m>\u001b[39m\n                            \u001b[0mFights First\u001b[0m\n                          \u001b[36m</span>\u001b[39m\n                        \u001b[36m</button>\u001b[39m\n                        \u001b[36m<button\u001b[39m\n                          \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                          \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                          \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                        \u001b[36m>\u001b[39m\n                          \u001b[36m<span\u001b[39m\n                            \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                          \u001b[36m>\u001b[39m\n                            \u001b[0mStealth\u001b[0m\n                          \u001b[36m</span>\u001b[39m\n                        \u001b[36m</button>\u001b[39m\n                        \u001b[36m<button\u001b[39m\n                          \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                          \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                          \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                        \u001b[36m>\u001b[39m\n                          \u001b[36m<span\u001b[39m\n                            \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                          \u001b[36m>\u001b[39m\n                            \u001b[0mInfiltrators\u001b[0m\n                          \u001b[36m</span>\u001b[39m\n                        \u001b[36m</button>\u001b[39m\n                        \u001b[36m<button\u001b[39m\n                          \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                          \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                          \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                        \u001b[36m>\u001b[39m\n                          \u001b[36m<span\u001b[39m\n                            \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                          \u001b[36m>\u001b[39m\n                            \u001b[0mAdvance and Charge\u001b[0m\n                          \u001b[36m</span>\u001b[39m\n                        \u001b[36m</button>\u001b[39m\n                        \u001b[36m<button\u001b[39m\n                          \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                          \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                          \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                        \u001b[36m>\u001b[39m\n                          \u001b[36m<span\u001b[39m\n                            \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                          \u001b[36m>\u001b[39m\n                            \u001b[0mDeadly Demise\u001b[0m\n                          \u001b[36m</span>\u001b[39m\n                        \u001b[36m</button>\u001b[39m\n                      \u001b[36m</div>\u001b[39m\n                      \u001b[36m<div\u001b[39m\n                        \u001b[33mclass\u001b[39m=\u001b[32m\"flags-row\"\u001b[39m\n                        \u001b[33mstyle\u001b[39m=\u001b[32m\"flex-wrap: wrap; gap: 0.5rem; margin-top: 8px;\"\u001b[39m\n                      \u001b[36m>\u001b[39m\n                        \u001b[36m<div\u001b[39m\n                          \u001b[33mclass\u001b[39m=\u001b[32m\"param-toggle\"\u001b[39m\n                        \u001b[36m>\u001b[39m\n                          \u001b[36m<button\u001b[39m\n                            \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                            \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                            \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                            \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                          \u001b[36m>\u001b[39m\n                            \u001b[36m<span\u001b[39m\n                              \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                            \u001b[36m>\u001b[39m\n                              \u001b[0mScouts\u001b[0m\n                            \u001b[36m</span>\u001b[39m\n                          \u001b[36m</button>\u001b[39m\n                        \u001b[36m</div>\u001b[39m\n                        \u001b[36m<div\u001b[39m\n                          \u001b[33mclass\u001b[39m=\u001b[32m\"param-toggle\"\u001b[39m\n                        \u001b[36m>\u001b[39m\n                          \u001b[36m<button\u001b[39m\n                            \u001b[33maria-pressed\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                            \u001b[33mclass\u001b[39m=\u001b[32m\"chip-toggle  \"\u001b[39m\n                            \u001b[33mdata-state\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                            \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                          \u001b[36m>\u001b[39m\n                            \u001b[36m<span\u001b[39m\n                              \u001b[33mclass\u001b[39m=\u001b[32m\"chip-body\"\u001b[39m\n                            \u001b[36m>\u001b[39m\n                              \u001b[0mFeel No Pain\u001b[0m\n                            \u001b[36m</span>\u001b[39m\n                          \u001b[36m</button>\u001b[39m\n                        \u001b[36m</div>\u001b[39m\n                      \u001b[36m</div>\u001b[39m\n                    \u001b[36m</div>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"override-actions\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<button\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"btn-secondary\"\u001b[39m\n                      \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mReset\u001b[0m\n                    \u001b[36m</button>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n    \u001b[36m</body>\u001b[39m\n\u001b[2m\u001b[22m\n\u001b[2m    \u001b[0m \u001b[90m 176 |\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 177 |\u001b[39m     \u001b[90m// Toggle Can lead\u001b[39m\u001b[22m\n\u001b[2m    \u001b[31m\u001b[1m>\u001b[22m\u001b[2m\u001b[39m\u001b[90m 178 |\u001b[39m     \u001b[36mconst\u001b[39m canLead \u001b[33m=\u001b[39m screen\u001b[33m.\u001b[39mgetByRole(\u001b[32m\"checkbox\"\u001b[39m\u001b[33m,\u001b[39m { name\u001b[33m:\u001b[39m \u001b[35m/can lead/i\u001b[39m })\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m     |\u001b[39m                            \u001b[31m\u001b[1m^\u001b[22m\u001b[2m\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 179 |\u001b[39m     fireEvent\u001b[33m.\u001b[39mclick(canLead)\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 180 |\u001b[39m     expect(onUpdateOverrides)\u001b[33m.\u001b[39mtoHaveBeenCalledWith({ canLead\u001b[33m:\u001b[39m \u001b[32m\"yes\"\u001b[39m })\u001b[33m;\u001b[39m\u001b[22m\n\u001b[2m     \u001b[90m 181 |\u001b[39m\u001b[0m\u001b[22m\n\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.getElementError (\u001b[22m\u001b[2mnode_modules/@testing-library/react/node_modules/@testing-library/dom/dist/config.js\u001b[2m:37:19)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat \u001b[22m\u001b[2mnode_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js\u001b[2m:76:38\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat \u001b[22m\u001b[2mnode_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js\u001b[2m:52:17\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat getByRole (\u001b[22m\u001b[2mnode_modules/@testing-library/react/node_modules/@testing-library/dom/dist/query-helpers.js\u001b[2m:95:19)\u001b[22m\u001b[2m\u001b[22m\n\u001b[2m      \u001b[2mat Object.<anonymous> (\u001b[22m\u001b[2m\u001b[0m\u001b[36msrc/components/__tests__/UnitDatasheet.test.jsx\u001b[39m\u001b[0m\u001b[2m:178:28)\u001b[22m\u001b[2m\u001b[22m\n",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\__tests__\\UnitDatasheet.test.jsx",
+      "startTime": 1759604060122,
+      "status": "failed",
+      "summary": ""
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["GameSession Attack Helper interactions"],
+          "failureMessages": [],
+          "fullName": "GameSession Attack Helper interactions weapon→enemy opens, enemy→enemy recomputes, enemy→friendly collapses; click-away collapses (no console errors)",
+          "location": null,
+          "status": "passed",
+          "title": "weapon→enemy opens, enemy→enemy recomputes, enemy→friendly collapses; click-away collapses (no console errors)"
+        }
+      ],
+      "endTime": 1759604066253,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\attack\\__tests__\\AttackHelper.session.interactions.test.jsx",
+      "startTime": 1759604060066,
       "status": "passed",
       "summary": ""
     }

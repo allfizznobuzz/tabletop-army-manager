@@ -61,16 +61,10 @@ describe("UnitDatasheet Override panel", () => {
     expect(screen.getByRole("button", { name: /add/i })).toBeInTheDocument();
   });
 
-  test("badge count updates when toggling flags and adding allow", () => {
+  test("badge count updates when adding allow", () => {
     render(<Wrapper />);
     const header = screen.getByRole("button", { name: /override/i });
     fireEvent.click(header);
-
-    // Toggle Can lead
-    const leadCheckbox = screen.getByLabelText(/Can lead/i, {
-      selector: "input",
-    });
-    fireEvent.click(leadCheckbox);
 
     // Add allow pairing
     const select = screen.getByRole("combobox", {
@@ -80,8 +74,8 @@ describe("UnitDatasheet Override panel", () => {
     const addBtn = screen.getByRole("button", { name: /add/i });
     fireEvent.click(addBtn);
 
-    // Badge should show Overridden (2)
-    expect(screen.getByText(/Overridden \(2\)/i)).toBeInTheDocument();
+    // Badge should show Overridden (1)
+    expect(screen.getByText(/Overridden \(1\)/i)).toBeInTheDocument();
 
     // Reset returns to Off
     fireEvent.click(screen.getByRole("button", { name: /reset/i }));
