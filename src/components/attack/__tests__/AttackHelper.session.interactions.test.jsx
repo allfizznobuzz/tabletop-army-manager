@@ -268,7 +268,7 @@ describe("GameSession Attack Helper interactions", () => {
     ).toBeInTheDocument();
     // New best armour breakdown via hover
     const panelEl2 = screen.getByRole("region", { name: /attack helper/i });
-    const saveNum2 = within(panelEl2).getByText(/\d\+/i);
+    const saveNum2 = within(panelEl2).getByLabelText(/defender best save/i);
     fireEvent.mouseEnter(saveNum2);
     const tip2 = await screen.findByRole("tooltip");
     expect(tip2).toHaveTextContent(/Armour after AP/i);

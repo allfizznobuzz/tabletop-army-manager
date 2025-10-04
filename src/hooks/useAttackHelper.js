@@ -62,19 +62,11 @@ export default function useAttackHelper({
   const onToggleWeaponLeft = useCallback(
     (section, index, weapon) => {
       if (!leftUnit) return;
-      if (!pinnedUnitIdB && rightUnit) setPinnedUnitIdB?.(rightUnit.id);
+      // Do not auto-pick a default target; user must select a defender explicitly
       lastActionRef.current = "toggle_weapon";
       setAttackHelper((prev) => {
         const defaultModels = resolveWeaponCarrierCount(leftUnit, weapon);
-        let nextTargetId =
-          prev.targetUnitId ||
-          pinnedUnitIdB ||
-          (rightUnit ? rightUnit.id : null);
-        if (nextTargetId) {
-          const cand = allUnitsById[nextTargetId];
-          if (!cand || cand.column === leftUnit.column) nextTargetId = null;
-        }
-        const hasTarget = !!nextTargetId;
+        const nextTargetId = null;
         return {
           open: true,
           section,
@@ -82,36 +74,23 @@ export default function useAttackHelper({
           modelsInRange: defaultModels,
           targetUnitId: nextTargetId,
           attackerUnitId: leftUnit.id,
-          intent: hasTarget ? "open_with_target" : "open_no_target",
+          intent: "open_no_target",
           showExpected: prev.showExpected,
         };
       });
       setSelectedUnit?.(leftUnit);
     },
-    [
-      leftUnit,
-      rightUnit,
-      pinnedUnitIdB,
-      setPinnedUnitIdB,
-      allUnitsById,
-      setSelectedUnit,
-    ],
+    [leftUnit, setSelectedUnit],
   );
 
   const onToggleWeaponRight = useCallback(
     (section, index, weapon) => {
       if (!rightUnit) return;
-      if (!pinnedUnitIdA && leftUnit) setPinnedUnitIdA?.(leftUnit.id);
+      // Do not auto-pick a default target; user must select a defender explicitly
       lastActionRef.current = "toggle_weapon";
       setAttackHelper((prev) => {
         const defaultModels = resolveWeaponCarrierCount(rightUnit, weapon);
-        let nextTargetId =
-          prev.targetUnitId || pinnedUnitIdA || (leftUnit ? leftUnit.id : null);
-        if (nextTargetId) {
-          const cand = allUnitsById[nextTargetId];
-          if (!cand || cand.column === rightUnit.column) nextTargetId = null;
-        }
-        const hasTarget = !!nextTargetId;
+        const nextTargetId = null;
         return {
           open: true,
           section,
@@ -119,20 +98,13 @@ export default function useAttackHelper({
           modelsInRange: defaultModels,
           targetUnitId: nextTargetId,
           attackerUnitId: rightUnit.id,
-          intent: hasTarget ? "open_with_target" : "open_no_target",
+          intent: "open_no_target",
           showExpected: prev.showExpected,
         };
       });
       setSelectedUnit?.(rightUnit);
     },
-    [
-      rightUnit,
-      leftUnit,
-      pinnedUnitIdA,
-      setPinnedUnitIdA,
-      allUnitsById,
-      setSelectedUnit,
-    ],
+    [rightUnit, setSelectedUnit],
   );
 
   const onChangeModelsInRange = useCallback((val) => {

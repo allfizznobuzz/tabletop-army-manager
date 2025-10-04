@@ -128,7 +128,7 @@ const AbilityOverrides = ({ overrides, onUpdateOverrides }) => {
 
   return (
     <div className="block" style={{ marginTop: 12 }}>
-      <div className="block__header">Ability Overrides</div>
+      <div className="block__header">Ability Controls</div>
       <div className="block__body">
         <div className="flags-row" style={{ flexWrap: "wrap", gap: "0.75rem" }}>
           <label className="flag-item" style={{ gap: 6 }}>

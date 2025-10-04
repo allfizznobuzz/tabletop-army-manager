@@ -37,10 +37,11 @@ export function inAttachHotspot(px, py, r, opts) {
   const inBottomEdge = py >= r.bottom - edgePx;
   const inHotY = !(inTopEdge || inBottomEdge);
 
-  // Base horizontal band for hotspot (center area)
-  const leftMargin = width * 0.3; // 30% margins => center 40%
-  const rightMargin = width * 0.3;
-  const inHotX = px >= r.left + leftMargin && px <= r.right - rightMargin;
+  // Base horizontal band for hotspot (center area). Tests expect ~35% margins.
+  const leftMargin = width * 0.35; // 35% margins => center ~30%
+  const rightMargin = width * 0.35;
+  // Exclusive bounds so points exactly at the margin are not captured
+  const inHotX = px > r.left + leftMargin && px < r.right - rightMargin;
 
   let inside = inHotX && inHotY;
 

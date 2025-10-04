@@ -1,0 +1,68 @@
+{
+  "numFailedTestSuites": 0,
+  "numFailedTests": 0,
+  "numPassedTestSuites": 1,
+  "numPassedTests": 3,
+  "numPendingTestSuites": 0,
+  "numPendingTests": 0,
+  "numRuntimeErrorTestSuites": 0,
+  "numTodoTests": 0,
+  "numTotalTestSuites": 1,
+  "numTotalTests": 3,
+  "openHandles": [],
+  "snapshot": {
+    "added": 0,
+    "didUpdate": false,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0
+  },
+  "startTime": 1759600955436,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["UnitDatasheet Override panel"],
+          "failureMessages": [],
+          "fullName": "UnitDatasheet Override panel shows header \"Override\" and status Off by default",
+          "location": null,
+          "status": "passed",
+          "title": "shows header \"Override\" and status Off by default"
+        },
+        {
+          "ancestorTitles": ["UnitDatasheet Override panel"],
+          "failureMessages": [],
+          "fullName": "UnitDatasheet Override panel no search input is visible and select+add exists",
+          "location": null,
+          "status": "passed",
+          "title": "no search input is visible and select+add exists"
+        },
+        {
+          "ancestorTitles": ["UnitDatasheet Override panel"],
+          "failureMessages": [],
+          "fullName": "UnitDatasheet Override panel badge count updates when toggling flags and adding allow",
+          "location": null,
+          "status": "passed",
+          "title": "badge count updates when toggling flags and adding allow"
+        }
+      ],
+      "endTime": 1759600959759,
+      "message": "",
+      "name": "C:\\Users\\John\\Documents\\Code\\tabletop-army-manager\\src\\components\\__tests__\\UnitOverrides.test.jsx",
+      "startTime": 1759600956735,
+      "status": "passed",
+      "summary": ""
+    }
+  ],
+  "wasInterrupted": false
+}

@@ -331,7 +331,12 @@ const AttackHelperPanel = ({
           <div className="value">
             {weapon ? (
               <>
-                <span className="primary-number">{bestLabel}</span>
+                <span
+                  className="primary-number"
+                  aria-label="Defender best save"
+                >
+                  {bestLabel}
+                </span>
               </>
             ) : (
               <>
