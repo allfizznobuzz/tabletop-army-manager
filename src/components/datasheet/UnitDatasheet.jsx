@@ -645,24 +645,33 @@ const UnitDatasheet = ({
                       >
                         <div className="weapon-name-col">
                           <div className="weapon-name">{weapon.name}</div>
-                          {Array.isArray(weapon.keywords) &&
-                            weapon.keywords.length > 0 && (
+                          {(() => {
+                            const raw = Array.isArray(weapon.keywords)
+                              ? weapon.keywords
+                              : [];
+                            const tags = raw
+                              .map((s) => String(s).trim())
+                              .filter(
+                                (s) =>
+                                  s &&
+                                  s !== "-" &&
+                                  s !== "—" &&
+                                  s.toLowerCase() !== "none" &&
+                                  s.toLowerCase() !== "n/a",
+                              );
+                            return tags.length > 0 ? (
                               <div
                                 className="weapon-tags"
-                                title={weapon.keywords.join(", ")}
+                                title={tags.join(", ")}
                               >
-                                {weapon.keywords.map((k, i) => (
+                                {tags.map((k, i) => (
                                   <span key={i} className="weapon-tag">
                                     {String(k).toUpperCase()}
                                   </span>
                                 ))}
                               </div>
-                            )}
-                          {weapon.count > 1 && (
-                            <div className="weapon-count">
-                              (x{weapon.count})
-                            </div>
-                          )}
+                            ) : null;
+                          })()}
                         </div>
                         <div className="weapon-stat-col">{weapon.range}</div>
                         <div className="weapon-stat-col">{weapon.attacks}</div>
@@ -722,24 +731,33 @@ const UnitDatasheet = ({
                       >
                         <div className="weapon-name-col">
                           <div className="weapon-name">{weapon.name}</div>
-                          {Array.isArray(weapon.keywords) &&
-                            weapon.keywords.length > 0 && (
+                          {(() => {
+                            const raw = Array.isArray(weapon.keywords)
+                              ? weapon.keywords
+                              : [];
+                            const tags = raw
+                              .map((s) => String(s).trim())
+                              .filter(
+                                (s) =>
+                                  s &&
+                                  s !== "-" &&
+                                  s !== "—" &&
+                                  s.toLowerCase() !== "none" &&
+                                  s.toLowerCase() !== "n/a",
+                              );
+                            return tags.length > 0 ? (
                               <div
                                 className="weapon-tags"
-                                title={weapon.keywords.join(", ")}
+                                title={tags.join(", ")}
                               >
-                                {weapon.keywords.map((k, i) => (
+                                {tags.map((k, i) => (
                                   <span key={i} className="weapon-tag">
                                     {String(k).toUpperCase()}
                                   </span>
                                 ))}
                               </div>
-                            )}
-                          {weapon.count > 1 && (
-                            <div className="weapon-count">
-                              (x{weapon.count})
-                            </div>
-                          )}
+                            ) : null;
+                          })()}
                         </div>
                         <div className="weapon-stat-col">Melee</div>
                         <div className="weapon-stat-col">{weapon.attacks}</div>
@@ -784,17 +802,78 @@ const UnitDatasheet = ({
           <Collapsible title="Unit Composition" defaultOpen={false} centerTitle>
             {unit.modelGroups && unit.modelGroups.length > 0 ? (
               <>
-                {unit.modelGroups.map((group, index) => (
-                  <div key={index} className="composition-item">
-                    • {group.count}x {group.name}
-                  </div>
-                ))}
+                {unit.modelGroups.map((group, index) => {
+                  const raw = Array.isArray(group.weapons) ? group.weapons : [];
+                  // Aggregate counts per weapon name (case-insensitive), skipping placeholders
+                  const byName = new Map();
+                  for (const w of raw) {
+                    const name = String(w?.name || "").trim();
+                    if (
+                      !name ||
+                      name === "-" ||
+                      name === "—" ||
+                      name.toLowerCase() === "none" ||
+                      name.toLowerCase() === "n/a"
+                    )
+                      continue;
+                    const key = name.toLowerCase();
+                    const prev = byName.get(key);
+                    const add = Number.isFinite(w?.count) ? w.count : 1;
+                    if (prev) prev.count += add;
+                    else byName.set(key, { name, count: add });
+                  }
+                  const parts = Array.from(byName.values()).map((e) =>
+                    e.count > 1 ? `${e.name} (x${e.count})` : e.name,
+                  );
+                  return (
+                    <div key={index} className="composition-item">
+                      • {group.count}x {group.name}
+                      {parts.length > 0 && (
+                        <span className="composition-weapons">
+                          {" "}
+                          — {parts.join(", ")}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
                 <div className="points-cost">
                   {unit.models} models - {unit.points} pts
                 </div>
               </>
             ) : (
-              <div className="empty">No composition data.</div>
+              <>
+                {Array.isArray(unit.weapons) && unit.weapons.length > 0 ? (
+                  <div className="composition-item">
+                    Weapons:{" "}
+                    {(() => {
+                      const byName = new Map();
+                      for (const w of unit.weapons) {
+                        const name = String(w?.name || "").trim();
+                        if (
+                          !name ||
+                          name === "-" ||
+                          name === "—" ||
+                          name.toLowerCase() === "none" ||
+                          name.toLowerCase() === "n/a"
+                        )
+                          continue;
+                        const key = name.toLowerCase();
+                        const prev = byName.get(key);
+                        const add = Number.isFinite(w?.count) ? w.count : 1;
+                        if (prev) prev.count += add;
+                        else byName.set(key, { name, count: add });
+                      }
+                      const parts = Array.from(byName.values()).map((e) =>
+                        e.count > 1 ? `${e.name} (x${e.count})` : e.name,
+                      );
+                      return parts.join(", ");
+                    })()}
+                  </div>
+                ) : (
+                  <div className="empty">No composition data.</div>
+                )}
+              </>
             )}
           </Collapsible>
 
