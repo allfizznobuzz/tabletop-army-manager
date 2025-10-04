@@ -1,0 +1,9 @@
+{
+  "short_name": "ArmyMgr",
+  "name": "Tabletop Army Manager",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#12161c",
+  "theme_color": "#0d6efd",
+  "icons": []
+}

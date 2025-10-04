@@ -8,7 +8,11 @@ import {
 import ConfirmDialog from "components/ConfirmDialog";
 import "components/GameDashboard.css";
 
-export default function GameDashboardPage({ user, onJoinGame }) {
+export default function GameDashboardPage({
+  user,
+  onJoinGame,
+  offline = false,
+}) {
   const [recentGames, setRecentGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateGame, setShowCreateGame] = useState(false);
@@ -43,14 +47,64 @@ export default function GameDashboardPage({ user, onJoinGame }) {
 
   useEffect(() => {
     if (!user?.uid) return;
+    if (offline) return; // skip Firestore when offline
     loadUserGames();
-  }, [user?.uid, loadUserGames]);
+  }, [user?.uid, loadUserGames, offline]);
 
   const handleCreateGame = async () => {
+    const name = (gameName || "").trim() || "Untitled Game";
+    const payload = {
+      name,
+      createdBy: user.uid,
+      players: [user.uid],
+      playerArmies: {
+        [user.uid]: {
+          playerName: user.displayName || user.email || "Player A",
+          armyData: null,
+        },
+      },
+      playerA: {
+        displayName: user.displayName || user.email || "Player A",
+        armyRef: null,
+        armyData: null,
+      },
+      playerB: { displayName: "", armyRef: null, armyData: null },
+      gameState: {
+        columns: {
+          A: { attachments: {}, unitOrder: [] },
+          B: { attachments: {}, unitOrder: [] },
+        },
+        leadershipOverrides: {},
+        damageHistory: {},
+        totalVP: {},
+        victoryPoints: {},
+      },
+    };
+    const timeoutMs = 4000;
     try {
-      const id = await createGame({
-        name: (gameName || "").trim() || "Untitled Game",
+      const id = await Promise.race([
+        createGame(payload),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), timeoutMs),
+        ),
+      ]);
+
+      setGameName("");
+      setShowCreateGame(false);
+      setUploadError("");
+      loadUserGames();
+      onJoinGame(id);
+    } catch (error) {
+      // Offline or backend unreachable: create a local game and navigate using route state
+      console.warn("Firestore unreachable, starting local game", error);
+      const id = `local-${Date.now()}`;
+      const localGame = {
+        id,
+        name,
         createdBy: user.uid,
+        status: "waiting",
+        round: 1,
+        currentTurn: user.uid,
         players: [user.uid],
         playerArmies: {
           [user.uid]: {
@@ -74,18 +128,12 @@ export default function GameDashboardPage({ user, onJoinGame }) {
           totalVP: {},
           victoryPoints: {},
         },
-      });
+      };
 
       setGameName("");
       setShowCreateGame(false);
-      setUploadError("");
-      loadUserGames();
-      onJoinGame(id);
-    } catch (error) {
-      console.error("Failed to create game:", error);
-      setUploadError(
-        `Failed to create game: ${error?.message || String(error)}`,
-      );
+      setUploadError("Working offline: started a local game");
+      onJoinGame(id, { gameData: localGame });
     }
   };
 
@@ -94,14 +142,53 @@ export default function GameDashboardPage({ user, onJoinGame }) {
       setUploadError("Please enter a game ID");
       return;
     }
+    const id = gameId.trim();
+    const timeoutMs = 4000;
     try {
-      await joinGame(gameId.trim(), user.uid, user.displayName || user.email);
-      onJoinGame(gameId.trim());
+      await Promise.race([
+        joinGame(id, user.uid, user.displayName || user.email),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), timeoutMs),
+        ),
+      ]);
+      onJoinGame(id);
       setGameId("");
       setUploadError("");
     } catch (error) {
-      console.error("Failed to join game:", error);
-      setUploadError("Failed to join game. Please check the game ID.");
+      console.warn("Offline join fallback", error);
+      const localGame = {
+        id: `local-${Date.now()}`,
+        name: `Local Game (${id})`,
+        createdBy: user.uid,
+        status: "waiting",
+        round: 1,
+        currentTurn: user.uid,
+        players: [user.uid],
+        playerArmies: {
+          [user.uid]: {
+            playerName: user.displayName || user.email || "Player A",
+            armyData: null,
+          },
+        },
+        playerA: {
+          displayName: user.displayName || user.email || "Player A",
+          armyRef: null,
+          armyData: null,
+        },
+        playerB: { displayName: "", armyRef: null, armyData: null },
+        gameState: {
+          columns: {
+            A: { attachments: {}, unitOrder: [] },
+            B: { attachments: {}, unitOrder: [] },
+          },
+          leadershipOverrides: {},
+          damageHistory: {},
+          totalVP: {},
+          victoryPoints: {},
+        },
+      };
+      onJoinGame(localGame.id, { gameData: localGame });
+      setUploadError("Working offline: joined a local game");
     }
   };
 
@@ -196,9 +283,15 @@ export default function GameDashboardPage({ user, onJoinGame }) {
       )}
 
       <div className="recent-games-section">
-        <h2 className="section-title">Recent Games</h2>
+        <h2 className="section-title">
+          Recent Games {offline ? "(offline)" : ""}
+        </h2>
 
-        {recentGames.length === 0 ? (
+        {offline ? (
+          <div className="no-games">
+            <p>Offline mode: Recent games are unavailable.</p>
+          </div>
+        ) : recentGames.length === 0 ? (
           <div className="no-games">
             <p>No games found. Create your first game to get started!</p>
           </div>

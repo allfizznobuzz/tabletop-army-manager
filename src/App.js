@@ -11,6 +11,7 @@ import ThemeToggle from "components/ThemeToggle";
 import { ThemeProvider } from "contexts/ThemeContext";
 import "./App.css";
 import "./styles/themes.css";
+import { goOffline, goOnline } from "./firebase/config";
 import {
   BrowserRouter,
   Routes,
@@ -22,20 +23,36 @@ import {
   useLocation,
 } from "react-router-dom";
 
-function GameSessionRoute({ user }) {
+function GameSessionRoute({ user, offline }) {
   const { id } = useParams();
-  return <GameSession gameId={id} user={user} />;
+  const location = useLocation();
+  const gameDataFromState = location.state?.gameData;
+  return (
+    <GameSession
+      gameId={id}
+      user={user}
+      gameData={gameDataFromState}
+      offline={offline}
+    />
+  );
 }
 
-function AppRoutes({ user, onSignOut, currentGameId, setCurrentGameId }) {
+function AppRoutes({
+  user,
+  onSignOut,
+  currentGameId,
+  setCurrentGameId,
+  offline,
+  setOffline,
+}) {
   const navigate = useNavigate();
   const location = useLocation();
   const isDashboard = location.pathname === "/";
   const isGame = location.pathname.startsWith("/game/");
 
-  const joinGame = (gameId) => {
+  const joinGame = (gameId, options) => {
     setCurrentGameId(gameId);
-    navigate(`/game/${gameId}`);
+    navigate(`/game/${gameId}`, { state: options });
   };
 
   return (
@@ -45,6 +62,25 @@ function AppRoutes({ user, onSignOut, currentGameId, setCurrentGameId }) {
         <div className="user-info">
           <span>Welcome, {user.displayName}</span>
           <ThemeToggle />
+          <button
+            onClick={() => {
+              const next = !offline;
+              setOffline(next);
+              try {
+                localStorage.setItem("tam_offline", next ? "1" : "0");
+              } catch (_) {}
+              // Flip Firestore network state
+              if (next) {
+                goOffline();
+              } else {
+                goOnline();
+              }
+            }}
+            className={`signout-button`}
+            title={offline ? "Working Offline" : "Go Offline"}
+          >
+            {offline ? "Offline" : "Go Offline"}
+          </button>
           <button onClick={onSignOut} className="signout-button">
             Sign Out
           </button>
@@ -69,9 +105,18 @@ function AppRoutes({ user, onSignOut, currentGameId, setCurrentGameId }) {
         <Routes>
           <Route
             path="/"
-            element={<GameDashboard user={user} onJoinGame={joinGame} />}
+            element={
+              <GameDashboard
+                user={user}
+                onJoinGame={joinGame}
+                offline={offline}
+              />
+            }
           />
-          <Route path="/game/:id" element={<GameSessionRoute user={user} />} />
+          <Route
+            path="/game/:id"
+            element={<GameSessionRoute user={user} offline={offline} />}
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -83,6 +128,25 @@ function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentGameId, setCurrentGameId] = useState(null);
+  const [offline, setOffline] = useState(() => {
+    try {
+      return localStorage.getItem("tam_offline") === "1";
+    } catch (_) {
+      return false;
+    }
+  });
+
+  // Keep a global hint for non-routed hooks
+  useEffect(() => {
+    try {
+      window.__TAM_OFFLINE__ = offline;
+    } catch (_) {}
+  }, [offline]);
+
+  // Apply initial network state on mount
+  useEffect(() => {
+    if (offline) goOffline();
+  }, [offline]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange((user) => {
@@ -152,6 +216,8 @@ function App() {
           onSignOut={handleSignOut}
           currentGameId={currentGameId}
           setCurrentGameId={setCurrentGameId}
+          offline={offline}
+          setOffline={setOffline}
         />
       </BrowserRouter>
     </ThemeProvider>

@@ -3,6 +3,9 @@ import { getAuth, connectAuthEmulator } from "firebase/auth";
 import {
   initializeFirestore,
   connectFirestoreEmulator,
+  enableIndexedDbPersistence,
+  disableNetwork,
+  enableNetwork,
 } from "firebase/firestore";
 
 // Read from environment variables only (do not expose config in source).
@@ -35,10 +38,20 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase services
 export const auth = getAuth(app);
 // Use auto-detected long polling to avoid WebChannel issues in some networks/browsers
+// Transport strategy: prefer Fetch Streams (no cleardot.gif / WebChannel)
+// Override via env flags if needed
+const forceLongPolling =
+  String(
+    process.env.REACT_APP_FIRESTORE_FORCE_LONG_POLLING || "",
+  ).toLowerCase() === "true";
+const useFetchStreams =
+  String(
+    process.env.REACT_APP_FIRESTORE_USE_FETCH_STREAMS || "true",
+  ).toLowerCase() !== "false";
+
 export const db = initializeFirestore(app, {
-  experimentalForceLongPolling: true,
-  // useFetchStreams can cause issues with some proxies; disable for compatibility
-  useFetchStreams: false,
+  experimentalForceLongPolling: forceLongPolling,
+  useFetchStreams,
 });
 
 // Connect to emulators only when explicitly enabled
@@ -71,4 +84,15 @@ if (useFirestoreEmu) {
   }
 }
 
+// Long-term offline: enable IndexedDB persistence so reads/writes work offline and sync later
+try {
+  enableIndexedDbPersistence(db).catch(() => {
+    // Ignore if already enabled or unsupported
+  });
+} catch (_) {}
+
 export default app;
+
+// Network control helpers
+export const goOffline = () => disableNetwork(db).catch(() => {});
+export const goOnline = () => enableNetwork(db).catch(() => {});

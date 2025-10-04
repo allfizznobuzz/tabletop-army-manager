@@ -15,10 +15,32 @@ export default function useArmyImport(gameId) {
         columnKey === "A" ? setUploadErrorA(msg) : setUploadErrorB(msg);
         return;
       }
+      let parsed;
       try {
         const text = await file.text();
         const json = JSON.parse(text);
-        const parsed = parseArmyFile(json);
+        parsed = parseArmyFile(json);
+      } catch (e) {
+        const msg = `Failed to read ${file.name}: ${e.message || e}`;
+        columnKey === "A" ? setUploadErrorA(msg) : setUploadErrorB(msg);
+        return;
+      }
+
+      // If offline flag is set, skip Firestore writes and emit local event immediately
+      if (typeof window !== "undefined" && window.__TAM_OFFLINE__) {
+        try {
+          window.dispatchEvent(
+            new CustomEvent("localArmyImport", {
+              detail: { columnKey, armyData: parsed },
+            }),
+          );
+          const msg = `Loaded locally (offline): ${file.name}`;
+          columnKey === "A" ? setUploadErrorA(msg) : setUploadErrorB(msg);
+        } catch (_) {}
+        return;
+      }
+
+      try {
         const base = columnKey === "A" ? "playerA" : "playerB";
         const order = (parsed.units || []).map(
           (_, i) => `${columnKey}_unit_${i}`,
@@ -31,8 +53,15 @@ export default function useArmyImport(gameId) {
         // clear errors
         columnKey === "A" ? setUploadErrorA("") : setUploadErrorB("");
       } catch (e) {
-        const msg = `Failed to import ${file.name}: ${e.message || e}`;
+        const msg = `Offline or DB update failed. Loaded locally: ${file.name}`;
         columnKey === "A" ? setUploadErrorA(msg) : setUploadErrorB(msg);
+        try {
+          window.dispatchEvent(
+            new CustomEvent("localArmyImport", {
+              detail: { columnKey, armyData: parsed },
+            }),
+          );
+        } catch (_) {}
       }
     },
     [gameId],

@@ -28,9 +28,14 @@ import DatasheetOverlay from "components/datasheet/DatasheetOverlay";
 
 // Attached unit sortable is implemented inside ./ArmyColumn
 
-const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
-  const subscribedGameData = useGameSubscription(gameId, subscribeToGame);
-  const gameData = gameDataProp ?? subscribedGameData;
+const GameSessionView = ({ gameId, user, gameData: gameDataProp, offline }) => {
+  // When offline, don't subscribe to Firestore to avoid slow WebChannel backoff
+  const subscribeFn = offline ? undefined : subscribeToGame;
+  const subscribedGameData = useGameSubscription(gameId, subscribeFn);
+  // Offline overlay: allow local import when Firestore is unreachable
+  const [localGame, setLocalGame] = useState(null);
+  // Prefer local overlay, then explicit prop, then subscription
+  const gameData = localGame ?? gameDataProp ?? subscribedGameData;
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [overlayOpen, setOverlayOpen] = useState(false);
   const isNarrow = useMedia("(max-width: 768px)", false);
@@ -72,6 +77,40 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
     else if (u.column === "B") setPinnedUnitIdB(u.id);
   };
 
+  // Listen for localArmyImport events from importer when DB update fails
+  useEffect(() => {
+    const handler = (e) => {
+      try {
+        const { columnKey, armyData } = e.detail || {};
+        if (!columnKey || !armyData) return;
+        const baseKey = columnKey === "A" ? "playerA" : "playerB";
+        setLocalGame((prev) => {
+          const base = prev ?? subscribedGameData ?? {};
+          const existingBase = base[baseKey] || {};
+          const nextUnitOrder = (armyData.units || []).map(
+            (_, i) => `${columnKey}_unit_${i}`,
+          );
+          return {
+            ...base,
+            [baseKey]: { ...existingBase, armyData },
+            gameState: {
+              ...(base.gameState || {}),
+              columns: {
+                ...(base.gameState?.columns || {}),
+                [columnKey]: {
+                  attachments: {},
+                  unitOrder: nextUnitOrder,
+                },
+              },
+            },
+          };
+        });
+      } catch (_) {}
+    };
+    window.addEventListener("localArmyImport", handler);
+    return () => window.removeEventListener("localArmyImport", handler);
+  }, [subscribedGameData]);
+
   // Manual attach from datasheet: attach childId under leaderId, update state and persist
   const attachUnitToLeader = (leaderId, childId) => {
     const leader = allUnitsById[leaderId];
@@ -99,11 +138,15 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
     const newTop = (unitOrder || []).filter((id) => id !== childId);
     setUnitOrder(newTop);
 
-    const base = `gameState.columns.${col}`;
-    updateGameState(gameId, {
-      [`${base}.attachments`]: next,
-      [`${base}.unitOrder`]: newTop,
-    }).catch((err) => console.error("persist attach (datasheet) failed", err));
+    if (!offline) {
+      const base = `gameState.columns.${col}`;
+      updateGameState(gameId, {
+        [`${base}.attachments`]: next,
+        [`${base}.unitOrder`]: newTop,
+      }).catch((err) =>
+        console.error("persist attach (datasheet) failed", err),
+      );
+    }
   };
 
   // gameData provided by useGameSubscription
@@ -227,9 +270,11 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
             : current.allowList,
       };
       next[unitId] = merged;
-      updateGameState(gameId, { "gameState.leadershipOverrides": next }).catch(
-        (err) => console.error("persist overrides failed", err),
-      );
+      if (!offline) {
+        updateGameState(gameId, {
+          "gameState.leadershipOverrides": next,
+        }).catch((err) => console.error("persist overrides failed", err));
+      }
       return next;
     });
   };
@@ -245,15 +290,11 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
   const isLeaderUnitVisual = (unit) =>
     inferIsLeaderUnit(unit, leadershipOverrides);
 
-  // Attach eligibility: only pairwise allow list controls this. No default/keyword-based attach.
+  // Attach eligibility: pairwise allow OR explicit source data rules via strictSourceCanAttach
   const canLeaderAttachToUnit = (leader, unit) => {
     if (!leader || !unit) return false;
-    const lOv = leadershipOverrides?.[leader.id] || { allowList: [] };
-    const uOv = leadershipOverrides?.[unit.id] || { allowList: [] };
-    return (
-      (lOv.allowList || []).includes(unit.id) ||
-      (uOv.allowList || []).includes(leader.id)
-    );
+    if (leader.column !== unit.column) return false; // never cross columns
+    return canAttach(leader, unit, leadershipOverrides, strictSourceCanAttach);
   };
 
   // File import/drag-drop handled via useArmyImport(gameId)
@@ -261,8 +302,23 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp }) => {
   // Determine whose turn it is
   const isMyTurn = gameData?.currentTurn === user?.uid;
 
-  const hasArmyA = !!gameData?.playerA?.armyData;
-  const hasArmyB = !!gameData?.playerB?.armyData;
+  // Support both new playerA/B schema and legacy playerArmies map
+  const hasArmyFor = (col) => {
+    const direct =
+      col === "A" ? gameData?.playerA?.armyData : gameData?.playerB?.armyData;
+    if (direct) return true;
+    const playerArmies = gameData?.playerArmies || {};
+    const players = Array.isArray(gameData?.players) ? gameData.players : [];
+    let uid = col === "A" ? players[0] : players[1];
+    if (!uid) {
+      const keys = Object.keys(playerArmies);
+      uid = col === "A" ? keys[0] : keys[1];
+    }
+    const pa = uid ? playerArmies[uid] : null;
+    return !!pa?.armyData;
+  };
+  const hasArmyA = hasArmyFor("A");
+  const hasArmyB = hasArmyFor("B");
 
   return (
     <div className="game-session">

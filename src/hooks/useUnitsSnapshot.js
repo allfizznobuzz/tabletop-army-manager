@@ -12,11 +12,16 @@ export default function useUnitsSnapshot(gameData) {
           direct.displayName || (col === "A" ? "Player A" : "Player B"),
       };
     }
-    // Fallback: playerArmies map by players array index
+    // Fallback path(s)
+    const playerArmies = gameData?.playerArmies || {};
     const players = Array.isArray(gameData?.players) ? gameData.players : [];
-    const uid = col === "A" ? players[0] : players[1];
-    const pa =
-      uid && gameData?.playerArmies ? gameData.playerArmies[uid] : null;
+    let uid = col === "A" ? players[0] : players[1];
+    // If no players array is present, fallback to first/second keys in playerArmies
+    if (!uid) {
+      const keys = Object.keys(playerArmies);
+      uid = col === "A" ? keys[0] : keys[1];
+    }
+    const pa = uid ? playerArmies[uid] : null;
     if (pa?.armyData) {
       return {
         armyData: pa.armyData,
