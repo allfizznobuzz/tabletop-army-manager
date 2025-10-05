@@ -1,5 +1,5 @@
 import React from "react";
-import AttackHelperPanel from "components/attack/AttackHelperPanel";
+import AttackHelperPanel from "../attack/AttackHelperPanel";
 
 export default function DatasheetRail({
   selectedUnit,
@@ -8,6 +8,8 @@ export default function DatasheetRail({
   defaultTargetUnit,
   onChangeModelsInRange,
   onToggleExpected,
+  gameId,
+  user,
 }) {
   return (
     <div className="datasheet-sticky-rail">
@@ -19,6 +21,8 @@ export default function DatasheetRail({
           defaultTargetUnit={defaultTargetUnit}
           onChangeModelsInRange={onChangeModelsInRange}
           onToggleExpected={onToggleExpected}
+          gameId={gameId}
+          user={user}
         />
       ) : null}
     </div>

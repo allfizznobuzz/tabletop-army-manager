@@ -23,7 +23,7 @@ import {
   useLocation,
 } from "react-router-dom";
 
-function GameSessionRoute({ user, offline }) {
+function GameSessionRoute({ user, offline, onGameMeta }) {
   const { id } = useParams();
   const location = useLocation();
   const gameDataFromState = location.state?.gameData;
@@ -33,6 +33,7 @@ function GameSessionRoute({ user, offline }) {
       user={user}
       gameData={gameDataFromState}
       offline={offline}
+      onGameMeta={onGameMeta}
     />
   );
 }
@@ -49,6 +50,7 @@ function AppRoutes({
   const location = useLocation();
   const isDashboard = location.pathname === "/";
   const isGame = location.pathname.startsWith("/game/");
+  const [gameMeta, setGameMeta] = useState(null);
 
   const joinGame = (gameId, options) => {
     setCurrentGameId(gameId);
@@ -99,6 +101,34 @@ function AppRoutes({
             Current Game
           </Link>
         )}
+        {isGame && gameMeta ? (
+          <div
+            className="nav-game-meta"
+            style={{
+              marginLeft: "auto",
+              display: "flex",
+              gap: 12,
+              alignItems: "center",
+              color: "var(--text-secondary)",
+            }}
+          >
+            <span>
+              Round:{" "}
+              <strong style={{ color: "var(--text-primary)" }}>
+                {gameMeta.round ?? 1}
+              </strong>
+            </span>
+            <span>
+              Turn:{" "}
+              <strong style={{ color: "var(--text-primary)" }}>
+                {gameMeta.turnName || gameMeta.currentTurn || "—"}
+              </strong>
+            </span>
+            <span>
+              Game ID: <code>{gameMeta.id}</code>
+            </span>
+          </div>
+        ) : null}
       </nav>
 
       <main className="app-main">
@@ -115,7 +145,13 @@ function AppRoutes({
           />
           <Route
             path="/game/:id"
-            element={<GameSessionRoute user={user} offline={offline} />}
+            element={
+              <GameSessionRoute
+                user={user}
+                offline={offline}
+                onGameMeta={setGameMeta}
+              />
+            }
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

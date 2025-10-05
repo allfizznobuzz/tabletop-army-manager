@@ -22,13 +22,20 @@ import ArmySidebar from "components/army/ArmySidebar";
 import DatasheetRail from "components/datasheet/DatasheetRail";
 import DatasheetCompare from "components/datasheet/DatasheetCompare";
 import DatasheetOverlay from "components/datasheet/DatasheetOverlay";
+// Removed DiceTray (dice button disabled)
 
 // ArmyColumn renders one player's army column with fully-contained DnD and attach logic.
 // It persists state to gameState.columns.<col>.{attachments,unitOrder} and never crosses columns.
 
 // Attached unit sortable is implemented inside ./ArmyColumn
 
-const GameSessionView = ({ gameId, user, gameData: gameDataProp, offline }) => {
+const GameSessionView = ({
+  gameId,
+  user,
+  gameData: gameDataProp,
+  offline,
+  onGameMeta,
+}) => {
   // When offline, don't subscribe to Firestore to avoid slow WebChannel backoff
   const subscribeFn = offline ? undefined : subscribeToGame;
   const subscribedGameData = useGameSubscription(gameId, subscribeFn);
@@ -300,7 +307,32 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp, offline }) => {
   // File import/drag-drop handled via useArmyImport(gameId)
 
   // Determine whose turn it is
-  const isMyTurn = gameData?.currentTurn === user?.uid;
+  const isMyTurn = gameData?.currentTurn === user?.uid || false;
+
+  // Push game meta to top nav
+  useEffect(() => {
+    if (!onGameMeta) return;
+    if (!gameData) {
+      onGameMeta(null);
+      return;
+    }
+    const meta = { id: gameId, round: gameData?.round };
+    const ct = gameData?.currentTurn;
+    const players = Array.isArray(gameData?.players) ? gameData.players : [];
+    const playerArmies = gameData?.playerArmies || {};
+    let turnName = null;
+    if (typeof ct === "number" && players[ct]) {
+      const uid = players[ct];
+      turnName = playerArmies[uid]?.playerName || `Player ${ct + 1}`;
+      meta.currentTurn = ct;
+    } else if (typeof ct === "string") {
+      turnName = playerArmies[ct]?.playerName || ct;
+      meta.currentTurn = ct;
+    }
+    meta.turnName = turnName;
+    onGameMeta(meta);
+    return () => onGameMeta && onGameMeta(null);
+  }, [onGameMeta, gameData, gameId]);
 
   // Support both new playerA/B schema and legacy playerArmies map
   const hasArmyFor = (col) => {
@@ -330,6 +362,7 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp, offline }) => {
         isNarrow={isNarrow}
         hasSelectedUnit={!!selectedUnit}
         onOpenOverlay={() => setOverlayOpen(true)}
+        compact
       />
 
       <div className="game-content" data-testid="game-content">
@@ -392,6 +425,8 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp, offline }) => {
             defaultTargetUnit={targetUnit}
             onChangeModelsInRange={onChangeModelsInRange}
             onToggleExpected={onToggleExpected}
+            gameId={gameId}
+            user={user}
           />
           <div className="datasheet-scroll">
             {withMergedKeywords.left || withMergedKeywords.right ? (
@@ -491,6 +526,7 @@ const GameSessionView = ({ gameId, user, gameData: gameDataProp, offline }) => {
           )}
         </ArmySidebar>
       </div>
+      {/* DiceTray removed; Attack Helper includes integrated rolling */}
       {isNarrow && overlayOpen && selectedUnit ? (
         <DatasheetOverlay
           selectedUnit={withMergedKeywords.selected}

@@ -1,5 +1,5 @@
 import React from "react";
-import AttackHelperPanel from "components/attack/AttackHelperPanel";
+import AttackHelperPanel from "../attack/AttackHelperPanel";
 import UnitDatasheet from "components/datasheet/UnitDatasheet";
 import { resolveWeaponCarrierCount } from "utils/weaponCarrier";
 
