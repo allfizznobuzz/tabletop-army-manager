@@ -1,5 +1,11 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, connectAuthEmulator } from "firebase/auth";
+import {
+  initializeAuth,
+  connectAuthEmulator,
+  indexedDBLocalPersistence,
+  browserLocalPersistence,
+  inMemoryPersistence,
+} from "firebase/auth";
 import {
   initializeFirestore,
   connectFirestoreEmulator,
@@ -35,8 +41,15 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase services
-export const auth = getAuth(app);
+// Initialize Firebase Auth with robust multi-persistence
+export const auth = initializeAuth(app, {
+  persistence: [
+    indexedDBLocalPersistence,
+    browserLocalPersistence,
+    inMemoryPersistence,
+  ],
+});
+try { auth?.useDeviceLanguage?.(); } catch (_) {}
 // Use auto-detected long polling to avoid WebChannel issues in some networks/browsers
 // Transport strategy: prefer Fetch Streams (no cleardot.gif / WebChannel)
 // Override via env flags if needed

@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "tabletop-army-manager",
+    "prod": "tabletop-army-manager"
+  }
+}

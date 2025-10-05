@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { getRedirectResult } from "firebase/auth";
 import {
   onAuthStateChange,
   signInWithGoogle,
@@ -11,7 +12,7 @@ import ThemeToggle from "components/ThemeToggle";
 import { ThemeProvider } from "contexts/ThemeContext";
 import "./App.css";
 import "./styles/themes.css";
-import { goOffline, goOnline } from "./firebase/config";
+import { goOffline, goOnline, auth } from "./firebase/config";
 import {
   BrowserRouter,
   Routes,
@@ -191,6 +192,21 @@ function App() {
     });
 
     return () => unsubscribe();
+  }, []);
+
+  // Ensure redirect-based sign-ins complete in production (e.g., popup blockers)
+  useEffect(() => {
+    // Only attempt once on mount
+    getRedirectResult(auth)
+      .then((res) => {
+        if (res && res.user) {
+          setUser(res.user);
+        }
+      })
+      .catch(() => {
+        // ignore; typical when there is no redirect result
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Ensure user document exists after any successful sign-in (popup or redirect)

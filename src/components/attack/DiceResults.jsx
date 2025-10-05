@@ -63,6 +63,7 @@ export default function DiceResults({
   const [slowSpeedMs, setSlowSpeedMs] = useState(1500); // per-die reveal time (default 1.5s)
   const [rollingAll, setRollingAll] = useState(false);
   const [toolbarMsg, setToolbarMsg] = useState("");
+  const [expandedPhase, setExpandedPhase] = useState(null);
   useEffect(() => {
     if (!rollingPhase) return;
     if (!slowMode) {
@@ -126,8 +127,11 @@ export default function DiceResults({
 
   const startRoll = (phase, fn) => () => {
     setRollingPhase(phase);
+    setExpandedPhase(phase);
     fn?.();
   };
+
+  const rolling = (phase) => rollingPhase === phase;
 
   const delay = (ms) => new Promise((res) => setTimeout(res, ms));
   const phaseRollCount = (phase) => {
@@ -137,6 +141,7 @@ export default function DiceResults({
   const runPhase = async (phase, fn) => {
     setToolbarMsg("");
     setRollingPhase(phase);
+    if (!rollingAll) setExpandedPhase(phase);
     fn?.();
     // Give parent time to set last
     await delay(120);
@@ -145,12 +150,13 @@ export default function DiceResults({
     const duration = slowMode
       ? Math.max(600, (count || 1) * slowSpeedMs + 200)
       : 800;
-    if (!count && slowMode) setToolbarMsg(`${phase} – no dice to roll`);
+    if (!count) setToolbarMsg(`${phase} – no dice to roll`);
     await delay(duration);
   };
   const rollAll = async () => {
     if (rollingAll) return;
     setRollingAll(true);
+    setExpandedPhase("attacks");
     try {
       await runPhase("attacks", onRollAttacks);
       await runPhase("hits", onRollHits);
@@ -168,8 +174,8 @@ export default function DiceResults({
   return (
     <div className="dice-results-card">
       <style>{`
-        .dice-results-card { margin-top: 12px; background: var(--bg-surface); border: 1px solid var(--line); border-radius: var(--radius-sm, 10px); padding: 12px; }
-        .dice-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .dice-results-card { margin-top: 10px; background: var(--bg-surface); border: 1px solid var(--line); border-radius: var(--radius-sm, 10px); padding: 10px; }
+        .dice-toolbar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
         .toggle { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); margin-right: 8px; }
         .btn { border: 1px solid var(--line); background: var(--interactive-active); color: var(--text-primary); padding: 6px 10px; border-radius: 8px; cursor: pointer; }
         .btn:hover { background: var(--interactive-hover); }
@@ -179,19 +185,23 @@ export default function DiceResults({
         .btn.small.active { outline: 2px solid color-mix(in srgb, var(--accent) 40%, transparent); }
         .num { width: 56px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg-surface); color: var(--text-primary); }
         .msg { color: var(--text-muted); font-size: 12px; margin-left: auto; }
-        .phase { margin-top: 10px; }
-        .phase-header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
-        .phase-title { color: var(--text-primary); font-weight: 600; }
-        .phase-sub { color: var(--text-muted); font-size: 12px; }
-        .dice-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(28px, 1fr)); gap: 6px; margin-top: 8px; }
-        .die { width: 28px; height: 28px; border-radius: 6px; display: grid; place-items: center; position: relative; box-shadow: 0 1px 0 rgba(0,0,0,0.08) inset, 0 2px 4px rgba(0,0,0,0.06); border: 1px solid var(--line); }
+        .summary-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 6px 0 2px; }
+        .phase { margin-top: 8px; }
+        .phase-header { display: flex; align-items: center; justify-content: flex-start; gap: 10px; }
+        .phase-title { color: var(--text-primary); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; order: 0; }
+        .phase-sub { color: var(--text-muted); font-size: 12px; display: flex; gap: 6px; align-items: center; order: 2; }
+        .phase-actions { order: 1; margin: 0 6px 0 0; }
+        .phase:has(.die.rolling) .phase-sub .chip { display: none; }
+        .chip { background: var(--interactive-hover); color: var(--text-secondary); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; font-size: 12px; }
+        .dice-grid { display: grid; grid-template-columns: repeat(auto-fit, 24px); justify-content: start; gap: 4px; margin-top: 6px; }
+        .die { width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; position: relative; box-shadow: 0 1px 0 rgba(0,0,0,0.08) inset, 0 2px 4px rgba(0,0,0,0.06); border: 1px solid var(--line); }
         .die.d6 { background: var(--bg-subtle); }
         .die.dN { background: var(--bg-subtle); color: var(--text-primary); font-weight: 600; font-size: 13px; }
         .die.hl { outline: 2px solid color-mix(in srgb, var(--action-success) 80%, transparent); }
         .die.rolling { animation: tilt 0.25s linear infinite; }
         @keyframes tilt { 0% { transform: rotate(0deg); } 50% { transform: rotate(7deg); } 100% { transform: rotate(0deg); } }
         .pips { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); width: 70%; height: 70%; }
-        .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--text-primary); box-shadow: 0 0 1px color-mix(in srgb, var(--text-primary) 40%, transparent); opacity: 0; }
+        .pip { width: 5px; height: 5px; border-radius: 50%; background: var(--text-primary); box-shadow: 0 0 1px color-mix(in srgb, var(--text-primary) 40%, transparent); opacity: 0; }
         /* Visible pips per value (grid cells 1..9) */
         .pips.v1 .pip:nth-child(5),
         .pips.v3 .pip:nth-child(1), .pips.v3 .pip:nth-child(5), .pips.v3 .pip:nth-child(9),
@@ -202,31 +212,44 @@ export default function DiceResults({
       `}</style>
 
       <div className="dice-toolbar">
-        <label className="toggle">
-          <input
-            type="checkbox"
-            checked={shareRolls}
-            onChange={(e) => setShareRolls?.(e.target.checked)}
-          />
-          Share to game log
-        </label>
-        <button className="btn" onClick={startRoll("attacks", onRollAttacks)}>
+        <button
+          className="btn small"
+          disabled={rollingAll}
+          onClick={startRoll("attacks", onRollAttacks)}
+        >
           Roll Attacks
         </button>
-        <button className="btn" onClick={startRoll("hits", onRollHits)}>
+        <button
+          className="btn small"
+          disabled={rollingAll}
+          onClick={startRoll("hits", onRollHits)}
+        >
           Roll Hits
         </button>
-        <button className="btn" onClick={startRoll("wounds", onRollWounds)}>
+        <button
+          className="btn small"
+          disabled={rollingAll}
+          onClick={startRoll("wounds", onRollWounds)}
+        >
           Roll Wounds
         </button>
-        <button className="btn" onClick={startRoll("saves", onRollSaves)}>
+        <button
+          className="btn small"
+          disabled={rollingAll}
+          onClick={startRoll("saves", onRollSaves)}
+        >
           Roll Saves
         </button>
-        <button className="btn" onClick={startRoll("damage", onRollDamage)}>
+        <button
+          className="btn small"
+          disabled={rollingAll}
+          onClick={startRoll("damage", onRollDamage)}
+        >
           Roll Damage
         </button>
         <button
           className="btn dramatic"
+          disabled={rollingAll}
           onClick={() => setSlowMode((v) => !v)}
           title="Toggle slow roll"
         >
@@ -261,6 +284,14 @@ export default function DiceResults({
             </button>
           </span>
         ) : null}
+        <button
+          className="btn dramatic"
+          disabled={rollingAll}
+          onClick={rollAll}
+          title="Roll all phases sequentially"
+        >
+          Roll All
+        </button>
         <span className="toggle" aria-label="Dice modifiers">
           Modifiers:
           <label className="toggle">
@@ -292,10 +323,103 @@ export default function DiceResults({
             />
           </label>
         </span>
-        <button className="btn clear" onClick={onClear}>
+        <button className="btn clear" disabled={rollingAll} onClick={onClear}>
           Clear
         </button>
+        <button
+          className="btn small"
+          disabled={rollingAll}
+          onClick={() => setExpandedPhase("all")}
+        >
+          Expand All
+        </button>
+        <button
+          className="btn small"
+          disabled={rollingAll}
+          onClick={() => setExpandedPhase(null)}
+        >
+          Collapse All
+        </button>
+        <div className="spacer" style={{ flex: 1 }} />
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={shareRolls}
+            onChange={(e) => setShareRolls?.(e.target.checked)}
+          />
+          Share to game log
+        </label>
+        {toolbarMsg ? <span className="msg">{toolbarMsg}</span> : null}
       </div>
+
+      {last?.attacks ||
+      last?.hits ||
+      last?.wounds ||
+      last?.saves ||
+      last?.damage ? (
+        <div className="summary-row">
+          {last?.attacks ? (
+            <span
+              className="chip"
+              role="button"
+              onClick={() =>
+                setExpandedPhase(expandedPhase === "attacks" ? null : "attacks")
+              }
+              title="Toggle Attacks"
+            >
+              A: {rolling("attacks") ? "—" : last.attacks.total}
+            </span>
+          ) : null}
+          {last?.hits ? (
+            <span
+              className="chip"
+              role="button"
+              onClick={() =>
+                setExpandedPhase(expandedPhase === "hits" ? null : "hits")
+              }
+              title="Toggle Hits"
+            >
+              H: {rolling("hits") ? "—" : last.hits.total}
+            </span>
+          ) : null}
+          {last?.wounds ? (
+            <span
+              className="chip"
+              role="button"
+              onClick={() =>
+                setExpandedPhase(expandedPhase === "wounds" ? null : "wounds")
+              }
+              title="Toggle Wounds"
+            >
+              W: {rolling("wounds") ? "—" : last.wounds.total}
+            </span>
+          ) : null}
+          {last?.saves ? (
+            <span
+              className="chip"
+              role="button"
+              onClick={() =>
+                setExpandedPhase(expandedPhase === "saves" ? null : "saves")
+              }
+              title="Toggle Saves"
+            >
+              S: {rolling("saves") ? "—" : last.saves.total}/{rolling("saves") ? "—" : last.saves.unsaved}
+            </span>
+          ) : null}
+          {last?.damage ? (
+            <span
+              className="chip"
+              role="button"
+              onClick={() =>
+                setExpandedPhase(expandedPhase === "damage" ? null : "damage")
+              }
+              title="Toggle Damage"
+            >
+              Dmg: {rolling("damage") ? "—" : last.damage.total}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
 
       {/* Attacks */}
       {last?.attacks ? (
@@ -303,11 +427,29 @@ export default function DiceResults({
           <div className="phase-header">
             <div className="phase-title">Attacks</div>
             <div className="phase-sub">
-              {last.attacks.expr} → total {last.attacks.total}
+              <span className="chip">{last.attacks.expr}</span>
+              <span className="chip">Total {last.attacks.total}</span>
+            </div>
+            <div className="phase-actions">
+              <button
+                className="btn small"
+                onClick={() =>
+                  setExpandedPhase(
+                    expandedPhase === "attacks" ? null : "attacks",
+                  )
+                }
+              >
+                {expandedPhase === "attacks" || expandedPhase === "all"
+                  ? "▾"
+                  : "▸"}
+              </button>
             </div>
           </div>
           {Array.isArray(last.attacks.rolls) &&
-          last.attacks.rolls.length > 0 ? (
+          last.attacks.rolls.length > 0 &&
+          (expandedPhase === "attacks" ||
+            expandedPhase === "all" ||
+            rollingPhase === "attacks") ? (
             <div className="dice-grid">
               {displayRolls("attacks", last.attacks.rolls).map((v, i) => (
                 <Die
@@ -330,10 +472,39 @@ export default function DiceResults({
           <div className="phase-header">
             <div className="phase-title">Hits</div>
             <div className="phase-sub">
-              {last.hits.expr} → {last.hits.total} hits
+              <span className="chip">{last.hits.expr}</span>
+              <span className="chip">{last.hits.total} hits</span>
+              {Number.isFinite(last.hits.crits) ? (
+                <span className="chip">crit {last.hits.crits}</span>
+              ) : null}
+              {Number(last.hits.sustained) > 0 ? (
+                <span className="chip">
+                  +Sust {last.hits.crits * Number(last.hits.sustained || 0)}
+                </span>
+              ) : null}
+              {Number.isFinite(last.hits.autoWounds) &&
+              last.hits.autoWounds > 0 ? (
+                <span className="chip">auto-W {last.hits.autoWounds}</span>
+              ) : null}
+            </div>
+            <div className="phase-actions">
+              <button
+                className="btn small"
+                onClick={() =>
+                  setExpandedPhase(expandedPhase === "hits" ? null : "hits")
+                }
+              >
+                {expandedPhase === "hits" || expandedPhase === "all"
+                  ? "▾"
+                  : "▸"}
+              </button>
             </div>
           </div>
-          {Array.isArray(last.hits.rolls) && last.hits.rolls.length > 0 ? (
+          {Array.isArray(last.hits.rolls) &&
+          last.hits.rolls.length > 0 &&
+          (expandedPhase === "hits" ||
+            expandedPhase === "all" ||
+            rollingPhase === "hits") ? (
             <div className="dice-grid">
               {displayRolls("hits", last.hits.rolls).map((v, i) => (
                 <Die
@@ -358,10 +529,36 @@ export default function DiceResults({
           <div className="phase-header">
             <div className="phase-title">Wounds</div>
             <div className="phase-sub">
-              {last.wounds.expr} → {last.wounds.total} wounds
+              <span className="chip">{last.wounds.expr}</span>
+              <span className="chip">{last.wounds.total} wounds</span>
+              {Number.isFinite(last.wounds.rolled) ? (
+                <span className="chip">rolled {last.wounds.rolled}</span>
+              ) : null}
+              {Number.isFinite(last.wounds.autoFromLethal) &&
+              last.wounds.autoFromLethal > 0 ? (
+                <span className="chip">
+                  lethal +{last.wounds.autoFromLethal}
+                </span>
+              ) : null}
+            </div>
+            <div className="phase-actions">
+              <button
+                className="btn small"
+                onClick={() =>
+                  setExpandedPhase(expandedPhase === "wounds" ? null : "wounds")
+                }
+              >
+                {expandedPhase === "wounds" || expandedPhase === "all"
+                  ? "▾"
+                  : "▸"}
+              </button>
             </div>
           </div>
-          {Array.isArray(last.wounds.rolls) && last.wounds.rolls.length > 0 ? (
+          {Array.isArray(last.wounds.rolls) &&
+          last.wounds.rolls.length > 0 &&
+          (expandedPhase === "wounds" ||
+            expandedPhase === "all" ||
+            rollingPhase === "wounds") ? (
             <div className="dice-grid">
               {displayRolls("wounds", last.wounds.rolls).map((v, i) => (
                 <Die
@@ -386,11 +583,28 @@ export default function DiceResults({
           <div className="phase-header">
             <div className="phase-title">Saves</div>
             <div className="phase-sub">
-              {last.saves.expr} → saved {last.saves.total}, unsaved{" "}
-              {last.saves.unsaved}
+              <span className="chip">{last.saves.expr}</span>
+              <span className="chip">saved {last.saves.total}</span>
+              <span className="chip">unsaved {last.saves.unsaved}</span>
+            </div>
+            <div className="phase-actions">
+              <button
+                className="btn small"
+                onClick={() =>
+                  setExpandedPhase(expandedPhase === "saves" ? null : "saves")
+                }
+              >
+                {expandedPhase === "saves" || expandedPhase === "all"
+                  ? "▾"
+                  : "▸"}
+              </button>
             </div>
           </div>
-          {Array.isArray(last.saves.rolls) && last.saves.rolls.length > 0 ? (
+          {Array.isArray(last.saves.rolls) &&
+          last.saves.rolls.length > 0 &&
+          (expandedPhase === "saves" ||
+            expandedPhase === "all" ||
+            rollingPhase === "saves") ? (
             <div className="dice-grid">
               {displayRolls("saves", last.saves.rolls).map((v, i) => (
                 <Die
@@ -415,10 +629,27 @@ export default function DiceResults({
           <div className="phase-header">
             <div className="phase-title">Damage</div>
             <div className="phase-sub">
-              {last.damage.expr} → {last.damage.total} total
+              <span className="chip">{last.damage.expr}</span>
+              <span className="chip">total {last.damage.total}</span>
+            </div>
+            <div className="phase-actions">
+              <button
+                className="btn small"
+                onClick={() =>
+                  setExpandedPhase(expandedPhase === "damage" ? null : "damage")
+                }
+              >
+                {expandedPhase === "damage" || expandedPhase === "all"
+                  ? "▾"
+                  : "▸"}
+              </button>
             </div>
           </div>
-          {Array.isArray(last.damage.rolls) && last.damage.rolls.length > 0 ? (
+          {Array.isArray(last.damage.rolls) &&
+          last.damage.rolls.length > 0 &&
+          (expandedPhase === "damage" ||
+            expandedPhase === "all" ||
+            rollingPhase === "damage") ? (
             <div className="dice-grid">
               {displayRolls("damage", last.damage.rolls).map((v, i) => (
                 <Die
